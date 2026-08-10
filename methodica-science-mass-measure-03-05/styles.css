@@ -1,0 +1,557 @@
+/* =========================================================
+   לומדה 720 — מדעים יעד 3 | סיין 5 (משימת שיא — מועד א)
+   תשתית בסיס — מועתקת מהמנוע/רכיבים הגלובליים המאומתים של סינים 1-4.
+   ========================================================= */
+
+:root {
+  --subject-500: #019de5;
+  --subject-700: #007ac6;
+}
+
+@font-face {
+  font-family: 'Assistant';
+  src: url('assets/fonts/assistant-hebrew.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Assistant';
+  src: url('assets/fonts/assistant-latin.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+                 U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden; direction: rtl;
+  font-family: 'Assistant', 'Segoe UI', Arial, sans-serif; background: #ffffff;
+}
+button { font-family: inherit; cursor: pointer; background: none; border: none; color: inherit; }
+button:disabled { cursor: default; }
+img { display: block; max-width: none; }
+
+#app {
+  width: 1280px; height: 710px; position: absolute; top: 0; left: 0;
+  transform-origin: top left; background: #fff; overflow: hidden;
+}
+.screen { position: absolute; inset: 0; display: none; }
+.screen.active { display: block; }
+* { transition: none !important; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Bottom bar
+   ════════════════════════════════════════════════════════ */
+.bottom-bar {
+  position: absolute; bottom: -3px; left: 0; right: 0; height: 74px;
+  background: #ffffff; border-top: 0.4px solid #AEAEAE;
+  display: flex; align-items: center; justify-content: center;
+}
+.bottom-bar-inner { width: 1232px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; }
+/* RTL אמיתי, לא direction:ltr — הסדר הפיזי מושג ע"י סדר ה-DOM (רמז ראשון = ימין) */
+.bar-actions { display: flex; align-items: center; gap: 16px; }
+.bar-back { display: flex; align-items: center; }
+
+.btn-continue {
+  background: linear-gradient(180deg, #005FBE 9%, #003971 100%);
+  color: #ffffff; border: none; border-radius: 1000px;
+  font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
+  padding: 12px 40px; width: 140px; cursor: pointer; white-space: nowrap;
+}
+.btn-continue:disabled { background: #AEAEAE; color: #303030; cursor: not-allowed; }
+.btn-continue:not(:disabled):hover { opacity: 0.88; }
+.btn-continue:focus-visible { outline: 3px solid var(--subject-500); outline-offset: 2px; }
+
+.btn-back {
+  background: #ffffff; color: var(--subject-700); border: 1.5px solid var(--subject-700);
+  border-radius: 1000px; font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
+  padding: 12px 40px; width: 140px; cursor: pointer; white-space: nowrap;
+}
+.btn-back:hover { background: #f0f8ff; }
+.btn-back:focus-visible { outline: 3px solid var(--subject-700); outline-offset: 2px; }
+
+.btn-hint {
+  background: #ffffff; color: var(--subject-500); border: 1.5px solid var(--subject-500);
+  border-radius: 1000px; font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
+  padding: 10px 20px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.btn-hint[hidden] { display: none; }
+.btn-hint .scq-hint-icon { flex-shrink: 0; width: 26px; height: 24px; }
+.btn-hint:hover { background: #f0f8ff; }
+.btn-hint:focus-visible { outline: 3px solid var(--subject-500); outline-offset: 2px; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Feedback popup system
+   ════════════════════════════════════════════════════════ */
+.scq-fb-box {
+  display: none; position: absolute; left: 16px; bottom: 87px; width: 426px;
+  max-width: calc(100% - 32px); border: 0.3px solid #aeaeae; border-radius: 12px;
+  padding: 24px; flex-direction: column; gap: 12px; background: #fff; z-index: 25;
+  cursor: grab; user-select: none;
+}
+.scq-fb-box.visible { display: flex; }
+.scq-fb-box.is-correct { background: #edf8ed; }
+.scq-fb-box.is-wrong { background: #ffdbdc; }
+.scq-fb-box.is-dragging { cursor: grabbing; }
+.scq-fb-title { display: flex; direction: rtl; align-items: center; gap: 16px; }
+.scq-fb-title-text { flex: 1; font-weight: 700; font-size: 20px; color: #222; text-align: right; white-space: pre-line; }
+.scq-fb-body { font-weight: 400; font-size: 20px; color: #222; text-align: right; white-space: pre-line; }
+.scq-fb-reveal-btn {
+  align-self: flex-start;
+  background: #fff; color: #019de5; border: 1.5px solid #019de5; border-radius: 1000px;
+  font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
+  padding: 10px 24px; cursor: pointer;
+}
+.scq-fb-reveal-btn[hidden] { display: none; }
+.scq-fb-reveal-btn:hover { background: #f0f8ff; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Hint popup
+   ════════════════════════════════════════════════════════ */
+.scq-hint-overlay {
+  position: absolute; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 32, 96, 0.35);
+}
+.scq-hint-overlay[hidden] { display: none; }
+.scq-hint-popup {
+  position: relative; width: 542px; max-width: calc(100% - 64px);
+  background: var(--subject-500); border-radius: 48px; padding: 40px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 24px;
+  direction: rtl;
+}
+.scq-hint-title-row { width: 100%; display: flex; flex-direction: row-reverse; align-items: center; justify-content: flex-end; gap: 16px; }
+.scq-hint-title { flex: 1; font-weight: 700; font-size: 32px; color: #fff; text-align: right; }
+.scq-hint-bulb { width: 40px; height: 34px; flex-shrink: 0; }
+.scq-hint-body { font-weight: 400; font-size: 22px; color: #fff; text-align: right; line-height: 1.5; }
+.scq-hint-close { align-self: center; width: 196px; padding: 16px 40px; border-radius: 999px; background: #fff; color: #303030; font-size: 24px; text-align: center; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Image zoom
+   ════════════════════════════════════════════════════════ */
+.img-zoom-btn {
+  position: absolute; top: 10px; right: 10px; width: 44px; height: 44px;
+  border-radius: 999px; background: #fff; border: 2px solid var(--subject-500);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; z-index: 2;
+}
+.img-zoom-btn:hover { background: var(--subject-500); }
+.img-zoom-btn__icon { width: 20px; height: 20px; stroke: var(--subject-500); }
+.img-zoom-btn:hover .img-zoom-btn__icon { stroke: #fff; }
+.img-zoom-btn:focus-visible { outline: 2px solid var(--subject-500); outline-offset: 2px; }
+.img-zoom-modal {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.78); z-index: 1000;
+}
+.img-zoom-modal.hidden { display: none; }
+.img-zoom-modal__panel {
+  position: relative; width: 660px; height: 660px; background: #fff; border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.img-zoom-modal__stage { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.img-zoom-close {
+  position: absolute; top: 10px; left: 10px; width: 44px; height: 44px;
+  border-radius: 999px; background: #fff; border: 2px solid var(--subject-500);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; z-index: 2;
+}
+.img-zoom-close:hover { background: var(--subject-500); }
+.img-zoom-close__icon { width: 15px; height: 15px; stroke: var(--subject-500); }
+.img-zoom-close:hover .img-zoom-close__icon { stroke: #fff; }
+.img-zoom-close:focus-visible { outline: 2px solid var(--subject-500); outline-offset: 2px; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Report/Issue button
+   ════════════════════════════════════════════════════════ */
+.flag-btn {
+  position: absolute; top: 16px; left: 16px; z-index: 30;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; width: 88px;
+}
+.flag-btn-icon { position: relative; display: block; width: 38px; height: 38px; }
+.flag-btn-icon-default, .flag-btn-icon-hover { position: absolute; inset: 0; width: 38px; height: 38px; }
+.flag-btn-icon-hover { opacity: 0; }
+.flag-btn-label { font-weight: 600; font-size: 14px; color: var(--subject-500); text-align: center; width: 80px; opacity: 0; }
+.flag-btn:hover .flag-btn-icon-default, .flag-btn:focus-visible .flag-btn-icon-default { opacity: 0; }
+.flag-btn:hover .flag-btn-icon-hover, .flag-btn:focus-visible .flag-btn-icon-hover { opacity: 1; }
+.flag-btn:hover .flag-btn-label, .flag-btn:focus-visible .flag-btn-label { opacity: 1; }
+
+/* ════════════════════════════════════════════════════════
+   מסך 1 — מסך מעבר
+   ════════════════════════════════════════════════════════ */
+.transition-content {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 74px;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: 80px 56px 50px;
+}
+.transition-title-block { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 810px; direction: rtl; }
+.transition-title { font-family: 'Assistant', sans-serif; font-size: 40px; font-weight: 700; color: #303030; text-align: center; line-height: 1.3; }
+.transition-sub { font-family: 'Assistant', sans-serif; font-size: 26px; font-weight: 400; color: #303030; text-align: center; line-height: 1.5; }
+.transition-avatar-wrap { position: relative; width: 304px; flex-shrink: 0; }
+.transition-avatar { width: 304px; aspect-ratio: 304 / 293; object-fit: cover; display: block; border-radius: 16px; }
+
+/* ════════════════════════════════════════════════════════
+   מסך 2 — סעיף 1: יישומון (placeholder) + טבלה למילוי
+   .dq-sim-placeholder הועתק ממסך 6 בסיין 1 (סימולציה בצד שמאל, כרגע
+   ריקה). .tbl-content/.tbl-page (אפקט גלילה) הועתקו מאותו מקור ששימש
+   בכל מסכי הגלילה בפרויקט — כאן, מכיוון שיש סימולציה בצד שמאל
+   (left:0..427px), מעטפת הגלילה מתחילה מ-left:427px (לא 40px כברירת
+   המחדל), אותה מוסכמה בדיוק כמו .dq-question-panel.
+   ════════════════════════════════════════════════════════ */
+.dq-sim-placeholder {
+  position: absolute;
+  left: 0; top: 0; width: 427px; height: 636px;
+  overflow: hidden;
+}
+/* סימולציית שקילה — גררו את שרשרת הזהב (weighting-application/gold-
+   necklace.png) אל המאזניים (weighting-application/weight-machine.png)
+   כדי לקבל מדידה. אין כפתור "מדידת מסה" נפרד (כפי שמתואר בשקפים
+   132-133) — לפי בקשה מפורשת: הגרירה עצמה היא פעולת המדידה (אותה
+   מוסכמה כמו makeScaleSimulation בסיין 1), וה"שאלה" (טבלת המילוי
+   הידנית + כפתור "מדידה נוספת") היא רכיב נפרד ובלתי-תלוי, שכבר קיים.
+   רק כפתור איפוס שייך לסימולציה עצמה.
+   קואורדינטות התחנה/ה-LCD נמדדו בפועל מתוך weight-machine.png
+   (1716×917) via PIL: קצה עליון של המגש ב-20.94% גובה, מרכז המגש
+   ב-49.4% רוחב, מסך ה-LCD ב-x:28.79%-69.81%, y:50.71%-69.14%. */
+.dq-sim {
+  position: absolute; inset: 0;
+  background: #ffffff;
+  overflow: hidden;
+}
+.dq-sim-station {
+  position: absolute; left: 23px; top: 350px; width: 380px; height: 203px;
+}
+.dq-sim-imgwrap { position: relative; width: 100%; height: 100%; }
+.dq-sim-scale-img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.dq-sim-lcd {
+  position: absolute; left: 28.79%; top: 50.71%; width: 41.02%; height: 18.43%;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  color: #2b3a2e; direction: rtl;
+  font-family: 'Share Tech Mono', 'Assistant', monospace; font-size: 24px; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.dq-sim-lcd-unit { font-size: 1em; opacity: .75; }
+/* אזור שחרור מקווקו — מוצג רק בזמן גרירה (.dragging על השרשרת),
+   כדי שברור איפה להניח אותה (ראו state.dragging ב-makeSingleScaleSimulation) */
+.dq-sim-dropzone {
+  position: absolute; left: 101px; top: 260px; width: 220px; height: 160px;
+  border: 2px dashed var(--subject-500); border-radius: 16px;
+  opacity: 0; pointer-events: none; transition: opacity .15s;
+}
+.dq-sim-dropzone.visible { opacity: 1; }
+/* בלי transition על transform: ההנחה על המגש קופצת מיידית למקומה
+   הסופי (בלי אנימציית "החלקה"). זו החלטה מכוונת — עם אנימציה, צילום
+   מסך שנלקח מיד אחרי השחרור (לפני שה-300ms הסתיימו) מראה את השרשרת
+   "תקועה" באמצע הדרך, נראה כמו מיקום שגוי אף שהמצב הסופי תקין. */
+.dq-sim-necklace {
+  position: absolute; left: 0; top: 0; width: 170px; height: 113px;
+  object-fit: contain; cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none;
+  z-index: 6;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
+}
+.dq-sim-necklace.dragging { cursor: grabbing; }
+.tbl-content {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 74px;
+  direction: rtl; /* מבטיח שהסקרול-בר יושב בצד הפיזי הנכון (ימין ב-RTL), לא תלוי בירושה בלבד */
+  /* left/right עברו מ-position ל-padding, כדי שפס הגלילה יישב צמוד
+     לקנבס (לא במרווח 40px). תוכן פנימי נשאר באותו מרווח, כי הפדינג
+     מפצה על ההסטה. */
+  padding-left: 40px; padding-right: 40px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+}
+/* s1: הסימולציה תופסת את הפינה הפיזית השמאלית (left:0, width:427px —
+   left/width הן מיקום פיזי אמיתי, לא מושפעות מ-direction). מעטפת
+   הגלילה תופסת את שאר השטח הפיזי: left:427px (מתחילה בדיוק איפה
+   שהסימולציה נגמרת) עד right:0 (קצה ימין פיזי של הקנבס). padding
+   מאופס בשני הצדדים כי .tbl-page מטפל בריווח הפנימי בעצמו (24px/40px). */
+.tbl-content.s1-scroll-area { left: 427px; top: 40px; padding-left: 0; padding-right: 0; }
+.tbl-content::-webkit-scrollbar { width: 8px; }
+.tbl-content::-webkit-scrollbar-track { background: rgba(201, 206, 216, 0.4); border-radius: 16px; }
+.tbl-content::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.56); border-radius: 24px; }
+.tbl-page {
+  min-height: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* RTL column: flex-start = physical right */
+  gap: 20px;
+  padding: 24px 40px 32px 24px;
+}
+.tbl-page-header { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.tbl-table { width: 100%; max-width: 700px; border-collapse: collapse; direction: rtl; text-align: center; flex-shrink: 0; }
+.tbl-th { background: #D4F3FF; border: 1px solid #D4D4D4; font-size: 22px; font-weight: 700; color: #303030; padding: 6px 12px; white-space: nowrap; }
+.tbl-td { border: 1px solid #D4D4D4; font-size: 22px; font-weight: 400; color: #303030; padding: 6px 12px; white-space: nowrap; background: #fff; }
+.tbl-table tbody tr:nth-child(even) .tbl-td { background: #D4F3FF; }
+
+/* תא-קלט חופשי (מסה/ממוצע) — בלי סימולציה אמיתית עדיין אין ולידציה */
+.tbl-input {
+  width: 100%; min-width: 90px;
+  border: 1px solid rgba(174, 174, 174, 0.6);
+  border-radius: 6px;
+  background: #fff;
+  font-family: 'Assistant', sans-serif;
+  font-size: 22px;
+  color: #303030;
+  text-align: center;
+  padding: 4px 6px;
+}
+/* "הממוצע עד כה" — תצוגה מחושבת בלבד (לא קלט), ראו s1ComputeAverages() */
+.tbl-avg-display {
+  display: block; width: 100%; min-width: 90px;
+  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 600;
+  color: #303030; text-align: center; padding: 4px 6px;
+  font-variant-numeric: tabular-nums;
+}
+.tbl-input:focus { outline: none; border-color: var(--subject-500); }
+.tbl-input:disabled { background: #f3f4f5; color: #616161; }
+
+/* כפתור "+" להוספת מדידה — עיגול כחול, כמו הוספת שורה בטבלת Word */
+.tbl-add-row-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--subject-500); font-size: 18px; font-weight: 700;
+  padding: 4px 0;
+}
+.tbl-add-row-btn svg { flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: var(--subject-500); padding: 4px; box-sizing: border-box; }
+.tbl-add-row-btn:hover { opacity: 0.8; }
+.tbl-add-row-btn:disabled { opacity: 0.35; cursor: default; }
+.tbl-add-row-btn[hidden] { display: none; }
+
+.s1-finish-btn { width: auto; min-width: 160px; }
+
+/* ════════════════════════════════════════════════════════
+   מסכים 3-4 — SingleChoiceQuestion (סעיפים א+ב)
+   ════════════════════════════════════════════════════════ */
+.scq-question {
+  position: absolute; top: 139px; left: 40px; right: 40px;
+  display: flex; flex-direction: row; direction: ltr; align-items: flex-start; gap: 16px;
+}
+.scq-content { direction: rtl; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; flex: 1; }
+.scq-qtext { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 792px; max-width: 100%; }
+.scq-qtitle { font-weight: 700; font-size: 24px; color: var(--subject-500); text-align: right; width: 100%; }
+.scq-qtext-body { display: flex; flex-direction: column; width: 100%; }
+.scq-qbody { font-weight: 400; font-size: 24px; color: #303030; text-align: right; }
+/* מסך 2 (s1): "מציג.../מחשב..." כרשימה אמיתית, לפי התסריט */
+.s1-app-behavior-list {
+  margin: 0;
+  padding-right: 28px;
+  padding-left: 0;
+  direction: rtl;
+  list-style: disc;
+  font-family: 'Assistant', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: #303030;
+  text-align: right;
+}
+.scq-answers { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 604px; max-width: 100%; }
+.scq-opt {
+  width: 100%; display: flex; flex-direction: row; align-items: center; gap: 10px;
+  padding: 12px 20px; border: 2px solid var(--subject-500); border-radius: 999px;
+  cursor: pointer; background: #fff; box-sizing: border-box;
+}
+.scq-opt-text { flex: 1; font-weight: 400; font-size: 22px; color: #222; text-align: right; }
+.scq-radio { order: -1; position: relative; flex-shrink: 0; width: 22px; height: 22px; border: 2px solid var(--subject-500); border-radius: 999px; background: #fff; }
+.scq-opt.selected .scq-radio { background: var(--subject-500); }
+.scq-radio::after { content: ''; position: absolute; inset: 0; background-repeat: no-repeat; background-position: center; }
+.scq-opt.correct { border-width: 1.5px; border-color: #609e12; background: #edf8ed; }
+.scq-opt.correct .scq-radio { border-color: #609e12; background: #609e12; }
+.scq-opt.correct .scq-radio::after { background-image: url('assets/images/icon-check-white.png'); background-size: 12px 9px; }
+.scq-opt.wrong { border-width: 1.5px; border-color: #b20010; background: #fff0f4; }
+.scq-opt.wrong .scq-radio { border-color: #b20010; background: #b20010; }
+.scq-opt.wrong .scq-radio::after { background-image: url('assets/images/icon-x-white.png'); background-size: 10px 10px; }
+.scq-opt.disabled { cursor: default; }
+
+/* מסך 3 — טבלה במקום תמונה, בעמודה הימנית-פיזית (380px, כמו .scq-img) */
+.scq-table-wrap {
+  flex-shrink: 0;
+  width: 380px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+.scq-table-wrap .tbl-table--compact { max-width: 100%; }
+.scq-table-wrap .tbl-table--compact .tbl-th,
+.scq-table-wrap .tbl-table--compact .tbl-td { font-size: 20px; padding: 4px 6px; }
+
+/* מסך 4 — תמונה + בועת דיבור מעליה */
+.scq-img-bubble-wrap { flex-shrink: 0; width: 380px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.scq-img { flex-shrink: 0; width: 380px; height: 300px; padding: 8px; }
+.scq-img-inner {
+  position: relative; width: 100%; height: 100%; border: 1px solid rgba(174, 174, 174, 0.5);
+  border-radius: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fff;
+}
+.scq-img-inner img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
+
+.s3-bubble {
+  direction: rtl !important;
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--subject-500);
+  border-radius: 16px;
+  padding: 14px 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.s3-bubble p {
+  margin: 0;
+  font-family: 'Assistant', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #222;
+  text-align: center;
+  line-height: 1.4;
+}
+.s3-bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 13px solid var(--subject-500);
+}
+.s3-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 11px solid #fff;
+  z-index: 1;
+}
+
+/* ════════════════════════════════════════════════════════
+   מסך 5 — סעיף ג: מסך גלילה. עמוד 1 = פיגמה (SOURCE OF TRUTH,
+   fileKey Z9sD0kksYj1Ph1kUcs71sw, node 2312:12312) — קואורדינטות
+   מוחלטות מ-get_metadata (קנבס הפיגמה 1280×710, זהה לשלנו, בלי סקאלה).
+   מעטפת הגלילה כאן פרוסה על פני כל רוחב המסך (left:0/right:0, לא
+   ה-40px ברירת המחדל) כדי שהקואורדינטות המוחלטות של הפיגמה יתאימו
+   1:1 בלי המרה. עמוד 2 = שאלת גרירה (ראו בלוק dq-* למטה).
+   ⚠️ אומת מול get_metadata בפועל (2026): ה-Figma המקורי (node 2312:12312)
+   קבע text frame ב-y:71 / bubble+img ב-y:292 — קומפוזיציה שונה במכוון
+   ממסך 4 (s3). אבל לפי בקשה מפורשת של הלקוחה, נדרש יישור אחיד לחלוטין
+   ל-X/Y של שאר מסכי ה"שאלה" בפרויקט (top:139, כמו s2/s3, ראו
+   .scq-question) — כדי שהמסך ירגיש עקבי, גם על חשבון סטייה מה-Figma
+   הספציפי הזה. זו החלטה מודעת ומאושרת (לא טעות של "לשכוח" את ה-Figma):
+   אל תחזיר ל-top:71 בלי לוודא מול הלקוחה מחדש. */
+.tbl-content.s4-scroll-area { left: 0; right: 0; top: 0; padding-left: 0; padding-right: 0; }
+
+.tbl-page.s4-page-top { position: relative; }
+
+.s4-text-block { position: absolute; right: 40px; top: 139px; width: 939px; max-width: calc(100% - 80px); }
+.s4-title { margin: 0 0 16px; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; }
+.s4-body { margin: 0; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; }
+
+/* bubble/img הוזזו מטה ב-68px (139-71) ביחס לערכי הפיגמה המקוריים
+   (292→360), כדי לשמור על אותו מרווח יחסי לכותרת אחרי ההזזה שלה. */
+.s4-bubble {
+  position: absolute; left: 138px; top: 250px; width: 326px; height: 131px;
+  background: #fff; border: 2px solid var(--subject-500); border-radius: 20px;
+  box-sizing: border-box; padding: 16px 20px;
+  display: flex; align-items: center; justify-content: center;
+}
+.s4-bubble p { margin: 0; font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400; color: #303030; text-align: center; line-height: 1.4; direction: rtl; }
+/* זנב הבועה — משולש CSS פונה ימינה, לעבר התמונה (אותה טכניקה בדיוק
+   כמו .s18-bubble--tail-right בסיין 1) */
+.s4-bubble--tail-right::after {
+  content: '';
+  position: absolute;
+  top: 50px;
+  right: -14px;
+  border: 10px solid transparent;
+  border-right: none;
+  border-left: 14px solid var(--subject-500);
+}
+
+/* תמונה — הפיגמה עצמה מציגה placeholder אפור (בלי תמונה אמיתית),
+   ממומש כפי שהוא, ראו ARCHITECTURE.md */
+.s4-img-placeholder { position: absolute; left: 475px; top: 250px; width: 330px; height: 274px; border-radius: 16px; object-fit: cover; }
+
+/* עמוד 2 הוא שאלה עצמאית (DragAndDropQuestion, ה-fill-in-blank),
+   בלי שום קשר ל-node הפיגמה של עמוד 1 (זה שקבע top:71 לכותרת שם —
+   ראו הערה מעל .s4-text-block). מבחינת תפקיד, עמוד 2 שקול לכל שאלת
+   "סעיף" אחרת בפרויקט (סעיף א ב-s2, סעיף ב ב-s3) — שתיהן משתמשות
+   ב-.scq-question שממוקם ב-top:139px (ראו .scq-question ב-CSS).
+   לכן כותרת "סעיף ג" כאן צריכה להיות ב-top:139px, בדיוק כמו הכותרות
+   ב-s2/s3 — לא ב-top:71 (זה היה שיוך שגוי למיקום הספציפי־לפיגמה
+   של עמוד 1, לא למוסכמת ה"שאלה" הכללית). .s4-dq-content ברוחב/יישור
+   זהים ל-.s4-text-block (right edge זהה בזכות padding-right:40 המשותף
+   של .tbl-page, width זהה 939px). */
+.tbl-page.s4-page-two { padding-top: 139px; }
+.s4-dq-content { display: flex; flex-direction: column; gap: 20px; width: 939px; max-width: calc(100% - 80px); }
+
+/* ════════════════════════════════════════════════════════
+   מסך 5 עמוד 2 — שאלת גרירה (DragAndDropQuestion), makeDragQuestion
+   factory (זהה לזה שכבר קיים בסיין 3). רכיבי dq-* משותפים/גנריים —
+   הועתקו מסיין 3 (שם הוגדרו ללא קידומת מסך, לשימוש חוזר). נוסף
+   .dq-sentence-text (לא היה בסיין 3) — פסקה זורמת עם ירידות שורה
+   טבעיות, לעומת .dq-sentence שם (שורה בודדת, flex-row), כי כאן המשפט
+   ארוך ורב-שורות עם 6 מקומות גרירה.
+   ════════════════════════════════════════════════════════ */
+.dq-instruction-bold {
+  font-size: 24px; font-weight: 700; color: #303030;
+  direction: rtl; text-align: right; width: 100%;
+  margin: 0; line-height: 1.3; flex-shrink: 0;
+}
+.dq-sentence-text {
+  direction: rtl; text-align: right; font-size: 24px; color: #303030;
+  line-height: 1.9; width: 100%; margin: 0; flex-shrink: 0;
+}
+.dq-snt-drop {
+  display: inline-flex; vertical-align: middle; align-items: center; justify-content: center;
+  flex-shrink: 0; width: 140px; height: 42px; border-radius: 10px;
+  border: 1px dashed rgba(0,0,0,0.6); background: #f3f4f5;
+  box-sizing: border-box; cursor: default; margin: 0 3px;
+}
+.dq-snt-drop.drag-over { background: #fff; border: 1px dashed var(--subject-500); }
+.dq-snt-drop.occupied { background: #d4f3ff; border: 1.5px solid var(--subject-500); }
+.dq-snt-drop.correct { border: 1.5px solid #609e12 !important; background: #fff !important; }
+.dq-snt-drop.wrong { border: 1.5px solid #B20010 !important; background: #fff !important; }
+.dq-placed-card {
+  font-size: 24px; font-weight: 400; color: #303030;
+  cursor: grab; user-select: none; white-space: nowrap; direction: rtl;
+  display: inline-flex; align-items: center; justify-content: flex-start;
+  gap: 10px; width: 100%; height: 100%; padding: 0 8px;
+}
+.dq-snt-drop.occupied:not(.correct):not(.wrong) .dq-placed-card { font-size: 22px; color: #222; }
+.dq-placed-card.locked { cursor: default; }
+.dq-snt-drop.correct .dq-placed-card::after {
+  content: ''; display: inline-block; width: 26px; height: 26px; flex-shrink: 0; order: -1;
+  border-radius: 50%; background-color: #609e12;
+  background-image: url('assets/images/icon-badge-check-white.svg');
+  background-repeat: no-repeat; background-position: center; background-size: 12px 9px;
+}
+.dq-snt-drop.wrong .dq-placed-card::after {
+  content: ''; display: inline-block; width: 26px; height: 26px; flex-shrink: 0; order: -1;
+  border-radius: 50%; background-color: #B20010;
+  background-image: url('assets/images/icon-badge-x-white.svg');
+  background-repeat: no-repeat; background-position: center; background-size: 12px 12px;
+}
+.dq-word-bank {
+  display: flex; flex-wrap: wrap; gap: 10px; width: 100%;
+  direction: rtl; flex-shrink: 0; padding: 8px 0; align-content: flex-start;
+}
+.dq-source-slot { display: inline-flex; align-items: center; }
+.dq-drag-card {
+  background: #fff; border: 1.5px solid #ececec; border-radius: 10px;
+  font-size: 24px; font-weight: 400; color: #303030;
+  cursor: grab; user-select: none; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 90px; height: 42px; padding: 0 12px; direction: rtl;
+}
+.dq-drag-card:hover:not(.ghost):not(.locked) { border-color: var(--subject-500); box-shadow: 0 2px 6px rgba(1,157,229,0.2); }
+.dq-drag-card.dragging { opacity: 0.38; }
+.dq-drag-card.ghost { color: transparent; background: #f3f4f5; border: 1px solid rgba(174,174,174,0.3); pointer-events: none; }
+.dq-drag-card.locked { cursor: default; }

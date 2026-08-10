@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לומדה 720 | מדעים יעד 3 | סיין 1</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ מסך 1 — בחירת דמות (TwoOptionSelection) ============
+       הועתק במדויק (עיצוב + פונקציונליות) ממסך 1 של
+       Methodica-science-mass-measure-02-01 (data-screen="0", id="s0"),
+       לפי בקשת המשתמשת. תמונות הדמויות זמניות — יעודכנו בהמשך. -->
+  <section class="screen active" data-screen="0" id="s0">
+
+    <div class="screen1-content">
+
+      <div class="screen1-text-group">
+        <h1 class="screen1-title">מי תלווה אותנו בלמידה?</h1>
+        <p class="screen1-subtitle">בחרו דמות</p>
+      </div>
+
+      <div class="options-row" role="radiogroup" aria-label="בחרו דמות">
+        <!-- דמות ורודה -->
+        <div class="option-card"
+             data-value="pink"
+             role="radio"
+             aria-checked="false"
+             tabindex="0"
+             onclick="selectOption(this)"
+             onkeydown="handleCardKey(event, this)">
+          <div class="option-card-frame">
+            <div class="option-card-img">
+              <img src="assets/images/pink-avatar-holds-weight.png" alt="דמות ורודה מחזיקה מאזניים" draggable="false">
+            </div>
+          </div>
+        </div>
+
+        <!-- דמות "בוי" -->
+        <div class="option-card"
+             data-value="boy"
+             role="radio"
+             aria-checked="false"
+             tabindex="0"
+             onclick="selectOption(this)"
+             onkeydown="handleCardKey(event, this)">
+          <div class="option-card-frame">
+            <div class="option-card-img">
+              <img src="assets/images/boy-avatar-hold-golds.png" alt="דמות תכולה עם משקפיים מחזיקה מטילי זהב" draggable="false">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom bar — "בחרתי" בלבד, אין כפתור חזרה במסך ראשון -->
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner s0-bar">
+        <button class="btn-continue"
+                id="s0-continue"
+                disabled
+                onclick="advanceFromS0()">בחרתי</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 2 — מסך וידאו (VideoIntro) ============
+       נבנה לפי Figma (מקור אמת יחיד — לא לפי לומדת מקור אחרת):
+       https://www.figma.com/design/eSbp4bKHgBky0rakDb8l9N/720---UI-Templates?node-id=408-4889
+       ("Video - state 01 - video start"). הבדל מפורש אחד מהפיגמה, לפי
+       בקשת המשתמשת: בלי ה-toggle "להקשיב לשיחה / להפוך קלפים"
+       (node-id=408-5243 הוא אותו sub-node שכולל גם את הטקסט/וידאו וגם
+       את ה-toggle — רק ה-toggle הוסר, לא שאר התוכן).
+       תוכן: תסריט הפקה, שקף 4 (אין תת-כותרת בשקף הזה — פסקה שנייה ריקה
+       בלבד). דמות+בועית: מיקום/עיצוב לפי Figma נוסף
+       (fileKey Z9sD0kksYj1Ph1kUcs71sw, node 2291:11788) — בועה עם זנב
+       (border 2px var(--subject-500), radius 16) מעל תמונת הדמות הנבחרת
+       (pink/boy, ראו Companion character system). מוצב פינה שמאל-תחתונה
+       (המיקום המדויק על הקנבס לא היה בנתוני ה-node עצמו — הועתק מהמוסכמה
+       הגלובלית הקיימת ל-widget דמות+בועה, ראו ARCHITECTURE.md).
+       כפתור "להמשיך?" תואם למצב Disabled שמופיע בפיגמה — יופעל בפועל
+       ע"י video-gating (`ended` event) ברגע שיסופק קובץ וידאו אמיתי
+       ל-assets/videos/ (לפי תסריט ההפקה: "כפתור המשך פעיל רק אחרי ניגון
+       הסרטון"). -->
+  <section class="screen" data-screen="1" id="s1">
+
+    <div class="video-intro-content">
+      <div class="video-intro-head">
+        <h1 class="video-intro-title">האם 3 גרמים של טוּנָה שווים 12 מיליון דולר?</h1>
+      </div>
+
+      <div class="video-player-wrap">
+        <div class="video-player-bg"></div>
+        <!-- TODO: כשיסופק קובץ וידאו ל-assets/videos/, להחליף ב-<video> אמיתי
+             + לחבר s1Start()/'ended' listener שמפעיל את #s1-continue -->
+        <button class="video-play-btn" type="button" aria-label="הפעל סרטון">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="28" cy="28" r="28" fill="#303030"/>
+            <path d="M22.5 19C22.5 17.86 23.74 17.15 24.73 17.73L38.5 25.85C39.47 26.42 39.47 27.83 38.5 28.4L24.73 36.52C23.74 37.1 22.5 36.39 22.5 35.25V19Z" fill="white"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="char-bubble-wrap">
+      <div class="char-speech-bubble">
+        <p>הקשיבו לפודקאסט של נועם ודניאלה וענו בעצמכם...</p>
+      </div>
+      <div class="char-bubble-avatar">
+        <img id="s1-char-img" src="" alt="הדמות הנלווית">
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s1-back" onclick="goTo(0)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s1-continue" disabled onclick="goTo(2)">המשך</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 3 — שאלת בחירה יחידה, עם תמונה (SingleChoiceQuestion) ============
+       מבנה ה-HTML (.scq-question > .scq-content > .scq-qtext > .scq-qtext-body
+       [qtitle+qbody] + .scq-answers) הועתק 1-1 ממסך 14 (data-screen="13",
+       id="s13") של Methodica-science-mass-measure-02-01 — זהו וריאנט SCQ
+       שכבר קיים ומאומת שם בפועל, לפי בקשת המשתמשת (לא הומצא). עיצוב הפילס
+       תואם למסך 2 (SCQ עם תמונה) של אותו פרויקט — זהות class names בין שני
+       הווריאנטים. ההתאמות בפועל ביחס למסך 14:
+       (1) השאלה נשארת חד-ברירה (radio, לא checkbox כמו במסך 14 המקורי);
+       (2) שתי אפשרויות בלבד (לא 4); (3) בלי מנגנון המשוב/רמז/ניסיונות
+       הסטנדרטי — בחירה מפעילה ישירות "המשך", בלי "צדקתי?"/פאנל משוב/רמז
+       (במסך 14 המקורי יש את כל אלה — לא הועתקו לפי בקשה מפורשת קודמת).
+       תוכן: תסריט הפקה מדעים_יעד 3_שימושי מדידת מסה_להפקה.pptx, שקף 6
+       (התשובה הנכונה: א — "עם נועם", מתועד ב-S2.correctId לצורך תיעוד
+       בלבד, לא מוצג כמשוב).
+       תמונה (daniela_and_noam_asking.png): נוספה לפי בקשה מפורשת, באותה
+       מסגרת/.scq-img בדיוק כמו מסך 9 (id="s8") — כולל object-fit: cover
+       (לא contain), לפי בחירה מפורשת של המשתמש למרות שה-cover חותך חלק
+       מספל "נועם" ומהמאזניים/פחית הטונה בקצוות התמונה הרחבה (1536×1024). -->
+  <section class="screen" data-screen="2" id="s2">
+
+    <div class="scq-question">
+      <div class="scq-img"><div class="scq-img-inner">
+        <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                data-zoom-src="assets/images/daniela_and_noam_asking.png" data-zoom-alt="נועם ודניאלה שואלים שאלה בפודקאסט">
+          <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <img id="s2-img" src="assets/images/daniela_and_noam_asking.png" alt="נועם ודניאלה שואלים שאלה בפודקאסט"></div></div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">עזרו לנועם ודניאלה</p>
+            <p class="scq-qbody">
+            האם לדעתכם חוסר של 8–3 גרם במוצר של 142 גרם הוא בעיה חמורה שדורשת קנס, <br/>או סטייה הגיונית ומותרת?</p>
+          </div>
+        </div>
+
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s2Select('a')">
+            <span class="scq-opt-text">אני עם נועם, בעיה חמורה! המפעל צריך לדייק לחלוטין</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s2Select('b')">
+            <span class="scq-opt-text">אני עם דניאלה, מדובר בסטייה הגיונית, במדידות תמיד יש חוסר דיוק קטן</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s2-back" onclick="goTo(1)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s2-continue" disabled onclick="advanceFromS2()">המשך</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 4 — מסך וידאו (VideoIntro) ============
+       אותו מבנה בדיוק כמו מסך 2 (ראו הערה שם) — Figma node-id=408-4889,
+       בלי ה-toggle. class names משותפים בין שני המסכים (video-intro-*).
+       תוכן: תסריט הפקה, שקף 7 (כאן יש כן תת-כותרת). -->
+  <section class="screen" data-screen="3" id="s3">
+
+    <div class="video-intro-content">
+      <div class="video-intro-head">
+        <h1 class="video-intro-title">תודה על המענה!</h1>
+        <p class="video-intro-subtitle">הקשיבו לחלק הבא של הפודקאסט וגלו מי צודק...</p>
+      </div>
+
+      <div class="video-player-wrap">
+        <div class="video-player-bg"></div>
+        <!-- TODO: כשיסופק קובץ וידאו ל-assets/videos/, להחליף ב-<video> אמיתי
+             + לחבר s3Start()/'ended' listener שמפעיל את #s3-continue -->
+        <button class="video-play-btn" type="button" aria-label="הפעל סרטון">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="28" cy="28" r="28" fill="#303030"/>
+            <path d="M22.5 19C22.5 17.86 23.74 17.15 24.73 17.73L38.5 25.85C39.47 26.42 39.47 27.83 38.5 28.4L24.73 36.52C23.74 37.1 22.5 36.39 22.5 35.25V19Z" fill="white"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="char-bubble-wrap">
+      <div class="char-speech-bubble">
+        <p>נו? התשובה שלכם הייתה נכונה?</p>
+      </div>
+      <div class="char-bubble-avatar">
+        <img id="s3-char-img" src="" alt="הדמות הנלווית">
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s3-back" onclick="goTo(2)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s3-continue" disabled onclick="goTo(4)">המשך</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 5 — בחירת מסלול למידה (TwoOptionSelection) ============
+       נבנה לפי Figma "לומדת התנסות" (fileKey Z9sD0kksYj1Ph1kUcs71sw),
+       node 196:3215 ("TwoOptionSelection") — אותה תבנית גנרית שכבר
+       מומשה במסך 1 (עמודת כותרת/תת-כותרת ב-top:64/left:235/width:810,
+       ואותם .option-card/.option-card-frame 296px — נבדק שמתאים 1:1).
+       הבדל מהותי אחד ממסך 1: כאן יש תווית (שם) מתחת לכל כרטיס
+       (.option-card-label, bold 32 per Figma), ותמונות ה-JPG הן תצלום
+       מלא-פריים (object-fit:cover, לא contain כמו הדמויות) — scoped ל-#s4
+       בלבד, לא משנה את מסך 1.
+       תוכן: תסריט הפקה, שקף 9. מיקום ימין/שמאל נקבע לפי מדידת מיקום X
+       בפועל של הצורות ב-PPTX (לא ניחוש): "תרופות"/Picture 15 ב-x=6.8in
+       (ימין, מתוך רוחב שקף 13.33in) מול "זהב"/Picture 8 ב-x=2.93in
+       (שמאל). ממומש ב-DOM טהור-RTL (בלי direction:ltr): תרופות ראשון
+       ב-DOM (=ימין תחת RTL), זהב שני (=שמאל) — לא טריק היפוך, לפי הכלל
+       שנקבע בתיקון ה-RTL הגלובלי.
+       ניתוב: תרופות → מסך 6 (goTo(5), טרם קיים), זהב → מסך 7 (goTo(6),
+       טרם קיים) — שני היעדים יתווספו בהמשך; goTo מוגן ע"י בדיקת
+       TOTAL_SCREENS ולא יעשה דבר עד שהם ייבנו. -->
+  <section class="screen" data-screen="4" id="s4">
+
+    <div class="screen1-content">
+      <div class="screen1-text-group">
+        <h1 class="screen1-title">מדידות בחיי היום יום</h1>
+        <p class="screen1-subtitle">בחרו אחד משני התחומים הבאים כדי ללמוד:</p>
+      </div>
+
+      <div class="options-row s4-options-row" role="radiogroup" aria-label="בחרו תחום ללמידה">
+        <!-- תרופות — ימין (Picture 15 / תיבת טקסט 9 ב-x=6.8in מתוך 13.33in) -->
+        <div class="option-card"
+             data-value="medicine"
+             role="radio"
+             aria-checked="false"
+             tabindex="0"
+             onclick="s4SelectPath(this)"
+             onkeydown="handleS4CardKey(event, this)">
+          <div class="option-card-frame">
+            <div class="option-card-img">
+              <img src="assets/images/screen5-midicine.jpg" alt="תרופות" draggable="false">
+            </div>
+          </div>
+          <p class="option-card-label">תרופות</p>
+        </div>
+
+        <!-- זהב — שמאל (Picture 8 / תיבת טקסט 14 ב-x=2.93in) -->
+        <div class="option-card"
+             data-value="gold"
+             role="radio"
+             aria-checked="false"
+             tabindex="0"
+             onclick="s4SelectPath(this)"
+             onkeydown="handleS4CardKey(event, this)">
+          <div class="option-card-frame">
+            <div class="option-card-img">
+              <img src="assets/images/screen5-gold-blocks.jpg" alt="זהב" draggable="false">
+            </div>
+          </div>
+          <p class="option-card-label">זהב</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s4-back" onclick="goTo(3)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s4-continue" disabled onclick="advanceFromS4()">בחרתי</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 6 — סימולציית גרירת זהב למאזניים + שאלת קלט מספרי, מסלול "זהב" ============
+       מבנה מפוצל בדיוק כמו מסך 3 ב-Methodica-science-mass-measure-02-05
+       (.dq-sim-placeholder 427×636 בצד שמאל + .dq-question-panel בצד ימין,
+       פס תחתון 74px) — reuse מלא של אותם class names. הבדל מהותי: שם זו
+       שאלת גרירה (DragAndDropQuestion); כאן זו שאלת קלט מספרי
+       (ValueInputQuestion, Figma fileKey Z9sD0kksYj1Ph1kUcs71sw, node
+       196:3341 [ברירת מחדל] / 196:3381 [פוקוס] / 196:3405 [משוב שגוי] /
+       196:3397 [משוב נכון]) — בלי כפתור "אפשר רמז?" (לפי בקשה מפורשת).
+       הסימולציה (גרירת גוש הזהב לשני סוגי המאזניים) מומשה בתוך
+       .dq-sim-placeholder — פותחה קודם כפרוטוטייפ נפרד בתיקיית "סימולציה
+       משקל מאזניים דיגטליים" (ליד הסיין הזה, מחוץ ל-assets הרשמי) ואומתה
+       שם ויזואלית, ואז שוחזרה כאן כ-vanilla JS טהור (ללא React/dc-runtime
+       ששימשו בפרוטוטייפ) דרך factory‏ makeScaleSimulation ב-script.js —
+       ניתנת לשימוש חוזר במסך 7 (תרופות) עם תמונות/יעדים שונים. תוכן:
+       תסריט הפקה, שקפים 10+11+12 — אלה שלושה **מצבים של אותו מסך**
+       (ברירת מחדל / משוב שגוי / משוב נכון), לא שלושה מסכים נפרדים (הטקסט
+       וההערות חוזרים זהים בשלושתם). הקפדתי שלא להכניס לצד הימני (השאלה)
+       את תוכן הסימולציה (תמונות/קריאות המאזניים) שמופיע גם הוא בשקפים —
+       הוא שייך אך ורק לפלייסהולדר השמאלי. שני ניסיונות (לפי בקשה מפורשת —
+       התסריט עצמו אומר "ניסיון מענה אחד" בהערות, אבל אלה הערות
+       boilerplate זהות ב-6 השקפים גם כשהתוכן שונה, ולכן לא אמינות;
+       ההוראה המפורשת בשיחה גוברת). -->
+  <section class="screen" data-screen="5" id="s5">
+
+    <div class="dq-sim-placeholder">
+      <div class="dq-sim" id="s5-sim">
+        <div class="dq-sim-station reg">
+          <div class="dq-sim-imgwrap">
+            <img class="dq-sim-scale-img" src="assets/images/סימולציה-מאזניים-רגילים.png" alt="מאזניים רגילים">
+            <div class="dq-sim-lcd dq-sim-lcd-reg"><span class="dq-sim-lcd-val">0.0</span><span class="dq-sim-lcd-unit">g</span></div>
+          </div>
+          <div class="dq-sim-label">מאזניים רגילים</div>
+          <div class="dq-sim-res">קריאות: 0.1 גרם</div>
+        </div>
+        <div class="dq-sim-station sens">
+          <div class="dq-sim-imgwrap">
+            <img class="dq-sim-scale-img" src="assets/images/סימולציה-מאזניים-רגישים.png" alt="מאזניים רגישים">
+            <div class="dq-sim-lcd dq-sim-lcd-sens"><span class="dq-sim-lcd-val">0.00</span><span class="dq-sim-lcd-unit">g</span></div>
+          </div>
+          <div class="dq-sim-label">מאזניים רגישים</div>
+          <div class="dq-sim-res">קריאות: 0.01 גרם</div>
+        </div>
+        <div class="dq-sim-block">
+          <img src="assets/images/simulation-gold-block.png" alt="גוש זהב לשקילה" draggable="false">
+        </div>
+      </div>
+    </div>
+
+    <div class="dq-question-panel">
+       <p class="tf-qtitle">זהב</p>
+      <p class="dq-instruction">לפניכם שני סוגי מאזניים:
+        <br/>
+        מאזניים רגילים ומאזניים רגישים במיוחד.<br>שימו את הזהב על כל אחד מהמאזניים ותעדו את הפער ביניהם.</p>
+      <div class="dq-sentence">
+        <span class="dq-snt-pre">מהו הפער שקיבלתם?</span>
+        <input id="s5-input" class="viq-input" type="number" step="any" inputmode="decimal" dir="ltr" aria-label="הפער, בגרם" oninput="viqOnInput(5)">
+        <span class="dq-snt-post">גרם</span>
+      </div>
+    </div>
+
+    <div id="s5-feedbox" class="scq-fb-box dq-feedbox-pos">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+      <button class="scq-fb-reveal-btn" id="s5-reveal-btn" type="button" hidden onclick="viqToggleReveal(5)">התשובה הנכונה</button>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s5-back" onclick="goTo(4)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s5-check" disabled onclick="viqCheck(5)">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 7 — סימולציית גרירת תרופה למאזניים + שאלת קלט מספרי, מסלול "תרופות" ============
+       אותו מבנה בדיוק כמו מסך 6 (ראו הערה שם) — class names משותפים.
+       הסימולציה (dq-sim) גם היא reuse של אותו factory‏
+       makeScaleSimulation ב-script.js (מופע s6MedicineSim), עם קופסת
+       תרופה זקופה (assets/images/simulation-medicine-box.png) במקום גוש
+       הזהב — פותחה ואומתה קודם כפרוטוטייפ נפרד בתיקיית "סימולציה משקל-
+       תרופה" (עותק של תיקיית הזהב, עם כמה דברים מוחלפים: תמונה, מידות
+       בלוק, גורם כיווץ-מנוחה, יעדים). שני סוגי המאזניים עצמם (מיקום/
+       מידות) זהים למסך 6, לעקביות ויזואלית. תוכן: תסריט הפקה, שקפים
+       13+14+15 (שוב שלושה מצבים של אותו מסך, לא שלושה מסכים). -->
+  <section class="screen" data-screen="6" id="s6">
+
+    <div class="dq-sim-placeholder">
+      <div class="dq-sim" id="s6-sim">
+        <div class="dq-sim-station reg">
+          <div class="dq-sim-imgwrap">
+            <img class="dq-sim-scale-img" src="assets/images/סימולציה-מאזניים-רגילים.png" alt="מאזניים רגילים">
+            <div class="dq-sim-lcd dq-sim-lcd-reg"><span class="dq-sim-lcd-val">0.00</span><span class="dq-sim-lcd-unit">g</span></div>
+          </div>
+          <div class="dq-sim-label">מאזניים רגילים</div>
+          <div class="dq-sim-res">קריאות: 0.01 גרם</div>
+        </div>
+        <div class="dq-sim-station sens">
+          <div class="dq-sim-imgwrap">
+            <img class="dq-sim-scale-img" src="assets/images/סימולציה-מאזניים-רגישים.png" alt="מאזניים רגישים">
+            <div class="dq-sim-lcd dq-sim-lcd-sens"><span class="dq-sim-lcd-val">0.000</span><span class="dq-sim-lcd-unit">g</span></div>
+          </div>
+          <div class="dq-sim-label">מאזניים רגישים</div>
+          <div class="dq-sim-res">קריאות: 0.001 גרם</div>
+        </div>
+        <div class="dq-sim-block">
+          <img src="assets/images/simulation-medicine-box.png" alt="קופסת תרופה לשקילה" draggable="false">
+        </div>
+      </div>
+    </div>
+
+    <div class="dq-question-panel">
+      <p class="tf-qtitle">תרופות</p>
+      <p class="dq-instruction">לפניכם שני סוגי מאזניים:
+        <br/>
+         מאזניים רגילים ומאזניים רגישים במיוחד.<br>שימו את התרופה על כל אחד מהמאזניים ותעדו את הפער ביניהם.</p>
+      <div class="dq-sentence">
+        <span class="dq-snt-pre">מהו הפער שקיבלתם?</span>
+        <input id="s6-input" class="viq-input" type="number" step="any" inputmode="decimal" dir="ltr" aria-label="הפער, בגרם" oninput="viqOnInput(6)">
+        <span class="dq-snt-post">גרם</span>
+      </div>
+    </div>
+
+    <div id="s6-feedbox" class="scq-fb-box dq-feedbox-pos">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+      <button class="scq-fb-reveal-btn" id="s6-reveal-btn" type="button" hidden onclick="viqToggleReveal(6)">התשובה הנכונה</button>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s6-back" onclick="goTo(4)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s6-check" disabled onclick="viqCheck(6)">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 8 — מסך וידאו (VideoIntro), בלי דמות/בועית ============
+       מבנה זהה למסך 4 (data-screen="3", id="s3") — video-intro-content
+       (כותרת+תת-כותרת+player placeholder) — אך ללא .char-bubble-wrap,
+       לפי בקשה מפורשת (אין דמות ואין בועת דיבור במסך הזה). תוכן: תסריט
+       הפקה, שקף 16. הערות המפיק: סרטון של שתי דמויות (נער ונערה) יושבות
+       ומדברות את התסריט שבשקף הבא — הדמות הנלווית עצמה לא מופיעה כ-widget
+       נפרד כאן, רק בתוך הסרטון. מסך זה הוא נקודת התכנסות של שני מסלולי
+       הלמידה (מסכים 6+7) — "המשך" מכל אחד מהם מוביל לכאן. -->
+  <section class="screen" data-screen="7" id="s7">
+
+    <div class="video-intro-content">
+      <div class="video-intro-head">
+        <h1 class="video-intro-title">מדידות בחיי היום יום</h1>
+        <p class="video-intro-subtitle">הקשיבו לפרק הבא בפודקאסט וגלו האם סטייה קטנה במדידה באמת יכולה לעשות הבדל גדול?</p>
+      </div>
+
+      <div class="video-player-wrap">
+        <div class="video-player-bg"></div>
+        <!-- TODO: כשיסופק קובץ וידאו ל-assets/videos/, להחליף ב-<video> אמיתי
+             + לחבר s7Start()/'ended' listener שמפעיל את #s7-continue -->
+        <button class="video-play-btn" type="button" aria-label="הפעל סרטון">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="28" cy="28" r="28" fill="#303030"/>
+            <path d="M22.5 19C22.5 17.86 23.74 17.15 24.73 17.73L38.5 25.85C39.47 26.42 39.47 27.83 38.5 28.4L24.73 36.52C23.74 37.1 22.5 36.39 22.5 35.25V19Z" fill="white"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s7-back" onclick="goTo(4)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s7-continue" disabled onclick="goTo(8)">המשך</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ מסך 9 — שאלת בחירה יחידה עם תמונה (SingleChoiceQuestion) ============
+       הועתק 1:1 ממסך 2 (data-screen="1", id="s1") של
+       Methodica-science-mass-measure-02-01 (מדעים יעד 2), לפי בקשה מפורשת.
+       מבנה: .scq-question (image left + content right; direction:ltr רק
+       לסדר סלוטים, .scq-content מאפס בפנים ל-rtl — תקדים מתועד ומאושר,
+       ראו rtl_no_direction_ltr_trick) + .scq-img/.scq-img-inner +
+       .scq-content > .scq-qtext + .scq-answers. שני ניסיונות, כפתור
+       "אפשר רמז?" (גלוי מההתחלה, לפי ברירת המחדל של 720-templates —
+       המקור לא סטה ממנה), משוב correct/wrong1/wrong2. תמונת שאלה סופקה
+       ע"י המשתמשת. תוכן: תסריט הפקה, שקפים 18-22 (5 שקפים = 5 מצבים של
+       אותו מסך אחד: לפני/משוב שגוי ראשון/רמז/משוב שגוי סופי/משוב נכון —
+       לא 5 מסכים נפרדים).
+       ⚠️ אי-התאמה שדורשת אישור: הערת המפיק בשקף 18 אומרת "התשובה הנכונה
+       – א", אך תוכן המשוב הנכון/שגוי-סופי (שקפים 21-22) מתאר במפורש את
+       שיטת "לבצע כמה מדידות ולחשב את הממוצע" כתשובה הנכונה — זו אפשרות ב,
+       לא א. גם מיקום איקון ה-"i" הגרפי בשקף 21 יושב ליד אפשרות ב. הלכתי
+       לפי תוכן המשוב (correctId='b'), לא לפי האות בשקף — ראו PROJECT_BRIEF.md. -->
+  <section class="screen" data-screen="8" id="s8">
+    <div class="scq-question">
+      <div class="scq-img"><div class="scq-img-inner">
+        <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                data-zoom-src="assets/images/מסך9-מדידה במאזניים הקניה.png" data-zoom-alt="מדידה במאזניים בהקניה">
+          <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <img id="s8-img" src="assets/images/מסך9-מדידה במאזניים הקניה.png" alt="מדידה במאזניים בהקניה"></div></div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">סטיית מדידה</p><br/>
+            <p class="scq-qbody">נועם סיפר שגם המאזניים המדויקים ביותר אינם מושלמים לחלוטין.<br>מהי לדעתכם הדרך הטובה ביותר לצמצם את השפעתן של טעויות מדידה אקראיות?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s8Select('a')">
+            <span class="scq-opt-text">להשתמש תמיד במאזניים היקרים והמדויקים ביותר.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s8Select('b')">
+            <span class="scq-opt-text">לבצע כמה מדידות ולחשב את הממוצע שלהן.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s8Select('c')">
+            <span class="scq-opt-text">לבחור את המדידה הגבוהה ביותר שהתקבלה.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s8Select('d')">
+            <span class="scq-opt-text">לעגל את התוצאה למספר שלם.</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s8-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s8-back" onclick="goTo(7)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s8-hint" type="button" hidden onclick="s8OpenHint()">
+            <img class="scq-hint-icon" id="s8-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s8-check" disabled onclick="s8Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 10 — מסך מעבר: דמות מלווה ============
+       הועתק 1:1 ממסך 6 (data-screen="5", id="s5") של
+       Methodica-science-mass-measure-02-01, לפי בקשה מפורשת. תוכן: תסריט
+       הפקה, שקף 23. הדמות: וידאו (MP4, לא GIF — בקשת הלקוח) בלופ, בלי
+       קול ובלי סרגל שליטה (autoplay/loop/muted/playsinline, בלי
+       controls) — "תנועת חימום של כושר" לפי הערת המפיק בשקף. נבחר
+       דינמית לפי window.lomdaState.selectedCharacter (Companion
+       character system), אותה מוסכמה בדיוק כמו כל דמות מלווה אחרת
+       בפרויקט — ראו resolveCharBubbleVideo()/S9_AVATAR_ASSETS ב-script.js.
+       כפתור ההמשך כאן נושא תווית ייעודית מהשקף ("אפשר להתחיל!"), לא
+       "המשך" הגנרי. -->
+  <section class="screen" data-screen="9" id="s9">
+    <div class="s9-content">
+      <p class="s9-message">מה נשאר לנו בראש?</p>
+      <p class="s9-instructions">שתי שאלות קלילות לחימום לפני שנתקדם</p>
+      <video class="s9-avatar" id="s9-avatar-video" autoplay loop muted playsinline disablepictureinpicture preload="auto" aria-label="דמות מלווה"></video>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s9-back" onclick="goTo(8)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s9-continue" onclick="s9Continue()">אפשר להתחיל!</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 11 — שאלה 1/2: שאלת בחירה יחידה עם תמונה + סרגל התקדמות ============
+       הועתק ממסך 16 (data-screen="15", id="s15") של
+       Methodica-science-mass-measure-02-01, מותאם לשתי שאלות בלבד (לא 5).
+       ניסיון מענה אחד בלבד (maxAttempts=1, לפי בקשה מפורשת — תיקון
+       ביחס לגרסה הקודמת של 2 ניסיונות), כפתור "אפשר רמז?" פעיל מההתחלה
+       (לא מוסתר עד לתשובה שגויה, גם זה לפי בקשה מפורשת). רק 2 אפשרויות
+       (לא 4) — תואם בפועל לתוכן השקף (2 קבוצות טקסט בלבד). תוכן: תסריט
+       הפקה, שקפים 24-27 (4 שקפים = 4 מצבים של אותו מסך אחד: לפני/רמז/
+       משוב נכון/משוב שגוי-סופי — אין שקף ייעודי למשוב "ניסיון ראשון
+       שגוי", ולא רלוונטי עוד כשיש ניסיון בודד בלבד).
+       סרגל ההתקדמות (qnav) משותף למסכים 11+12 — סדר RTL אמיתי (בלי
+       direction:ltr, ראו הערה ב-styles.css). -->
+  <section class="screen" data-screen="10" id="s10">
+    <div class="qnav" id="s10-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s10-qnav-icon-1"></div>
+        <span class="qnav-label" id="s10-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s10-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s10-qnav-icon-2"></div>
+        <span class="qnav-label" id="s10-qnav-label-2">שאלה 2</span>
+      </div>
+    </div>
+
+    <div class="scq-question">
+      <div class="scq-img"><div class="scq-img-inner">
+        <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                data-zoom-src="assets/images/אישה שוקלת חמוצים.png" data-zoom-alt="אישה שוקלת חמוצים במאזניים">
+          <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <img id="s10-img" src="assets/images/אישה שוקלת חמוצים.png" alt="אישה שוקלת חמוצים במאזניים"></div></div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">סטיית מדידה</p><br/>
+            <p class="scq-qbody">גברת פיקל שקלה קופסאות שימורים במאזני המטבח וכתבה לעצמה ביומן:<br>"מסת הקופסה (עם השימורים שבתוכה) היא בדיוק 400 גרם".<br>באיזה סוג של קביעה מדעית השתמשה גברת פיקל?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s10Select('a')">
+            <span class="scq-opt-text">תצפית איכותנית (תיאור המבוסס על התרשמות החושים)</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s10Select('b')">
+            <span class="scq-opt-text">מדידה כמותית (קביעה המבוססת על מספרים ויחידות מידה)</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s10-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s10-back" onclick="goTo(9)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s10-hint" type="button" onclick="s10OpenHint()">
+            <img class="scq-hint-icon" id="s10-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s10-check" disabled onclick="s10Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 12 — שאלת גרירה: חישוב ממוצע ============
+       הועתק ממסך 3 (data-screen="2", id="s2") של
+       Methodica-science-mass-measure-02-05 — בלי תג "חלק א" ובלי
+       הסימולציה בצד שמאל (לפי בקשה מפורשת): פאנל שאלה ברוחב מלא
+       (#s11 .dq-question-panel, ראו styles.css). 2 ניסיונות, רמז מוסתר
+       עד לניסיון ראשון שגוי. תוכן: תסריט הפקה, שקפים 28-32 (5 שקפים =
+       5 מצבים של אותו מסך אחד: לפני/משוב שגוי-ראשון/רמז/משוב שגוי-סופי/
+       משוב נכון). מחסן מילים: 4 כרטיסים (2 נכונים + 2 מסיחים), 2
+       משבצות מילוי במשפט. אותו סרגל התקדמות (qnav) כמו מסך 11. -->
+  <section class="screen" data-screen="11" id="s11">
+    <div class="qnav" id="s11-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s11-qnav-icon-1"></div>
+        <span class="qnav-label" id="s11-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s11-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s11-qnav-icon-2"></div>
+        <span class="qnav-label" id="s11-qnav-label-2">שאלה 2</span>
+      </div>
+    </div>
+
+    <div class="scq-img"><div class="scq-img-inner">
+      <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+              data-zoom-src="assets/images/ילדה שוקלת טונה.png" data-zoom-alt="ילדה שוקלת קופסת טונה על מאזני מטבח">
+        <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <img src="assets/images/ילדה שוקלת טונה.png" alt="ילדה שוקלת קופסת טונה על מאזני מטבח">
+    </div></div>
+
+    <div class="dq-question-panel" id="s11-question-panel">
+      <p class="scq-qtitle">חישוב ממוצע</p>
+      <p class="dq-instruction">שקלנו קופסת טונה 3 פעמים וקיבלנו את התוצאות הבאות:</p>
+      <div class="dq-measurements-row">
+        <span class="dq-measurement-chip">מדידה 1: 141 גרם</span>
+        <span class="dq-measurement-chip">מדידה 2: 144 גרם</span>
+        <span class="dq-measurement-chip">מדידה 3: 141 גרם</span>
+      </div>
+      <p class="dq-instruction-bold">השלימו את החסר מתוך מחסן המילים:</p>
+
+      <div class="dq-fill-sentences">
+        <div class="dq-sentence">
+          <span class="dq-snt-pre">ביצוע מספר</span>
+          <div class="dq-snt-drop" id="s11-target-1" ondragover="s11DragOver(event,'s11-target-1')" ondragenter="s11DragEnter(event,'s11-target-1')" ondragleave="s11DragLeave(event,'s11-target-1')" ondrop="s11Drop(event,'s11-target-1')"></div>
+          <span class="dq-snt-post">של המדידה וחישוב</span>
+          <div class="dq-snt-drop" id="s11-target-2" ondragover="s11DragOver(event,'s11-target-2')" ondragenter="s11DragEnter(event,'s11-target-2')" ondragleave="s11DragLeave(event,'s11-target-2')" ondrop="s11Drop(event,'s11-target-2')"></div>
+          <br/><span class="dq-snt-post">התוצאות שהוא 142 גרם,</span>
+        </div>
+        <div class="dq-sentence">
+          <span class="dq-snt-pre">עוזרים לנו למזער את אי-הוודאות ולקבל נתונים אמינים.</span>
+        </div>
+      </div>
+
+      <div class="dq-word-bank" id="s11-word-bank" ondragover="event.preventDefault()" ondrop="s11DropToBank(event)">
+        <div class="dq-source-slot" id="slot-s11-drag-hazarot"></div>
+        <div class="dq-source-slot" id="slot-s11-drag-mimutza"></div>
+        <div class="dq-source-slot" id="slot-s11-drag-hafhatot"></div>
+        <div class="dq-source-slot" id="slot-s11-drag-sikum"></div>
+      </div>
+    </div>
+
+    <div id="s11-feedbox" class="scq-fb-box dq-feedbox-pos">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+      <button class="scq-fb-reveal-btn" id="s11-reveal-btn" type="button" hidden onclick="s11ToggleReveal()">התשובה הנכונה</button>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s11-back" onclick="goTo(10)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s11-hint" type="button" hidden onclick="s11OpenHint()">
+            <img class="scq-hint-icon" id="s11-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s11-check" disabled onclick="s11Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 13 — מסך מעבר: דמות + בועית דיבור (Transition) ============
+       הועתק 1:1 ממסך 1 (data-screen="0", id="s0") של
+       Methodica-science-mass-measure-02-02. תוכן: תסריט הפקה, שקף 33 —
+       "6 שאלות" ("6 שאלות" בגודל 40/700 בשקף, תואם ל-.transition-title;
+       שתי פסקאות מסביב הן .transition-sub). ⚠️ שימו לב: השקף אומר "6
+       שאלות" אבל משאיר את סף המעבר "4 שאלות (80%)" ללא שינוי — זה לא
+       תואם מתמטית (4/6≈67%, לא 80%) — כנראה נשאר מתבנית לחמש שאלות
+       שלא עודכנה; לא תוקן כאן, מוצג verbatim (ראו PROJECT_BRIEF.md).
+       דמות+בועית: **placeholder זמני** — תמונות מסך 1 (כמו במסך 10),
+       לא פוזה ייעודית; טרם סופקה. -->
+  <section class="screen" data-screen="12" id="s12">
+    <div class="transition-content">
+      <div class="transition-title-block">
+        <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על</p>
+        <h2 class="transition-title">6 שאלות</h2>
+        <p class="transition-sub">צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
+      </div>
+      <div class="transition-avatar-wrap">
+        <img src="" alt="דמות מלווה" class="transition-avatar" id="s12-avatar-img">
+        <div class="transition-bubble">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s12-back" onclick="goTo(11)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s12-continue" onclick="s12Continue()">אפשר להתחיל!</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 14 — מסך הסבר (לא שאלה) עם שלוש תמונות ============
+       מקור אמת ל-layout: Figma node 196:3282 ("SelectOptionThatBestMatchesImage
+       - State 01", fileKey Z9sD0kksYj1Ph1kUcs71sw) — אומת מול המשתמשת: 3
+       כרטיסי תמונה+טקסט בפועל, לא 4 (ראו PROJECT_BRIEF.md). תוכן: תסריט
+       הפקה, שקף 34. לפי הערות המפיק על שקפים הבאים (35-44), הבחירה
+       הנכונה במאזניים קורית במסך מאוחר יותר (שקף 40) — מסך זה הוא הקדמה/
+       הסבר בלבד: בלי בדיקת נכון/שגוי, בלי כפתור רמז, "המשך" תמיד פעיל.
+       ⚠️ בלי סרגל qnav — הוסר לפי בקשה מפורשת של המשתמשת (2026-07-13):
+       "במסך 14 לא צריך סרגל התקדמות, אני יודעת שזה נמצא בתסריט" — למרות
+       שהערת המפיק בתסריט מזכירה סרגל שאלה, המשתמשת מודעת לכך ובחרה
+       במפורש לא להציג אותו כאן.
+       אייקון מידע+tooltip ליד "מאזניים אנליטיים" — לפי הערת המפיק
+       המפורשת ("אייקון אינפורמיישן... יפתח הובר"). -->
+  <section class="screen" data-screen="13" id="s13">
+    <div class="s13-content">
+      <div class="s13-text">
+        <p>אנחנו חלק מקבוצת מחקר בהודו המפתחת תוסף גדילה לצמח האורז שיוכל לעזור בצמצום רעב בהודו (בהצלחה!).<br/>
+        כדי להראות שהצמחים גדלים, במהלך המחקר <strong>נשקול צמחי אורז צעירים שקיבלו את התוסף וכאלה שלא ונשווה בין המדידות</strong>
+        .<br/> המדידות יתבצעו אחת לשבוע.<br/>
+        הצעד הראשון הוא לבחור במאזניים המתאימים מבין האפשרויות:</p>
+      </div>
+
+      <div class="s13-cards">
+        <div class="s13-card">
+          <div class="s13-card-img"><img src="assets/images/screen14-kitchen-weight.jpg" alt="מאזני מטבח"></div>
+          <div class="s13-card-label">
+            <p class="s13-card-name">מאזני מטבח</p>
+            <p class="s13-card-precision">רמת דיוק: 1 גרם</p>
+          </div>
+        </div>
+        <div class="s13-card">
+          <div class="s13-card-img"><img src="assets/images/screen14-work-weight.jpg" alt="מאזני מעבדה"></div>
+          <div class="s13-card-label">
+            <p class="s13-card-name">מאזני מעבדה</p>
+            <p class="s13-card-precision">רמת דיוק: 0.01 גרם (מאית גרם)</p>
+          </div>
+        </div>
+        <div class="s13-card">
+          <div class="s13-card-img"><img src="assets/images/screen14-analytic-weight.jpg" alt="מאזניים אנליטיים"></div>
+          <div class="s13-card-label">
+            <p class="s13-card-name">
+              מאזניים אנליטיים
+              <span class="scq-info">
+                <button class="scq-info-icon" type="button" aria-label="מידע נוסף">i</button>
+                <span class="scq-tooltip">מאזניים בעלי רמת דיוק גבוהה מאוד. לרוב יהיו בעלי תא זכוכית סגור בכדי שאוויר לא ישפיע על המדידה.</span>
+              </span>
+            </p>
+            <p class="s13-card-precision">רמת דיוק: 0.001 גרם (מיליגרם)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s13-back" onclick="goTo(12)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s13-continue" onclick="s13Continue()">המשך</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 15 — שאלה 1 מתוך 6, סעיף א: שאלת בחירה יחידה עם תמונה ============
+       הועתק ממסך 16 (data-screen="15", id="s15") של
+       Methodica-science-mass-measure-02-01 (זהה למקור ששימש למסך 11 —
+       אותו class-based pattern). 2 ניסיונות, רמז מוסתר עד ניסיון ראשון
+       שגוי. תוכן: תסריט הפקה, שקפים 35-39 (5 שקפים = 5 מצבים של אותו
+       מסך אחד: לפני/משוב שגוי-ראשון/רמז/משוב נכון/משוב שגוי-סופי).
+       תמונה: "שדה אורז" (סופקה ע"י המשתמשת מראש).
+       ⚠️ שאלה 1 כוללת שני סעיפים (א/ב, לפי בקשה מפורשת) — סעיף ב (בחירת
+       מאזניים בהוט-ספוט, שקף 40) טרם נבנה; סרגל ה-qnav (6 פריטים,
+       stationBProgress/updateQuestionNavB, נפרד מזה של מסכים 11+12)
+       ישאר על "שאלה 1" גם אחרי שסעיף א נענה, עד שסעיף ב ייבנה ויושלם. -->
+  <section class="screen" data-screen="14" id="s14">
+    <div class="qnav" id="s14-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-current" id="s14-qnav-icon-1"></div>
+        <span class="qnav-label qnav-label-active" id="s14-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s14-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s14-qnav-icon-2"></div>
+        <span class="qnav-label" id="s14-qnav-label-2">שאלה 2</span>
+      </div>
+      <div class="qnav-line" id="s14-qnav-line-2"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s14-qnav-icon-3"></div>
+        <span class="qnav-label" id="s14-qnav-label-3">שאלה 3</span>
+      </div>
+      <div class="qnav-line" id="s14-qnav-line-3"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s14-qnav-icon-4"></div>
+        <span class="qnav-label" id="s14-qnav-label-4">שאלה 4</span>
+      </div>
+      <div class="qnav-line" id="s14-qnav-line-4"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s14-qnav-icon-5"></div>
+        <span class="qnav-label" id="s14-qnav-label-5">שאלה 5</span>
+      </div>
+      <div class="qnav-line" id="s14-qnav-line-5"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s14-qnav-icon-6"></div>
+        <span class="qnav-label" id="s14-qnav-label-6">שאלה 6</span>
+      </div>
+    </div>
+
+    <div class="scq-question">
+      <div class="scq-img"><div class="scq-img-inner">
+        <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                data-zoom-src="assets/images/screen15-rice-fields.jpg" data-zoom-alt="שדה אורז">
+          <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <img id="s14-img" src="assets/images/screen15-rice-fields.jpg" alt="שדה אורז"></div></div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">סעיף א</p>
+            <p class="scq-qbody">מה המידע אותו עלינו לחפש בכדי לבחור במאזניים המתאימים?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s14Select('a')">
+            <span class="scq-opt-text">את מחיר האורז בשוק, כדי לוודא כדאיות כלכלית מול עלות הרכישה</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s14Select('b')">
+            <span class="scq-opt-text">את המסה הממוצעת של צמח אורז צעיר, ובכמה בערך היא עולה כל שבוע, כדי לדעת מהו השינוי המצופה במדידות</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s14Select('c')">
+            <span class="scq-opt-text">את המכשיר היקר והמדויק ביותר, כי במחקר כזה אסור לקחת סיכונים של הטיות מדידה</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s14Select('d')">
+            <span class="scq-opt-text">מהי המדידה הגבוהה ביותר של המאזניים שנבחר, כדי להוכיח שהצמח גדל ולוודא כי המאזניים מותאמים למדידה זו</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s14-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s14-back" onclick="goTo(13)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s14-hint" type="button" hidden onclick="s14OpenHint()">
+            <img class="scq-hint-icon" id="s14-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s14-check" disabled onclick="s14Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 16 — שאלה 1 מתוך 6, סעיף ב: SCQ עם מסיחי-תמונה ============
+       שאלת בחירה יחידה שהמסיחים בה הם תמונות (לא טקסט) — הועתק בהשראת
+       מסך 1 (data-screen="1", id="s1") של methodica-science-mass-liquid
+       -01-02-main: מבנה כרטיס-תמונה (.s5q-card/.s5q-card-frame/
+       .s5q-card-label, מצבי selected/correct/wrong כצבע מסגרת+רקע על
+       המסגרת בלבד — לא badge על גבי התמונה). הותאם לשמור על מוסכמות
+       הפרויקט הזה (לא הועתק verbatim): כפתורי "צדקתי?"/"המשך" (לא
+       "בחרתי"), רמז מוסתר עד ניסיון ראשון שגוי (לא גלוי-מההתחלה כמו
+       במקור), תיבת המשוב הגלובלית .scq-fb-box (לא פופ-אפ נגרר נפרד),
+       חלון הרמז .scq-hint-overlay הקיים. אותן 3 תמונות מאזניים כמו
+       מסך 14 (kitchen/lab/analytic) — הפעם כתמונות-תשובה נבחרות, לא
+       תצוגה בלבד. correctId='lab' ("מאזני מעבדה"). אייקון מידע+tooltip
+       ליד "מאזניים אנליטיים" (זהה למסך 14). תוכן: תסריט הפקה, שקפים
+       40-44 (5 שקפים = 5 מצבים: לפני/משוב שגוי-ראשון/רמז/משוב נכון/
+       משוב שגוי-סופי). 2 ניסיונות.
+       ⚠️ לוגיקת "X בסרגל": לפי בקשה מפורשת, אם אחד הסעיפים (א או ב)
+       מגיע לניסיון שגוי סופי, כל שאלה 1 תיחשב כלא-נענתה-נכון (qnav-fail,
+       X) — גם אם הסעיף השני נענה נכון. ראו stationBSectionDone()
+       ב-script.js: מחכה ששני הסעיפים ייגמרו (a+b), ואז קובע את התוצאה
+       המשולבת ומקדם את stationBQuestionNum ל-2. -->
+  <section class="screen" data-screen="15" id="s15">
+    <div class="qnav" id="s15-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-current" id="s15-qnav-icon-1"></div>
+        <span class="qnav-label qnav-label-active" id="s15-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s15-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s15-qnav-icon-2"></div>
+        <span class="qnav-label" id="s15-qnav-label-2">שאלה 2</span>
+      </div>
+      <div class="qnav-line" id="s15-qnav-line-2"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s15-qnav-icon-3"></div>
+        <span class="qnav-label" id="s15-qnav-label-3">שאלה 3</span>
+      </div>
+      <div class="qnav-line" id="s15-qnav-line-3"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s15-qnav-icon-4"></div>
+        <span class="qnav-label" id="s15-qnav-label-4">שאלה 4</span>
+      </div>
+      <div class="qnav-line" id="s15-qnav-line-4"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s15-qnav-icon-5"></div>
+        <span class="qnav-label" id="s15-qnav-label-5">שאלה 5</span>
+      </div>
+      <div class="qnav-line" id="s15-qnav-line-5"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s15-qnav-icon-6"></div>
+        <span class="qnav-label" id="s15-qnav-label-6">שאלה 6</span>
+      </div>
+    </div>
+
+    <div class="s15-content">
+      <div class="scq-qtext-900">
+        <div class="scq-qtext-body">
+          <p class="scq-qtitle">סעיף ב</p>
+          <p class="scq-qbody">בספרות המדעית מצאנו שצמח אורז צעיר שוקל כ-5 גרם וצפוי לעלות במסה של כ-0.1 גרם בשבוע.<br>בחרו כעת את המאזניים המתאימים ביותר עבור הניסוי.</p>
+        </div>
+      </div>
+
+      <div class="s15-cards" role="radiogroup" aria-label="בחרו את המאזניים המתאימים">
+        <div class="s15-card" role="radio" aria-checked="false" tabindex="0" data-id="kitchen" onclick="s15Select('kitchen')">
+          <div class="s15-card-frame"><img src="assets/images/screen14-kitchen-weight.jpg" alt="מאזני מטבח"></div>
+          <span class="s15-card-badge" aria-hidden="true"></span>
+          <div class="s15-card-label">
+            <p class="s15-card-name">מאזני מטבח</p>
+            <p class="s15-card-precision">רמת דיוק: 1 גרם</p>
+          </div>
+        </div>
+        <div class="s15-card" role="radio" aria-checked="false" tabindex="0" data-id="lab" onclick="s15Select('lab')">
+          <div class="s15-card-frame"><img src="assets/images/screen14-work-weight.jpg" alt="מאזני מעבדה"></div>
+          <span class="s15-card-badge" aria-hidden="true"></span>
+          <div class="s15-card-label">
+            <p class="s15-card-name">מאזני מעבדה</p>
+            <p class="s15-card-precision">רמת דיוק: 0.01 גרם (מאית גרם)</p>
+          </div>
+        </div>
+        <div class="s15-card" role="radio" aria-checked="false" tabindex="0" data-id="analytic" onclick="s15Select('analytic')">
+          <div class="s15-card-frame"><img src="assets/images/screen14-analytic-weight.jpg" alt="מאזניים אנליטיים"></div>
+          <span class="s15-card-badge" aria-hidden="true"></span>
+          <div class="s15-card-label">
+            <p class="s15-card-name">
+              מאזניים אנליטיים
+              <span class="scq-info">
+                <button class="scq-info-icon" type="button" aria-label="מידע נוסף">i</button>
+                <span class="scq-tooltip">מאזניים בעלי רמת דיוק גבוהה מאוד. לרוב יהיו בעלי תא זכוכית סגור בכדי שאוויר לא ישפיע על המדידה.</span>
+              </span>
+            </p>
+            <p class="s15-card-precision">רמת דיוק: 0.001 גרם (מיליגרם)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s15-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s15-back" onclick="goTo(14)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s15-hint" type="button" hidden onclick="s15OpenHint()">
+            <img class="scq-hint-icon" id="s15-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s15-check" disabled onclick="s15Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 17 — שאלה 2 מתוך 6: טבלה + שאלת גרירה, עם גלילה ============
+       אפקט הגלילה (.tbl-content/.tbl-page, snap-scroll "קפיצת עמוד" ב-
+       wheel/מקלדת) הועתק בדיוק ממסך 2 (data-screen="1", id="s1") של
+       Methodica-science-mass-measure-02-04 — פס גלילה מותאם 8px
+       (::-webkit-scrollbar), scroll-snap-type:y mandatory, JS: kGoToPage
+       עם scrollTo({behavior:'smooth'}) + נעילת tblJumping + wheel/
+       keydown handlers (זהה מכניקה, prefix s16 כאן).
+       עמוד 1 (לפני הגלילה): טבלת תוצאות מדידה — מבנה/עיצוב (.tbl-table/
+       .tbl-th/.tbl-td, zebra striping שורות זוגיות) הועתק ממסך 5
+       (data-screen="4") של Methodica-science-mass-measure-02-06,
+       מותאם לתוכן שלנו (2 עמודות: מספר חזרה / תוצאה בגרמים).
+       עמוד 2 (אחרי הגלילה): שאלת גרירה — factory זהה ל-makeDragQuestion
+       שנבנה למסך 12 (dq11), אינסטנס נוסף (dq16) עם תוכן חדש. 2
+       ניסיונות, רמז מוסתר עד ניסיון ראשון שגוי. תוכן: תסריט הפקה,
+       שקפים 45-50. שאלה 2 היא סעיף יחיד (לא כמו שאלה 1) — סיום ישיר
+       מעדכן stationBProgress/qnav ומקדם ל"שאלה 3". -->
+  <section class="screen" data-screen="16" id="s16">
+    <div class="qnav" id="s16-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s16-qnav-icon-1"></div>
+        <span class="qnav-label" id="s16-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s16-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-current" id="s16-qnav-icon-2"></div>
+        <span class="qnav-label qnav-label-active" id="s16-qnav-label-2">שאלה 2</span>
+      </div>
+      <div class="qnav-line" id="s16-qnav-line-2"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s16-qnav-icon-3"></div>
+        <span class="qnav-label" id="s16-qnav-label-3">שאלה 3</span>
+      </div>
+      <div class="qnav-line" id="s16-qnav-line-3"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s16-qnav-icon-4"></div>
+        <span class="qnav-label" id="s16-qnav-label-4">שאלה 4</span>
+      </div>
+      <div class="qnav-line" id="s16-qnav-line-4"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s16-qnav-icon-5"></div>
+        <span class="qnav-label" id="s16-qnav-label-5">שאלה 5</span>
+      </div>
+      <div class="qnav-line" id="s16-qnav-line-5"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s16-qnav-icon-6"></div>
+        <span class="qnav-label" id="s16-qnav-label-6">שאלה 6</span>
+      </div>
+    </div>
+
+    <div class="tbl-content" id="s16-scroll-area" tabindex="0">
+
+      <!-- ===== עמוד 1 — טבלת תוצאות מדידה ===== -->
+      <section class="tbl-page">
+        <div class="tbl-page-header">
+          <p class="scq-qtitle">ניתוח המדידות – האם התוצאות אמינות?</p>
+          <p class="scq-qbody">הניסוי החל. הוספנו את התוסף לשתיל האורז. לאחר שבוע של טיפול, מדדנו את השתיל 4 פעמים.</p>
+        </div>
+        <table class="tbl-table" dir="rtl">
+          <thead>
+            <tr>
+              <th class="tbl-th">מספר חזרה על השקילה</th>
+              <th class="tbl-th">התוצאה (בגרמים)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="tbl-td">1</td><td class="tbl-td">5.09</td></tr>
+            <tr><td class="tbl-td">2</td><td class="tbl-td">5.11</td></tr>
+            <tr><td class="tbl-td">3</td><td class="tbl-td">5.90</td></tr>
+            <tr><td class="tbl-td">4</td><td class="tbl-td">5.12</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ===== עמוד 2 — שאלת גרירה ===== -->
+      <section class="tbl-page" id="s16-question-panel">
+        <div class="s16-question-col">
+          <p class="dq-instruction">השלימו את הפסקה בעזרת מחסן המילים והמספרים:</p>
+
+          <div class="dq-fill-sentences">
+            <div class="dq-sentence">
+              <span class="dq-snt-pre">התוצאה שאינה הגיונית היא</span>
+              <div class="dq-snt-drop" id="s16-target-1" ondragover="s16DragOver(event,'s16-target-1')" ondragenter="s16DragEnter(event,'s16-target-1')" ondragleave="s16DragLeave(event,'s16-target-1')" ondrop="s16Drop(event,'s16-target-1')"></div>
+            </div>
+            <div class="dq-sentence">
+              <span class="dq-snt-pre">מדענים מכנים תוצאה כזו</span>
+              <div class="dq-snt-drop" id="s16-target-2" ondragover="s16DragOver(event,'s16-target-2')" ondragenter="s16DragEnter(event,'s16-target-2')" ondragleave="s16DragLeave(event,'s16-target-2')" ondrop="s16Drop(event,'s16-target-2')"></div>
+            </div>
+            <div class="dq-sentence">
+              <span class="dq-snt-pre">מכיוון שהיא לא הופיעה שוב במדידות החוזרות,
+                <br/> לא השתמשנו בה לחישוב הממוצע.</span>
+            </div>
+            <div class="dq-sentence">
+              <span class="dq-snt-pre">הממוצע של שלוש המדידות התקינות הוא</span>
+              <div class="dq-snt-drop" id="s16-target-3" ondragover="s16DragOver(event,'s16-target-3')" ondragenter="s16DragEnter(event,'s16-target-3')" ondragleave="s16DragLeave(event,'s16-target-3')" ondrop="s16Drop(event,'s16-target-3')"></div>
+            </div>
+          </div>
+
+          <div class="dq-word-bank" id="s16-word-bank" ondragover="event.preventDefault()" ondrop="s16DropToBank(event)">
+            <div class="dq-source-slot" id="slot-s16-drag-590"></div>
+            <div class="dq-source-slot" id="slot-s16-drag-510"></div>
+            <div class="dq-source-slot" id="slot-s16-drag-meduyeket"></div>
+            <div class="dq-source-slot" id="slot-s16-drag-hariga"></div>
+            <div class="dq-source-slot" id="slot-s16-drag-shgiat"></div>
+            <div class="dq-source-slot" id="slot-s16-drag-1532"></div>
+          </div>
+        </div>
+
+        <!-- טבלת התוצאות (עמוד 1) חוזרת כאן בצד שמאל, לפי התסריט (שקפים 45-50) -->
+        <div class="s16-table-recap">
+          <table class="tbl-table" dir="rtl">
+            <thead>
+              <tr>
+                <th class="tbl-th">מספר חזרה על השקילה</th>
+                <th class="tbl-th">התוצאה (בגרמים)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="tbl-td">1</td><td class="tbl-td">5.09</td></tr>
+              <tr><td class="tbl-td">2</td><td class="tbl-td">5.11</td></tr>
+              <tr><td class="tbl-td">3</td><td class="tbl-td">5.90</td></tr>
+              <tr><td class="tbl-td">4</td><td class="tbl-td">5.12</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="s16-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+      <button class="scq-fb-reveal-btn" id="s16-reveal-btn" type="button" hidden onclick="s16ToggleReveal()">התשובה הנכונה</button>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s16-back" onclick="goTo(15)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s16-hint" type="button" hidden onclick="s16OpenHint()">
+            <img class="scq-hint-icon" id="s16-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s16-check" disabled onclick="s16Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 18 — שאלה 3 מתוך 6: גרירה, התאמת טקסט לתמונה ============
+       הועתקה בהשראת מסך 20 (data-screen="19", id="s19"/פנימי "s20-*")
+       של Methodica-science-mass-measure-02-01 — שם: מנגנון native HTML5
+       drag&drop (data-correct על כל פריט נגרר, ולידציה per-zone, resume-
+       state guard, revealCorrect בניסיון סופי שגוי) — אבל שם הפריטים
+       הנגררים הם תמונה והיעדים הם טקסט; **כאן הפוך**, לפי בקשת המשתמשת
+       ("התאמת טקסט שמתאר את התמונה"): הפריטים הנגררים הם כרטיסי **טקסט**
+       (שקילת אורז/טבעת זהב/תרופה), והיעדים הם תמונות **התמונות** (3
+       תמונות המאזניים הקיימות ממסך 14 — לא תמונות מוצר חדשות; המשתמשת
+       אישרה זאת מפורשות). לוגיקת ה-JS (s17*) מבוססת ישירות על s20* של
+       המקור, לא על ה-makeDragQuestion factory (מנגנון שונה: n:1
+       ולידציה per-zone, לא מילוי-חסר במשפט). 2 ניסיונות, רמז מוסתר עד
+       ניסיון ראשון שגוי. תוכן: תסריט הפקה, שקפים 51-55. -->
+  <section class="screen" data-screen="17" id="s17">
+    <div class="qnav" id="s17-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s17-qnav-icon-1"></div>
+        <span class="qnav-label" id="s17-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s17-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s17-qnav-icon-2"></div>
+        <span class="qnav-label" id="s17-qnav-label-2">שאלה 2</span>
+      </div>
+      <div class="qnav-line" id="s17-qnav-line-2"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-current" id="s17-qnav-icon-3"></div>
+        <span class="qnav-label qnav-label-active" id="s17-qnav-label-3">שאלה 3</span>
+      </div>
+      <div class="qnav-line" id="s17-qnav-line-3"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s17-qnav-icon-4"></div>
+        <span class="qnav-label" id="s17-qnav-label-4">שאלה 4</span>
+      </div>
+      <div class="qnav-line" id="s17-qnav-line-4"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s17-qnav-icon-5"></div>
+        <span class="qnav-label" id="s17-qnav-label-5">שאלה 5</span>
+      </div>
+      <div class="qnav-line" id="s17-qnav-line-5"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s17-qnav-icon-6"></div>
+        <span class="qnav-label" id="s17-qnav-label-6">שאלה 6</span>
+      </div>
+    </div>
+
+    <div class="s17-content">
+      <div class="s17-text-group">
+        <p class="scq-qtitle">מדידת מסה במבחן המציאות</p>
+        <p class="scq-qbody">לאחר שהצלחנו בפרויקט האורז, פנו אלינו כמה מפעלים וביקשו עזרה בבחירת מאזניים.<br>גררו את המוצר אל המאזניים המתאימים ביותר לשקילתו</p>
+      </div>
+
+      <div class="s17-source-bank" id="s17-source-bank" ondragover="s17DragOver(event)" ondrop="s17DropToSource(event)">
+        <div class="s17-drag-item" id="s17i-gold" draggable="true" data-correct="lab"
+             ondragstart="s17DragStart(event,'s17i-gold')" ondragend="s17DragEnd('s17i-gold')" onclick="s17ItemClick('s17i-gold')">טבעת זהב (5g)</div>
+        <div class="s17-drag-item" id="s17i-drug" draggable="true" data-correct="analytic"
+             ondragstart="s17DragStart(event,'s17i-drug')" ondragend="s17DragEnd('s17i-drug')" onclick="s17ItemClick('s17i-drug')">תרופה</div>
+        <div class="s17-drag-item" id="s17i-rice" draggable="true" data-correct="kitchen"
+             ondragstart="s17DragStart(event,'s17i-rice')" ondragend="s17DragEnd('s17i-rice')" onclick="s17ItemClick('s17i-rice')">שקילת אורז (1kg)</div>
+      </div>
+
+      <div class="s17-zones-row">
+        <div class="s17-zone-wrap">
+          <div class="s17-zone-img"><img src="assets/images/screen14-kitchen-weight.jpg" alt="מאזני מטבח"></div>
+          <p class="s17-zone-label">מאזני מטבח<br>רמת דיוק: 1 גרם</p>
+          <div class="s17-zone" id="s17-zone-kitchen"
+               ondragover="s17DragOver(event)" ondragenter="s17DragEnter(event,'s17-zone-kitchen')" ondragleave="s17DragLeave(event,'s17-zone-kitchen')" ondrop="s17Drop(event,'kitchen')"></div>
+        </div>
+        <div class="s17-zone-wrap">
+          <div class="s17-zone-img"><img src="assets/images/screen14-work-weight.jpg" alt="מאזני מעבדה"></div>
+          <p class="s17-zone-label">מאזני מעבדה<br>רמת דיוק: 0.01 גרם</p>
+          <div class="s17-zone" id="s17-zone-lab"
+               ondragover="s17DragOver(event)" ondragenter="s17DragEnter(event,'s17-zone-lab')" ondragleave="s17DragLeave(event,'s17-zone-lab')" ondrop="s17Drop(event,'lab')"></div>
+        </div>
+        <div class="s17-zone-wrap">
+          <div class="s17-zone-img"><img src="assets/images/screen14-analytic-weight.jpg" alt="מאזניים אנליטיים"></div>
+          <p class="s17-zone-label">מאזניים אנליטיים<br>רמת דיוק: 0.001 גרם</p>
+          <div class="s17-zone" id="s17-zone-analytic"
+               ondragover="s17DragOver(event)" ondragenter="s17DragEnter(event,'s17-zone-analytic')" ondragleave="s17DragLeave(event,'s17-zone-analytic')" ondrop="s17Drop(event,'analytic')"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s17-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+      <button class="scq-fb-reveal-btn" id="s17-reveal-btn" type="button" hidden onclick="s17ToggleReveal()">התשובה הנכונה</button>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s17-back" onclick="goTo(16)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s17-hint" type="button" hidden onclick="s17OpenHint()">
+            <img class="scq-hint-icon" id="s17-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s17-check" disabled onclick="s17Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 19 — הקדמה לשאלה 4: שתי דמויות מתווכחות ============
+       מקור אמת: Figma node 2131:10740 ("Screen with application"),
+       fileKey Z9sD0kksYj1Ph1kUcs71sw — שתי קבוצות דמות+בועית, מדורגות
+       באלכסון (עליונה: תמונה ימין/בועה שמאל; תחתונה: בועה ימין/תמונה
+       שמאל — היפוך פיזי, מומש בסדר ה-DOM, לא ב-direction:ltr). כותרת
+       +טקסט מעל, בלי שאלה — "המשך" תמיד פעיל, בלי סרגל qnav (כמו מסך
+       14, מסך הסבר). תוכן: תסריט הפקה, שקף 56.
+       ⚠️ **תמונות placeholder זמניות** — טרם סופקו תמונות אמיתיות
+       לדמויות (יורם מוכר הירקות / אדיר הצורף); מוצג מלבן אפור כמו
+       ב-state ברירת המחדל של הפריים בפיגמה עצמו. -->
+  <section class="screen" data-screen="18" id="s18">
+    <div class="s18-content">
+      <div class="s18-text-group">
+        <p class="scq-qtitle">זהב או עגבניות?</p>
+        <p class="scq-qbody">הסתובבתם בשוק ונתקלתם בויכוח בין שני בעלי עסקים:</p>
+      </div>
+
+      <div class="s18-char-row s18-char-row--top">
+        <img class="s18-char-img" src="assets/images/screen19-yoram.png" alt="יורם מוכר הירקות">
+        <div class="s18-bubble s18-bubble--tail-right">
+          <p class="s18-bubble-name">יורם מוכר הירקות</p>
+          <p>אני צריך מאזניים מדויקים כי הלקוחות משלמים לפי משקל, ואני לא רוצה לטעות בחיוב.</p>
+        </div>
+      </div>
+
+      <div class="s18-char-row s18-char-row--bottom">
+        <div class="s18-bubble s18-bubble--tail-left">
+          <p class="s18-bubble-name">אדיר הצורף</p>
+          <p>אני צריך מאזניים מדויקים כי כל גרם משפיע על המחיר שאני גובה.</p>
+        </div>
+        <img class="s18-char-img" src="assets/images/screen19-adeer.png" alt="אדיר הצורף">
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s18-back" onclick="goTo(17)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s18-continue" onclick="s18Continue()">המשך</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 20 — שאלה 4 מתוך 6: SCQ בלי תמונה ============
+       שכפול מדויק של מבנה מסך 15 (S14, סעיף א) — .scq-question בלי
+       .scq-img (שטח ריק מכוון בצד שמאל, כמו מסך 3, לפי אותו כלל
+       "לחפש במקור לפני שממציאים"), 4 אפשרויות, 2 ניסיונות, רמז מוסתר
+       עד ניסיון ראשון שגוי. תוכן: תסריט הפקה, שקפים 57-61.
+       ⚠️ correctId='b': שקף 60 מזכיר בהערה "תשובה נכונה ג", בסתירה
+       לשקפים 57/58/61 (כולם "ב") ולתוכן המשוב עצמו (מדבר על ערך חומר
+       גבוה = הצורף, לא ניטרלי כמו אפשרות ג) — טעות/שארית בשקף 60,
+       הלכתי לפי הרוב + התוכן. -->
+  <section class="screen" data-screen="19" id="s19">
+    <div class="qnav" id="s19-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s19-qnav-icon-1"></div>
+        <span class="qnav-label" id="s19-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s19-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s19-qnav-icon-2"></div>
+        <span class="qnav-label" id="s19-qnav-label-2">שאלה 2</span>
+      </div>
+      <div class="qnav-line" id="s19-qnav-line-2"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s19-qnav-icon-3"></div>
+        <span class="qnav-label" id="s19-qnav-label-3">שאלה 3</span>
+      </div>
+      <div class="qnav-line" id="s19-qnav-line-3"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-current" id="s19-qnav-icon-4"></div>
+        <span class="qnav-label qnav-label-active" id="s19-qnav-label-4">שאלה 4</span>
+      </div>
+      <div class="qnav-line" id="s19-qnav-line-4"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s19-qnav-icon-5"></div>
+        <span class="qnav-label" id="s19-qnav-label-5">שאלה 5</span>
+      </div>
+      <div class="qnav-line" id="s19-qnav-line-5"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s19-qnav-icon-6"></div>
+        <span class="qnav-label" id="s19-qnav-label-6">שאלה 6</span>
+      </div>
+    </div>
+
+    <div class="scq-question">
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">הכריעו את הויכוח</p>
+            <p class="scq-qbody">מי באמת צריך את המשקל המדויק ביותר?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s19Select('a')">
+            <span class="scq-opt-text">יורם מוכר הירקות, כי גם בסופר גובים כסף לפי מסה</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s19Select('b')">
+            <span class="scq-opt-text">אדיר הצורף, כי טעות קטנה עלולה לגרום להפסד כספי גדול</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s19Select('c')">
+            <span class="scq-opt-text">שניהם מציגים טיעון חזק באותה מידה</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s19Select('d')">
+            <span class="scq-opt-text">אי אפשר להחליט בלי לדעת את מחיר המוצרים</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s19-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s19-back" onclick="goTo(18)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s19-hint" type="button" hidden onclick="s19OpenHint()">
+            <img class="scq-hint-icon" id="s19-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s19-check" disabled onclick="s19Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 21 — הקדמה לשאלה 5: טקסט + תמונה ============
+       בהשראת מסך 2 (data-screen="1", id="s7"/"s8-*") של
+       Methodica-science-mass-measure-02-06 — מבנה image+text (מסגרת
+       380×380 עם img-zoom-btn + עמודת טקסט). המקור השתמש ב-
+       direction:ltr על השורה החיצונית; **לא הועתק** — נעשה שימוש חוזר
+       ב-.scq-question/.scq-content הגלובליים הקיימים (אותו רכיב, אותו
+       חריג RTL מתועד ומאושר כבר בפרויקט הזה, ראו
+       rtl_no_direction_ltr_trick), בלי להמציא class חדש. בלי כותרת
+       קצרה נפרדת (פסקת נרטיב אחת רציפה, כמו מסך 14/17). "המשך" תמיד
+       פעיל, בלי qnav (מסך הסבר, כמו מסך 14/19). תוכן: תסריט הפקה, שקף
+       62. ⚠️ **תמונה placeholder זמנית** — טרם סופקה תמונה אמיתית
+       (שרשרת זהב + חנוכייה על מאזני מטבח). -->
+  <section class="screen" data-screen="20" id="s20">
+    <div class="scq-question">
+      <div class="scq-img"><div class="scq-img-inner">
+        <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                data-zoom-src="assets/images/scene01-screen22-boy-using-kitchen-weight.png" data-zoom-alt="ילד שוקל שרשרת זהב וחנוכייה עתיקה על מאזני מטבח">
+          <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <img src="assets/images/scene01-screen22-boy-using-kitchen-weight.png" alt="ילד שוקל שרשרת זהב וחנוכייה עתיקה על מאזני מטבח">
+      </div></div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qbody">דן למד בשיעור מדעים על מדידות מדעיות. זה עניין אותו מאוד.<br><br>הוא החליט להמשיך לחקור את הנושא גם בבית ומדד שני פריטים:</p>
+            <ul class="s20-measure-list">
+              <li>שרשרת זהב - משקלה האמיתי 2.3 גרם.</li>
+              <li>חנוכייה עתיקה - משקלה האמיתי 150 גרם.</li>
+            </ul>
+            <p class="scq-qbody">המדידה התבצעה על מאזני המטבח (דיוק של 1 גרם).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s20-back" onclick="goTo(19)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s20-continue" onclick="s20Continue()">המשך</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 22 — שאלה 5 מתוך 6: SCQ עם תמונה ============
+       שכפול מדויק של מבנה מסך 15 (S14, סעיף א) עם תמונה — .scq-question
+       מלא (עם .scq-img). התמונה זהה לזו של מסך 21 (סופקה ע"י המשתמשת:
+       scene01-screen22-boy-using-kitchen-weight.png — ילד שוקל שרשרת
+       זהב וחנוכייה עתיקה על מאזני מטבח). 4 אפשרויות, 2 ניסיונות, רמז
+       מוסתר עד ניסיון ראשון שגוי. תוכן: תסריט הפקה, שקפים 63-67.
+       correctId='d' (תשובה נכונה: ד). -->
+  <section class="screen" data-screen="21" id="s21">
+    <div class="qnav" id="s21-qnav">
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s21-qnav-icon-1"></div>
+        <span class="qnav-label" id="s21-qnav-label-1">שאלה 1</span>
+      </div>
+      <div class="qnav-line" id="s21-qnav-line-1"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s21-qnav-icon-2"></div>
+        <span class="qnav-label" id="s21-qnav-label-2">שאלה 2</span>
+      </div>
+      <div class="qnav-line" id="s21-qnav-line-2"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s21-qnav-icon-3"></div>
+        <span class="qnav-label" id="s21-qnav-label-3">שאלה 3</span>
+      </div>
+      <div class="qnav-line" id="s21-qnav-line-3"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s21-qnav-icon-4"></div>
+        <span class="qnav-label" id="s21-qnav-label-4">שאלה 4</span>
+      </div>
+      <div class="qnav-line" id="s21-qnav-line-4"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-current" id="s21-qnav-icon-5"></div>
+        <span class="qnav-label qnav-label-active" id="s21-qnav-label-5">שאלה 5</span>
+      </div>
+      <div class="qnav-line" id="s21-qnav-line-5"></div>
+      <div class="qnav-item">
+        <div class="qnav-icon qnav-future" id="s21-qnav-icon-6"></div>
+        <span class="qnav-label" id="s21-qnav-label-6">שאלה 6</span>
+      </div>
+    </div>
+
+    <div class="scq-question">
+      <div class="scq-img"><div class="scq-img-inner">
+        <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                data-zoom-src="assets/images/scene01-screen22-boy-using-kitchen-weight.png" data-zoom-alt="ילד שוקל שרשרת זהב וחנוכייה עתיקה על מאזני מטבח">
+          <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <img src="assets/images/scene01-screen22-boy-using-kitchen-weight.png" alt="ילד שוקל שרשרת זהב וחנוכייה עתיקה על מאזני מטבח">
+      </div></div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qbody">לאיזה פריט, ומדוע, תהיה טעות המדידה קריטית יותר?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s21Select('a')">
+            <span class="scq-opt-text">לשרשרת הזהב, כי היא מסתה קטנה יותר והיא זולה יותר</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s21Select('b')">
+            <span class="scq-opt-text">לחנוכיה, כי היא מסתה כבדה יותר והיא יקרה יותר</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s21Select('c')">
+            <span class="scq-opt-text">לשני הפריטים באותה מידה. טעות מדידה זהה בשניהם (1 גרם)</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s21Select('d')">
+            <span class="scq-opt-text">לשרשרת הזהב, 1 גרם מהווה אחוז גדול יותר מהמסה שלה</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s21-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s21-back" onclick="goTo(20)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s21-hint" type="button" hidden onclick="s21OpenHint()">
+            <img class="scq-hint-icon" id="s21-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s21-check" disabled onclick="s21Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- כפתור "מצאתם בעיה?" — רכיב גלובלי יחיד, מחוץ לכל .screen,
+       ישירות ב-#app, לפי 720-templates skill (_global-components.md) -->
+  <button class="flag-btn" aria-label="מצאתם בעיה?" title="מצאתם בעיה?">
+    <span class="flag-btn-icon" aria-hidden="true">
+      <img class="flag-btn-icon-default" src="assets/images/btn-flag-default.png" alt="">
+      <img class="flag-btn-icon-hover" src="assets/images/btn-flag-hover.png" alt="">
+    </span>
+    <span class="flag-btn-label">מצאתם בעיה?</span>
+  </button>
+
+  <!-- הגדלת תמונה (img-zoom) — רכיב גלובלי יחיד, מחוץ לכל .screen,
+       ישירות ב-#app, לפי מפרט 720-templates _global-components.md.
+       כל תמונת תוכן שצריכה זום מוסיפה כפתור .img-zoom-btn משלה
+       בתוך ה-wrapper שלה (position:relative, בלי stacking context) -->
+  <div id="img-zoom-modal" class="img-zoom-modal hidden" aria-hidden="true" data-zoom-close="true">
+    <div class="img-zoom-modal__panel" role="dialog" aria-modal="true" aria-label="הגדלת תמונה">
+      <button class="img-zoom-close" type="button" data-zoom-close="true" aria-label="סגירת הגדלת תמונה">
+        <svg class="img-zoom-close__icon" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L14 14M14 1L1 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="img-zoom-modal__stage"></div>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 9 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s8-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">האם מדידה אחת תמיד מספיקה כדי להיות בטוחים בתוצאה, או שכדאי לבדוק כמה פעמים לפני שמסיקים מסקנה?</p>
+      <button class="scq-hint-close" onclick="s8CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 11 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s10-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">שימו לב - האם הדיווח כולל מספר (400) ויחידת מידה רשמית (גרם), או רק תיאור כללי כמו "כבד" או "קל"?</p>
+      <button class="scq-hint-close" onclick="s10CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 12 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s11-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">שימו לב שלא הסתפקנו בשקילה אחת בלבד. מה עשינו כדי להגדיל את הביטחון בתוצאה?</p>
+      <button class="scq-hint-close" onclick="s11CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 15 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s14-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">עלינו לחפש מכשיר עם דיוק קטן יותר מהשינוי הקטן ביותר שנרצה למדוד.</p>
+      <button class="scq-hint-close" onclick="s14CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 16 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s15-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">הזכרו מהו גודל השינוי שעלינו למדוד.</p>
+      <button class="scq-hint-close" onclick="s15CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 17 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s16-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">האם אחת המדידות שונה מאוד מהאחרות?</p>
+      <button class="scq-hint-close" onclick="s16CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 18 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s17-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">חשבו מה עלינו לשקול בכל משימה, ומה יקרה אם תהיה טעות קטנה במדידה.</p>
+      <button class="scq-hint-close" onclick="s17CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 20 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s19-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">היכן טעות של עשירית גרם משמעותית יותר?</p>
+      <button class="scq-hint-close" onclick="s19CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 22 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s21-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">חשבו כמה אחוז ממשקל כל פריט מהווה גרם 1.<br>האם האחוז שווה או שונה בין הפריטים?</p>
+      <button class="scq-hint-close" onclick="s21CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>

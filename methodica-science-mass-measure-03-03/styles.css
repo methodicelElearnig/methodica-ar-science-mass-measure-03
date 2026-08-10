@@ -1,0 +1,583 @@
+/* =========================================================
+   לומדה 720 — מדעים יעד 3 | סיין 3
+   תשתית בסיס — מועתקת מהמנוע/רכיבים הגלובליים המאומתים של סיין 1+2
+   (methodica-science-mass-measure-03-01/02), לפי מוסכמת "כל סין הוא
+   חבילה עצמאית". נבנה ישירות עם תוכן (לא placeholder) כי סופק תוכן
+   ל-3 המסכים הראשונים מיד עם התשתית.
+   ========================================================= */
+
+/* ---------- Subject theme tokens (720-templates skill:
+   _global-components.md → "Subject theme colors") ---------- */
+:root {
+  --subject-500: #019de5; /* Science theme */
+  --subject-700: #007ac6; /* Science theme */
+}
+
+/* ---------- Fonts (עותק מקומי לסין זה, ב-assets/fonts) ---------- */
+@font-face {
+  font-family: 'Assistant';
+  src: url('assets/fonts/assistant-hebrew.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+}
+@font-face {
+  font-family: 'Assistant';
+  src: url('assets/fonts/assistant-latin.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+                 U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+/* ---------- Reset ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  direction: rtl;
+  font-family: 'Assistant', 'Segoe UI', Arial, sans-serif;
+  background: #ffffff;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+}
+button:disabled { cursor: default; }
+img { display: block; max-width: none; }
+
+/* ---------- Canvas & viewport scaling ---------- */
+#app {
+  width: 1280px;
+  height: 710px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  background: #fff;
+  overflow: hidden;
+}
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.screen.active { display: block; }
+
+/* transitions removed on purpose — Figma states change instantly */
+* { transition: none !important; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Bottom bar (74px). RTL אמיתי: אין direction:ltr בשום מקום.
+   ════════════════════════════════════════════════════════ */
+.bottom-bar {
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 74px;
+  background: #ffffff;
+  border-top: 0.4px solid #AEAEAE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bottom-bar-inner {
+  width: 1232px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+/* RTL אמיתי, לא direction:ltr — הסדר הפיזי מושג ע"י סדר ה-DOM (רמז ראשון = ימין) */
+.bar-actions { display: flex; align-items: center; gap: 16px; }
+.bar-back { display: flex; align-items: center; }
+
+.btn-continue {
+  background: linear-gradient(180deg, #005FBE 9%, #003971 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 1000px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  padding: 12px 40px;
+  width: 140px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-continue:disabled { background: #AEAEAE; color: #303030; cursor: not-allowed; }
+.btn-continue:not(:disabled):hover { opacity: 0.88; }
+.btn-continue:focus-visible { outline: 3px solid var(--subject-500); outline-offset: 2px; }
+
+.btn-back {
+  background: #ffffff;
+  color: var(--subject-700);
+  border: 1.5px solid var(--subject-700);
+  border-radius: 1000px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  padding: 12px 40px;
+  width: 140px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-back:hover { background: #f0f8ff; }
+.btn-back:focus-visible { outline: 3px solid var(--subject-700); outline-offset: 2px; }
+
+.btn-hint {
+  background: #ffffff;
+  color: var(--subject-500);
+  border: 1.5px solid var(--subject-500);
+  border-radius: 1000px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.btn-hint[hidden] { display: none; }
+.btn-hint .scq-hint-icon { flex-shrink: 0; width: 26px; height: 24px; }
+.btn-hint:hover { background: #f0f8ff; }
+.btn-hint:focus-visible { outline: 3px solid var(--subject-500); outline-offset: 2px; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Feedback popup system
+   ════════════════════════════════════════════════════════ */
+.scq-fb-box {
+  display: none;
+  position: absolute;
+  left: 16px;
+  bottom: 87px;
+  width: 426px;
+  max-width: calc(100% - 32px);
+  border: 0.3px solid #aeaeae;
+  border-radius: 12px;
+  padding: 24px;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  z-index: 25;
+  cursor: grab;
+  user-select: none;
+}
+.scq-fb-box.visible { display: flex; }
+.scq-fb-box.is-correct { background: #edf8ed; }
+.scq-fb-box.is-wrong { background: #ffdbdc; }
+.scq-fb-box.is-dragging { cursor: grabbing; }
+.scq-fb-title { display: flex; direction: rtl; align-items: center; gap: 16px; }
+.scq-fb-title-text { flex: 1; font-weight: 700; font-size: 20px; color: #222; text-align: right; white-space: pre-line; }
+.scq-fb-body { font-weight: 400; font-size: 20px; color: #222; text-align: right; white-space: pre-line; }
+/* כפתור טוגל "התשובה הנכונה"/"התשובה שלי" — CLAUDE.md כלל #4 */
+.scq-fb-reveal-btn {
+  align-self: flex-start;
+  background: #fff; color: #019de5; border: 1.5px solid #019de5; border-radius: 1000px;
+  font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400;
+  padding: 10px 24px; cursor: pointer;
+}
+.scq-fb-reveal-btn[hidden] { display: none; }
+.scq-fb-reveal-btn:hover { background: #f0f8ff; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Hint popup (CSS-only, ready for future screens)
+   ════════════════════════════════════════════════════════ */
+.scq-hint-overlay {
+  position: absolute; inset: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 32, 96, 0.35);
+}
+.scq-hint-overlay[hidden] { display: none; }
+.scq-hint-popup {
+  position: relative; width: 542px; max-width: calc(100% - 64px);
+  background: var(--subject-500); border-radius: 48px; padding: 40px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 24px;
+  direction: rtl;
+}
+.scq-hint-title-row { width: 100%; display: flex; flex-direction: row-reverse; align-items: center; justify-content: flex-end; gap: 16px; }
+.scq-hint-title { flex: 1; font-weight: 700; font-size: 32px; color: #fff; text-align: right; }
+.scq-hint-bulb { width: 40px; height: 34px; flex-shrink: 0; }
+.scq-hint-body { font-weight: 400; font-size: 22px; color: #fff; text-align: right; line-height: 1.5; }
+.scq-hint-close { align-self: center; width: 196px; padding: 16px 40px; border-radius: 999px; background: #fff; color: #303030; font-size: 24px; text-align: center; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Image zoom
+   ════════════════════════════════════════════════════════ */
+.img-zoom-btn {
+  position: absolute; top: 10px; right: 10px; width: 44px; height: 44px;
+  border-radius: 999px; background: #fff; border: 2px solid var(--subject-500);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  padding: 0; z-index: 2;
+}
+.img-zoom-btn:hover { background: var(--subject-500); }
+.img-zoom-btn__icon { width: 20px; height: 20px; stroke: var(--subject-500); }
+.img-zoom-btn:hover .img-zoom-btn__icon { stroke: #fff; }
+.img-zoom-btn:focus-visible { outline: 2px solid var(--subject-500); outline-offset: 2px; }
+.img-zoom-modal {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.78); z-index: 1000;
+}
+.img-zoom-modal.hidden { display: none; }
+.img-zoom-modal__panel {
+  position: relative; width: 660px; height: 660px; background: #fff; border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); display: flex; align-items: center;
+  justify-content: center; overflow: hidden;
+}
+.img-zoom-modal__stage { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.img-zoom-close {
+  position: absolute; top: 10px; left: 10px; width: 44px; height: 44px;
+  border-radius: 999px; background: #fff; border: 2px solid var(--subject-500);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  padding: 0; z-index: 2;
+}
+.img-zoom-close:hover { background: var(--subject-500); }
+.img-zoom-close__icon { width: 15px; height: 15px; stroke: var(--subject-500); }
+.img-zoom-close:hover .img-zoom-close__icon { stroke: #fff; }
+.img-zoom-close:focus-visible { outline: 2px solid var(--subject-500); outline-offset: 2px; }
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL — Report/Issue button (.flag-btn)
+   ════════════════════════════════════════════════════════ */
+.flag-btn {
+  position: absolute; top: 16px; left: 16px; z-index: 30;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 4px; width: 88px;
+}
+.flag-btn-icon { position: relative; display: block; width: 38px; height: 38px; }
+.flag-btn-icon-default, .flag-btn-icon-hover { position: absolute; inset: 0; width: 38px; height: 38px; }
+.flag-btn-icon-hover { opacity: 0; }
+.flag-btn-label { font-weight: 600; font-size: 14px; color: var(--subject-500); text-align: center; width: 80px; opacity: 0; }
+.flag-btn:hover .flag-btn-icon-default, .flag-btn:focus-visible .flag-btn-icon-default { opacity: 0; }
+.flag-btn:hover .flag-btn-icon-hover, .flag-btn:focus-visible .flag-btn-icon-hover { opacity: 1; }
+.flag-btn:hover .flag-btn-label, .flag-btn:focus-visible .flag-btn-label { opacity: 1; }
+
+/* ════════════════════════════════════════════════════════
+   מסך 1 — מסך מעבר: דמות + כותרות (Transition), הועתק מסיין 2 מסך 1
+   ════════════════════════════════════════════════════════ */
+.transition-content {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 80px 56px 50px;
+}
+.transition-title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 810px;
+  direction: rtl;
+}
+.transition-title {
+  font-family: 'Assistant', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: #303030;
+  text-align: center;
+}
+.transition-sub {
+  font-family: 'Assistant', sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: #303030;
+  text-align: center;
+  line-height: 1.5;
+}
+.transition-avatar-wrap {
+  position: relative;
+  width: 304px;
+  flex-shrink: 0;
+}
+.transition-avatar {
+  width: 304px;
+  aspect-ratio: 304 / 293;
+  object-fit: cover;
+  display: block;
+  border-radius: 16px;
+}
+.transition-bubble {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 11px);
+  transform: translateY(-50%);
+  width: 300px;
+  background: #ffffff;
+  border: 1.5px solid var(--subject-500);
+  border-radius: 20px;
+  padding: 16px 20px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #000000;
+  text-align: center;
+  line-height: 1.5;
+  direction: rtl;
+}
+.transition-bubble::before {
+  content: '';
+  position: absolute;
+  right: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left: 7px solid var(--subject-500);
+}
+.transition-bubble::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left: 6px solid #ffffff;
+  z-index: 1;
+}
+
+/* ════════════════════════════════════════════════════════
+   מסך 2 — משימת כיתה. תוקן לפי המקור (Methodica-02-03, מסך 2) —
+   עמודה בודדת ממורכזת (.s2-content > h1.s2-title + .s2-body>.s2-group),
+   בלי .s2-card (קופסה לבנה) ובלי .s2-columns/.s2-col (שתי עמודות
+   זו-לצד-זו) — אלה סטו מהמקור, הוסרו. צבעים/גדלים תואמים 1:1 למקור
+   (#303030 גם לכותרת/מספרים/בולד — לא var(--subject-500), שלא מופיע
+   במקור בכלל). left:340px נשאר (לא במקור): מפנה מקום לדמות+בועית
+   שהתווספה כאן לפי בקשה מפורשת (המקור אין בו דמות במסך הזה כלל).
+   ════════════════════════════════════════════════════════ */
+.s2-content {
+  position: absolute;
+  top: 64px; right: 40px; bottom: 76px; left: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  overflow-y: auto;
+}
+.s2-title {
+  font-size: 40px;
+  font-weight: 700;
+  color: #303030;
+  text-align: center;
+  margin: 0;
+  max-width: 1050px;
+  /* .s2-content ממורכז ב-flex, אבל הקופסה שלו אינה סימטרית על המסך
+     (right:40/left:340, כדי לפנות מקום לדמות+בועה למטה-שמאל) — מרכז
+     הקופסה ב-x:790, לא x:640 (מרכז הקנבס). הכותרת בלבד (לא שאר
+     התוכן, שממילא צריך את הפינוי מהדמות) מוזזת 150px שמאלה כדי
+     להיות ממורכזת אמת על המסך המלא. */
+  position: relative;
+  right: 150px;
+}
+.s2-body {
+  width: 100%;
+  max-width: 1112px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  direction: rtl;
+}
+.s2-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.s2-steps {
+  list-style: none;
+  counter-reset: step-counter;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.s2-steps > li {
+  counter-increment: step-counter;
+  position: relative;
+  padding-right: 34px;
+  font-size: 24px;
+  font-weight: 400;
+  color: #303030;
+  text-align: right;
+  direction: rtl;
+}
+.s2-steps > li::before {
+  content: counter(step-counter) ".";
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #303030;
+}
+.s2-section-bold {
+  font-size: 24px;
+  font-weight: 700;
+  color: #303030;
+  text-align: right;
+  direction: rtl;
+  line-height: 1.6;
+
+}
+.s2-section-body {
+  font-size: 24px;
+  font-weight: 400;
+  color: #303030;
+  text-align: right;
+  direction: rtl;
+  line-height: 1.6;
+  margin: 0;
+}
+.s2-btn-continue-wide { min-width: 240px; white-space: nowrap; }
+
+/* דמות מלווה + בועת דיבור (פינה שמאל-תחתונה) — הועתק ממסך 4 בסיין 1 */
+.char-bubble-wrap {
+  position: absolute;
+  left: 24px;
+  bottom: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 5;
+}
+.char-speech-bubble {
+  position: relative;
+  background: #fff;
+  border: 2px solid var(--subject-500);
+  border-radius: 16px;
+  padding: 12px 16px;
+  max-width: 260px;
+}
+.char-speech-bubble p {
+  margin: 0;
+  font-family: 'Assistant', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #222;
+  text-align: center;
+}
+.char-speech-bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 12px solid var(--subject-500);
+}
+.char-speech-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid #fff;
+}
+.char-bubble-avatar img { width: 300px; height: auto; object-fit: contain; }
+
+/* ════════════════════════════════════════════════════════
+   מסך 3 — שאלת גרירה (DragAndDropQuestion), makeDragQuestion factory
+   (הועתק מסיין 1). גרסה ברוחב-מלא (בלי סימולציה/badge), top:139px
+   (אותו offset סטנדרטי כמו שאר מסכי התוכן בפרויקט, גם בלי qnav).
+   ════════════════════════════════════════════════════════ */
+.dq-question-panel {
+  position: absolute;
+  left: 0; top: 139px; right: 0; bottom: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 40px 16px 40px;
+  gap: 16px;
+  overflow-y: auto;
+  direction: rtl;
+}
+.dq-instruction-bold {
+  font-size: 24px; font-weight: 700; color: #303030;
+  direction: rtl; text-align: right; width: 100%;
+  margin: 0; line-height: 1.3; flex-shrink: 0;
+}
+.dq-instruction {
+  font-size: 24px; font-weight: 400; color: #303030;
+  direction: rtl; text-align: right; width: 100%;
+  margin: 0; line-height: 1.3; flex-shrink: 0;
+}
+.dq-sentence {
+  display: flex; flex-direction: row; align-items: center; gap: 8px;
+  direction: rtl; font-size: 24px; color: #303030; min-height: 42px;
+}
+.dq-snt-pre, .dq-snt-post { white-space: nowrap; }
+.dq-fill-sentences {
+  display: flex; flex-direction: column; gap: 10px;
+  width: 100%; flex-shrink: 0;
+}
+.dq-snt-drop {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; width: 180px; height: 42px; border-radius: 10px;
+  border: 1px dashed rgba(0,0,0,0.6); background: #f3f4f5;
+  box-sizing: border-box; cursor: default;
+}
+.dq-snt-drop.drag-over { background: #fff; border: 1px dashed var(--subject-500); }
+.dq-snt-drop.occupied { background: #d4f3ff; border: 1.5px solid var(--subject-500); width: 180px; height: 42px; }
+.dq-snt-drop.correct { border: 1.5px solid #609e12 !important; background: #fff !important; }
+.dq-snt-drop.wrong { border: 1.5px solid #B20010 !important; background: #fff !important; }
+.dq-placed-card {
+  font-size: 24px; font-weight: 400; color: #303030;
+  cursor: grab; user-select: none; white-space: nowrap; direction: rtl;
+  display: inline-flex; align-items: center; justify-content: flex-start;
+  gap: 10px; width: 100%; height: 100%; padding: 0 8px;
+}
+.dq-snt-drop.occupied:not(.correct):not(.wrong) .dq-placed-card { font-size: 22px; color: #222; }
+.dq-placed-card.locked { cursor: default; }
+.dq-snt-drop.correct .dq-placed-card::after {
+  /* order:-1 — .dq-placed-card is direction:rtl; without this the ::after (always last in
+     flex/DOM order) lands to the LEFT of the text instead of the right (main-start in rtl = right,
+     and items pack start→end in order, so the text — first in order — would otherwise claim the
+     right edge). order:-1 puts the badge before the text in flex order so it lands at the right,
+     matching Figma's AnswerBox (icon at the pill's own right edge). */
+  content: ''; display: inline-block; width: 26px; height: 26px; flex-shrink: 0; order: -1;
+  border-radius: 50%; background-color: #609e12;
+  background-image: url('assets/images/icon-badge-check-white.svg');
+  background-repeat: no-repeat; background-position: center; background-size: 12px 9px;
+}
+.dq-snt-drop.wrong .dq-placed-card::after {
+  content: ''; display: inline-block; width: 26px; height: 26px; flex-shrink: 0; order: -1;
+  border-radius: 50%; background-color: #B20010;
+  background-image: url('assets/images/icon-badge-x-white.svg');
+  background-repeat: no-repeat; background-position: center; background-size: 12px 12px;
+}
+.dq-word-bank {
+  display: flex; flex-wrap: wrap; gap: 10px; width: 100%;
+  direction: rtl; flex-shrink: 0; padding: 8px 0; align-content: flex-start;
+}
+.dq-source-slot { display: inline-flex; align-items: center; }
+.dq-drag-card {
+  background: #fff; border: 1.5px solid #ececec; border-radius: 10px;
+  font-size: 24px; font-weight: 400; color: #303030;
+  cursor: grab; user-select: none; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 180px; height: 42px; direction: rtl;
+}
+.dq-drag-card:hover:not(.ghost):not(.locked) { border-color: var(--subject-500); box-shadow: 0 2px 6px rgba(1,157,229,0.2); }
+.dq-drag-card.dragging { opacity: 0.38; }
+.dq-drag-card.ghost { color: transparent; background: #f3f4f5; border: 1px solid rgba(174,174,174,0.3); pointer-events: none; }
+.dq-drag-card.locked { cursor: default; }
+
+.scq-fb-box.dq-feedbox-pos { left: 341px; bottom: 87px; width: 400px; }

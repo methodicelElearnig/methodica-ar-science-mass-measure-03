@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    a { color: #15938a; }
+    a:hover { color: #0e6f68; }
+  </style>
+</helmet>
+
+<div style="direction:rtl; font-family:'Assistant',sans-serif; color:#2c2c2c; background:#ffffff; min-height:100%; padding:28px 24px 40px; -webkit-tap-highlight-color:transparent;">
+
+  <div style="max-width:920px; margin:0 auto;">
+
+    <sc-if value="{{ showHint }}" hint-placeholder-val="{{ true }}">
+      
+    </sc-if>
+
+    <!-- Interactive stage -->
+    <div style="overflow-x:auto; overflow-y:hidden;">
+    <div style="position:relative; width:900px; height:470px; margin:0 auto;">
+
+      <!-- Regular scale station -->
+      <div style="position:absolute; left:60px; top:150px; width:300px; height:250px;">
+        <div style="position:relative; width:100%; height:100%;">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="scaleRegular" shape="rounded" placeholder="תמונת מאזניים רגילים" src="assets/scale-regular.png" style="display:block; width:100%; height:100%;" hint-size="300px,250px"></x-import>
+          <div style="{{ regLcdStyle }}">
+            <span style="flex:1; text-align:right; font-variant-numeric:tabular-nums; letter-spacing:1px;">{{ regDisplay }}</span>
+            <span style="font-size:.62em; opacity:.8;">g</span>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:10px; font-size:16px; font-weight:600; color:#333;">מאזניים רגילים</div>
+        <div style="text-align:center; margin-top:2px; font-size:13px; color:#8a8a8a;">קריאות: {{ regResText }} גרם</div>
+      </div>
+
+      <!-- Sensitive scale station -->
+      <div style="position:absolute; left:540px; top:150px; width:300px; height:250px;">
+        <div style="position:relative; width:100%; height:100%;">
+          <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="scaleSensitive" shape="rounded" placeholder="תמונת מאזניים רגישים" src="assets/scale-sensitive.png" style="display:block; width:100%; height:100%;" hint-size="300px,250px"></x-import>
+          <div style="{{ sensLcdStyle }}">
+            <span style="flex:1; text-align:right; font-variant-numeric:tabular-nums; letter-spacing:1px;">{{ sensDisplay }}</span>
+            <span style="font-size:.62em; opacity:.8;">g</span>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:10px; font-size:16px; font-weight:600; color:#333;">מאזניים רגישים</div>
+        <div style="text-align:center; margin-top:2px; font-size:13px; color:#8a8a8a;">קריאות: {{ sensResText }} גרם</div>
+      </div>
+
+      <!-- Draggable gold block -->
+      <div style="{{ blockStyle }}" onPointerDown="{{ onBlockDown }}">
+        <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="goldBlock" shape="rounded" radius="8" placeholder="גררו תמונת זהב" src="assets/gold-block.png" style="display:block; width:100%; height:100%;" hint-size="130px,100px"></x-import>
+      </div>
+
+    </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 960, &quot;height&quot;: 640 },
+  &quot;regTarget&quot;: { &quot;editor&quot;: &quot;float&quot;, &quot;default&quot;: 9.9, &quot;min&quot;: 0, &quot;max&quot;: 1000, &quot;step&quot;: 0.1, &quot;unit&quot;: &quot;g&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מאזניים רגילים&quot; },
+  &quot;regDecimals&quot;: { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 1, &quot;min&quot;: 0, &quot;max&quot;: 4, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מאזניים רגילים&quot; },
+  &quot;sensTarget&quot;: { &quot;editor&quot;: &quot;float&quot;, &quot;default&quot;: 10, &quot;min&quot;: 0, &quot;max&quot;: 1000, &quot;step&quot;: 0.01, &quot;unit&quot;: &quot;g&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מאזניים רגישים&quot; },
+  &quot;sensDecimals&quot;: { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 2, &quot;min&quot;: 0, &quot;max&quot;: 4, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מאזניים רגישים&quot; },
+  &quot;lcdColor&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#1560d6&quot;, &quot;options&quot;: [&quot;#1560d6&quot;, &quot;#0a7d3c&quot;, &quot;#1a1a1a&quot;, &quot;#b34700&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;מסך LCD&quot; },
+  &quot;regLcdTop&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 68, &quot;min&quot;: 0, &quot;max&quot;: 100, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מיקום מסך – רגילים&quot; },
+  &quot;regLcdLeft&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 40, &quot;min&quot;: 0, &quot;max&quot;: 100, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מיקום מסך – רגילים&quot; },
+  &quot;regLcdW&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 37, &quot;min&quot;: 10, &quot;max&quot;: 90, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מיקום מסך – רגילים&quot; },
+  &quot;sensLcdTop&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 60, &quot;min&quot;: 0, &quot;max&quot;: 100, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מיקום מסך – רגישים&quot; },
+  &quot;sensLcdLeft&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 50, &quot;min&quot;: 0, &quot;max&quot;: 100, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מיקום מסך – רגישים&quot; },
+  &quot;sensLcdW&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 49, &quot;min&quot;: 10, &quot;max&quot;: 90, &quot;step&quot;: 1, &quot;unit&quot;: &quot;%&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;מיקום מסך – רגישים&quot; }
+}">
+class Component extends DCLogic {
+  BLOCK = { w: 130, h: 100 };
+  STATIONS = {
+    reg:  { left: 60,  top: 150, w: 300, h: 250 },
+    sens: { left: 540, top: 150, w: 300, h: 250 }
+  };
+  state = { blockX: 385, blockY: 18, regVal: 0, sensVal: 0, placedOn: null, dragging: false };
+
+  componentWillUnmount() { this.cancelAnim(); }
+
+  cancelAnim() {
+    if (this._raf) clearTimeout(this._raf);
+    if (this._jit) clearTimeout(this._jit);
+    this._raf = null; this._jit = null;
+  }
+
+  restFor(scale) {
+    const s = this.STATIONS[scale];
+    return { x: s.left + s.w / 2 - this.BLOCK.w / 2, y: s.top + 16 };
+  }
+
+  roundRes(v, res) { return res > 0 ? Math.round(v / res) * res : v; }
+  trimNum(n) { return String(+(+n).toFixed(6)); }
+
+  placeOn = (scale) => {
+    const rest = this.restFor(scale);
+    this.setState({ placedOn: scale, blockX: rest.x, blockY: rest.y });
+    this.startWeigh(scale);
+  };
+
+  startWeigh(scale) {
+    this.cancelAnim();
+    const p = this.props || {};
+    const target = scale === 'reg' ? (p.regTarget ?? 9.9) : (p.sensTarget ?? 10);
+    const other = scale === 'reg' ? 'sens' : 'reg';
+    this.setState({ [other + 'Val']: 0 });
+    const dur = 1300, t0 = Date.now();
+    const step = () => {
+      const prog = Math.min(1, (Date.now() - t0) / dur);
+      const e = 1 - Math.pow(1 - prog, 3);
+      this.setState({ [scale + 'Val']: target * e });
+      if (prog < 1) this._raf = setTimeout(step, 30);
+      else this.settle(scale, target);
+    };
+    this._raf = setTimeout(step, 30);
+  }
+
+  // Sensitive scale keeps flickering on the last digit before settling.
+  settle(scale, target) {
+    if (scale !== 'sens') { this.setState({ regVal: target }); return; }
+    const res = Math.pow(10, -((this.props?.sensDecimals ?? 2)));
+    let i = 0;
+    const jit = () => {
+      i++;
+      if (i >= 7) { this.setState({ sensVal: target }); return; }
+      const delta = Math.round((Math.random() - 0.5) * 2) * res;
+      this.setState({ sensVal: target + delta });
+      this._jit = setTimeout(jit, 110);
+    };
+    this._jit = setTimeout(jit, 110);
+  }
+
+  removeFromScale() {
+    if (!this.state.placedOn) return;
+    this.cancelAnim();
+    this.setState({ placedOn: null, regVal: 0, sensVal: 0 });
+  }
+
+  handleDrop() {
+    const { blockX, blockY } = this.state;
+    const cx = blockX + this.BLOCK.w / 2, cy = blockY + this.BLOCK.h / 2;
+    const hit = (s) => cx > s.left - 30 && cx < s.left + s.w + 30 && cy > s.top - 50 && cy < s.top + s.h + 30;
+    if (hit(this.STATIONS.reg)) this.placeOn('reg');
+    else if (hit(this.STATIONS.sens)) this.placeOn('sens');
+  }
+
+  onPointerDown = (e) => {
+    const startX = e.clientX, startY = e.clientY;
+    const bx = this.state.blockX, by = this.state.blockY;
+    this.removeFromScale();
+    this.setState({ dragging: true });
+    const move = (ev) => this.setState({ blockX: bx + (ev.clientX - startX), blockY: by + (ev.clientY - startY) });
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      this.setState({ dragging: false }, () => this.handleDrop());
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  lcdBase(color) {
+    return {
+      position: 'absolute', transform: 'translate(-50%,-50%)',
+      background: color, color: '#eaf3ff', direction: 'ltr',
+      display: 'flex', alignItems: 'center', gap: '4px',
+      padding: '5px 10px', borderRadius: '5px',
+      fontFamily: "'Share Tech Mono', monospace", fontSize: '22px', lineHeight: 1,
+      boxShadow: 'inset 0 1px 4px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.35)',
+      border: '1px solid rgba(0,0,0,.3)', whiteSpace: 'nowrap', zIndex: 3, userSelect: 'none'
+    };
+  }
+
+  renderVals() {
+    const p = this.props || {}, s = this.state;
+    const regDec = p.regDecimals ?? 2, sensDec = p.sensDecimals ?? 3;
+    const lcd = p.lcdColor ?? '#1560d6';
+    const regLcdStyle = { ...this.lcdBase(lcd), top: (p.regLcdTop ?? 68) + '%', left: (p.regLcdLeft ?? 40) + '%', width: (p.regLcdW ?? 37) + '%' };
+    const sensLcdStyle = { ...this.lcdBase(lcd), top: (p.sensLcdTop ?? 60) + '%', left: (p.sensLcdLeft ?? 50) + '%', width: (p.sensLcdW ?? 49) + '%' };
+    const blockStyle = {
+      position: 'absolute', left: '0', top: '0',
+      width: this.BLOCK.w + 'px', height: this.BLOCK.h + 'px',
+      transform: `translate(${s.blockX}px, ${s.blockY}px)`,
+      cursor: s.dragging ? 'grabbing' : 'grab', touchAction: 'none', userSelect: 'none',
+      zIndex: 6, transition: s.dragging ? 'none' : 'transform .3s cubic-bezier(.22,1,.36,1)',
+      filter: 'drop-shadow(0 8px 12px rgba(0,0,0,.3))', borderRadius: '8px'
+    };
+    return {
+      regDisplay: (s.regVal ?? 0).toFixed(regDec),
+      sensDisplay: (s.sensVal ?? 0).toFixed(sensDec),
+      regResText: this.trimNum(Math.pow(10, -regDec)),
+      sensResText: this.trimNum(Math.pow(10, -sensDec)),
+      regLcdStyle, sensLcdStyle, blockStyle,
+      onBlockDown: this.onPointerDown,
+      showHint: s.placedOn == null && !s.dragging
+    };
+  }
+}
+</script>
+</body>
+</html>

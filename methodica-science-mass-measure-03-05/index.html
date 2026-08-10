@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לומדה 720 | מדעים יעד 3 | סיין 5 (משימת שיא — מועד א)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ מסך 1 — מעבר: הקדמה למשימת השיא ============
+       שוכפל ממסך 1 (id="s0") של סיין 2. בלי בועת דיבור (השקף לא כלל
+       טקסט בועה נפרד). תוכן: תסריט הפקה, שקף 131 — "כל הכבוד! ... עכשיו
+       מגיעה שאלת השיא, יש בה 3 סעיפים. עליכם להצליח בכולם." בלי כפתור
+       חזרה (מסך ראשון בסיין).
+       דמות: וידאו (MP4, לא GIF — בקשת הלקוח) בלופ, בלי קול ובלי סרגל
+       שליטה (autoplay/loop/muted/playsinline, בלי controls) — "תנועת
+       שריר" לפי הערת המפיק בשקף 131. נבחר דינמית לפי
+       window.lomdaState.selectedCharacter (Companion character system),
+       אותה מוסכמה בדיוק כמו כל דמות מלווה אחרת בפרויקט — ראו
+       resolveCharBubbleVideo()/S0_AVATAR_ASSETS ב-script.js.
+       תיקון: כל השורות נבנו כ-`.transition-sub` רגילה, בלי h2 מודגש.
+       המקור (Methodica-science-mass-measure-02-05, מסך "s0") מפצל את
+       אותו תוכן: "כל הכבוד! ... להסבר נוסף." נשאר sub, "עכשיו מגיעה
+       שאלת השיא" הופך ל-h2.transition-title מודגש, וההמשך "יש בה 3
+       סעיפים..." נשאר sub. תוקן לפי המקור. -->
+  <section class="screen active" data-screen="0" id="s0">
+    <div class="transition-content">
+      <div class="transition-title-block">
+        <p class="transition-sub">כל הכבוד!</p>
+        <p class="transition-sub">אם לא הצלחת לענות נכון על חלק מהשאלות, חשוב להבין מה עדיין לא ברור ולפנות לצ'אט או למורה להסבר נוסף.</p>
+        <h2 class="transition-title">עכשיו מגיעה שאלת השיא</h2>
+        <p class="transition-sub"><b>יש בה 3 סעיפים. עליכם להצליח בכולם.</b></p>
+      </div>
+      <div class="transition-avatar-wrap">
+        <video class="transition-avatar" id="s0-avatar-video" autoplay loop muted playsinline disablepictureinpicture preload="auto" aria-label="דמות מלווה"></video>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s0-back" onclick="s0BackToPreviousSain()">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s0-continue" onclick="s0Continue()">המשך</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 2 — סעיף 1: יישומון שקילה + טבלה למילוי ============
+       פריסת "סימולציה בצד שמאל" (.dq-sim-placeholder) הועתקה ממסך 6
+       (data-screen="5", id="s5") בסיין 1. אפקט הגלילה (.tbl-content/
+       .tbl-page, "קפיצת עמוד") הועתק מאותו מקור ששימש בכל מסכי הגלילה
+       בפרויקט (Methodica-science-mass-measure-02-04). עמוד 1 (לפני
+       הגלילה): טקסט התרחיש (שקף 132). עמוד 2 (אחרי הגלילה): טבלה
+       למילוי + כפתור "+" להוספת שורה (עד 7 שורות סה"כ, כמו הוספת שורה
+       בטבלת Word) + כפתור "סיימתי לשקול".
+       הסימולציה (weighting-application/weight-machine.png +
+       gold-necklace.png, ראו makeSingleScaleSimulation ב-script.js):
+       גררו את שרשרת הזהב אל המאזניים כדי לקבל מדידה — כל הנחה חוזרת
+       חושפת את הערך הבא ברצף הקבוע (50.8/49.2/50.4/49.8/50.1/50.0/49.9,
+       תואם לטבלת הייחוס ששקף 134 ולסעיף א במסך 3), עד 7 מדידות.
+       ⚠️ בניגוד למתואר בשקפים 132-133: **אין כפתור "מדידת מסה" נפרד** —
+       לפי בקשה מפורשת, הגרירה עצמה היא פעולת המדידה. **אין כפתור איפוס
+       לסימולציה** (הוסר לפי בקשה מפורשת) — הרמת התליון והנחתו מחדש על
+       המאזניים מספיקה כדי לקבל מדידה נוספת; שורה חדשה לטבלה מתווספת
+       ידנית ע"י הלומד/ת דרך כפתור "מדידה נוספת" (s1AddRow()). טבלת המילוי הידנית —
+       עמודת "מסה (גרם)" קלט חופשי (בלי ולידציה אוטומטית מול הסימולציה,
+       הלומד/ת קוראים את התוצאה מה-LCD ומזינים בעצמם), אבל עמודת
+       "הממוצע עד כה" **מחושבת אוטומטית** (s1ComputeAverages(): ממוצע
+       רץ של כל ערכי המסה שהוזנו עד לשורה, מוצג בלבד — לא קלט). כפתור
+       "סיימתי לשקול" ננעל ומסמן את סעיף 1 כ"עבר" ללא ולידציה אמיתית
+       של ערכי המסה עצמם (לפי אותה החלטה מפורשת). תוכן: תסריט הפקה,
+       שקפים 132-133. **בלי סרגל התקדמות** (qnav) — לפי בקשה מפורשת. -->
+  <section class="screen" data-screen="1" id="s1">
+    <div class="dq-sim-placeholder">
+      <div class="dq-sim" id="s1-sim">
+        <div class="dq-sim-station">
+          <div class="dq-sim-imgwrap">
+            <img class="dq-sim-scale-img" src="weighting-application/weight-machine.png" alt="מאזני בקרת איכות">
+            <div class="dq-sim-lcd"><span class="dq-sim-lcd-val">0.0</span><span class="dq-sim-lcd-unit">גרם</span></div>
+          </div>
+        </div>
+        <div class="dq-sim-dropzone" id="s1-sim-dropzone"></div>
+        <img class="dq-sim-necklace" id="s1-sim-necklace" src="weighting-application/gold-necklace.png" alt="שרשרת זהב">
+      </div>
+    </div>
+
+    <div class="tbl-content s1-scroll-area" id="s1-scroll-area" tabindex="0">
+
+      <!-- ===== עמוד 1 — תיאור התרחיש ===== -->
+      <section class="tbl-page">
+        <div class="tbl-page-header">
+          <p class="scq-qbody">מפעל תכשיטי זהב פיתח מאזניים חדשים לבקרת איכות.<br><br>המאזניים מסייעים לעובדות ועובדי המפעל לקבוע את מסת תליון הזהב בדיוק גבוה ככל האפשר.<br><br>
+            
+           הניחו את השרשרת על המאזניים כדי למדוד את המסה. הסירו אותה והניחו אותה שוב לפי הצורך.<br><br>
+            לאחר כל מדידת מסה היישומון:</p>
+          <ul class="s1-app-behavior-list">
+            <li>
+            מציג את תוצאת המדידה החדשה על צג המאזניים
+            </li>
+            <li>
+             מוסיף שורה חדשה לטבלה בה יש לתעד את המדידה.
+            </li>
+               <li>
+מחשב ומציג את הממוצע החדש של כל המדידות שבוצעו עד כה.           
+            </li>
+          </ul>
+          <p class="scq-qbody"><b>עליכם להחליט מתי נאספו מספיק נתונים כדי לסמוך על התוצאה.</b></p>
+        </div>
+      </section>
+
+      <!-- ===== עמוד 2 — טבלה למילוי ===== -->
+      <section class="tbl-page">
+        <div class="tbl-page-header">
+           <p class="scq-qtitle">
+           שקלו כעת.
+           </p>
+          <p class="scq-qbody">החליטו מתי נאספו מספיק נתונים כדי לסמוך על התוצאה.<br>בשלב זה, הפסיקו לשקול והמשיכו לשאלות.</p>
+        </div>
+
+        <table class="tbl-table" id="s1-measure-table" dir="rtl">
+          <thead>
+            <tr>
+              <th class="tbl-th">הממוצע עד כה</th>
+              <th class="tbl-th">מסה (גרם)</th>
+              <th class="tbl-th">מספר מדידה</th>
+            </tr>
+          </thead>
+          <tbody id="s1-table-body">
+            <tr data-row="1">
+              <td class="tbl-td"><span class="tbl-avg-display" id="s1-avg-1"></span></td>
+              <td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="מסה בגרם, מדידה 1" oninput="s1OnCellInput()"></td>
+              <td class="tbl-td">1</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button class="tbl-add-row-btn" id="s1-add-row" type="button" onclick="s1AddRow()" aria-label="הוספת מדידה נוספת">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 3V17M3 10H17" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+          <span>מדידה נוספת</span>
+        </button>
+
+        <button class="btn-continue s1-finish-btn" id="s1-finish-weighing" type="button" onclick="s1FinishWeighing()">סיימתי לשקול</button>
+      </section>
+
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s1-back" onclick="goTo(0)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s1-continue" disabled onclick="s1Continue()">המשך</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 3 — סעיף א: חד-ברירה עם טבלה (במקום תמונה) ============
+       שוכפל ממסך 15 (data-screen="14", id="s14") בסיין 1 — אותו מבנה
+       SCQ+qnav+רמז בדיוק, אך במקום .scq-img (תמונה) מוצגת כאן טבלת
+       המדידות (.tbl-table, אותו עיצוב טבלה שכבר נבנה בפרויקט) בעמודה
+       השמאלית. **בלי qnav** — לפי אותה מוסכמה כמו מסך 2 (משימת שיא
+       אינה משתמשת בסרגל "שאלה X מתוך Y"). תוכן: תסריט הפקה, שקפים
+       135-139. correctId='c' ("ארבע מדידות"). -->
+  <section class="screen" data-screen="2" id="s2">
+    <div class="scq-question">
+      <div class="scq-table-wrap">
+        <table class="tbl-table tbl-table--compact" dir="rtl">
+          <thead>
+            <tr>
+              <th class="tbl-th">הממוצע עד כה</th>
+              <th class="tbl-th">מסה (גרם)</th>
+              <th class="tbl-th">מס' מדידה</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="tbl-td">50.8</td><td class="tbl-td">50.8</td><td class="tbl-td">1</td></tr>
+            <tr><td class="tbl-td">50.0</td><td class="tbl-td">49.2</td><td class="tbl-td">2</td></tr>
+            <tr><td class="tbl-td">50.1</td><td class="tbl-td">50.4</td><td class="tbl-td">3</td></tr>
+            <tr><td class="tbl-td">50.1</td><td class="tbl-td">49.8</td><td class="tbl-td">4</td></tr>
+            <tr><td class="tbl-td">50.1</td><td class="tbl-td">50.1</td><td class="tbl-td">5</td></tr>
+            <tr><td class="tbl-td">50.1</td><td class="tbl-td">50.0</td><td class="tbl-td">6</td></tr>
+            <tr><td class="tbl-td">50.0</td><td class="tbl-td">49.9</td><td class="tbl-td">7</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">סעיף א</p>
+            <p class="scq-qbody">לאחר כמה מדידות בערך נראה שהממוצע מתחיל להתייצב?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s2Select('a')">
+            <span class="scq-opt-text">שתי מדידות</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s2Select('b')">
+            <span class="scq-opt-text">שלוש מדידות</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s2Select('c')">
+            <span class="scq-opt-text">ארבע מדידות</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s2Select('d')">
+            <span class="scq-opt-text">חמש מדידות</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s2-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s2-back" onclick="goTo(1)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s2-hint" type="button" hidden onclick="s2OpenHint()">
+            <img class="scq-hint-icon" id="s2-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s2-check" disabled onclick="s2Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 4 — סעיף ב: חד-ברירה עם תמונה + בועית דיבור ============
+       שוכפל ממסך 15 (id="s14") בסיין 1. מעל התמונה — בועת דיבור חדשה
+       (.s3-bubble, זנב פונה למטה לעבר התמונה) עם הציטוט מהעובד. **בלי
+       qnav**. תוכן: תסריט הפקה, שקפים 140-144. תמונה: סופקה ע"י
+       המשתמשת (screen03-man-on-laptop.jpg). correctId='c'. סיום הסעיף
+       הזה כעת רק ממשיך הלאה (goTo(4), סעיף ג) — ההחלטה על
+       moedAFullyPassed() עברה לסוף סעיף ג (מסך 5), הסעיף האחרון. -->
+  <section class="screen" data-screen="3" id="s3">
+    <div class="scq-question">
+      <div class="scq-img-bubble-wrap">
+        <div class="s3-bubble">
+          <p>המדידה השביעית היא 49.9 גרם, ולכן זו המסה המדויקת ביותר של התליון.</p>
+        </div>
+        <div class="scq-img"><div class="scq-img-inner">
+          <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                  data-zoom-src="assets/images/screen03-man-on-laptop.jpg" data-zoom-alt="עובד במפעל התכשיטים מול מחשב נייד">
+            <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <img src="assets/images/screen03-man-on-laptop.jpg" alt="עובד במפעל התכשיטים מול מחשב נייד">
+        </div></div>
+      </div>
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">סעיף ב</p>
+            <p class="scq-qbody">קראו את הטענה של אחד העובדים במפעל.<br>האם הוא צודק?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s3Select('a')">
+            <span class="scq-opt-text">הוא צודק, כי המדידה האחרונה תמיד מדויקת יותר.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s3Select('b')">
+            <span class="scq-opt-text">הוא צודק, כי 49.9 גרם קרוב מאוד ל־50 גרם.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s3Select('c')">
+            <span class="scq-opt-text">הוא טועה, כי עדיף להסתמך על ממוצע של כמה מדידות ולא על מדידה אחת.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s3Select('d')">
+            <span class="scq-opt-text">הוא טועה, 7 מדידות זה כבר יותר מדי.</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s3-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s3-back" onclick="goTo(2)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s3-hint" type="button" hidden onclick="s3OpenHint()">
+            <img class="scq-hint-icon" id="s3-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s3-check" disabled onclick="s3Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 5 — סעיף ג: מסך גלילה — תמונה+בועה (למעלה) + שאלת גרירה (למטה) ============
+       עמוד עליון (לפני הגלילה): מקור אמת — פיגמה (fileKey
+       Z9sD0kksYj1Ph1kUcs71sw, node 2312:12312, "לומדת התנסות"),
+       לפי בקשת המשתמשת המפורשת "פיגמה הוא SOURCE OF TRUTH". מיקומים
+       הועתקו 1:1 מ-get_metadata/get_design_context (קנבס הפיגמה עצמו
+       1280×710 — זהה לקנבס שלנו, בלי צורך בסקאלה): כותרת+טקסט
+       right:40px/top:71px, קבוצת בועה+תמונה left:138px/top:292px.
+       תמונה: הפיגמה עצמה מציגה placeholder אפור (rgba(201,206,216,0.4),
+       330×274px) בלי תמונה אמיתית — מומש כפי שהוא (ראו ARCHITECTURE.md,
+       ממתין לתמונה אמיתית של מוריה). בועת דיבור: CSS (זנב פונה ימינה
+       לעבר התמונה), אותה טכניקה כמו .s18-bubble--tail-right בסיין 1.
+       עמוד תחתון (אחרי הגלילה): שאלת גרירה להשלמת משפט ממחסן מילים
+       (6 מקומות, 9 קלפים — 6 נכונים+3 מסיחים), הועתקה ממסך 4 של
+       Methodica-science-mass-measure-02-06 (makeDragQuestion factory,
+       זהה למנגנון שכבר קיים בסיין 3 כאן) — **בלי** תג "חלק X"
+       (.dq-part-badge), לפי בקשה מפורשת. תוכן: תסריט הפקה, שקפים
+       145-150. correctMap: 4/ממוצע/התייצב/3/אי-ודאות/אמינה. תיקון
+       כתיב: "התשבה"←"התשובה" (שקף 147). **בלי qnav**. מסך זה הוא הסעיף
+       האחרון של מועד א' — בסיומו מתבצעת בדיקת moedAFullyPassed() (כעת
+       4 חלקים: היישומון+א+ב+ג) והניתוב בהתאם (ראו script.js). -->
+  <section class="screen" data-screen="4" id="s4">
+    <div class="tbl-content s4-scroll-area" id="s4-scroll-area" tabindex="0">
+
+      <!-- ===== עמוד 1 — תמונה+בועה (לפי פיגמה) ===== -->
+      <section class="tbl-page s4-page-top">
+        <div class="s4-text-block">
+          <p class="s4-title">סעיף ג</p>
+          <p class="s4-body">מוריה, מנהלת המפעל מבקשת את המלצתכם:</p>
+        </div>
+        <div class="s4-bubble s4-bubble--tail-right">
+          <p>תוכלו בבקשה להמליץ לי כמה מדידות לבצע לכל תליון כדי להשיג איזון בין דיוק מדעי והשקעת זמן במדידות?</p>
+        </div>
+        <img class="s4-img-placeholder" src="assets/images/screen05-woman-setting.jpg" alt="מוריה, מנהלת המפעל">
+      </section>
+
+      <!-- ===== עמוד 2 — שאלת גרירה: השלמת המלצה למוריה ===== -->
+      <section class="tbl-page s4-page-two">
+        <div class="s4-dq-content">
+          <p class="scq-qtitle">סעיף ג</p>
+          <p class="dq-instruction-bold">השלימו את ההמלצה למוריה בעזרת המילים המתאימות:</p>
+
+          <p class="dq-sentence-text">
+            לאחר שבחנו את תוצאות המדידות, אנו ממליצים לבצע
+            <span class="dq-snt-drop" id="s4-target-1" ondragover="s4DragOver(event,'s4-target-1')" ondragenter="s4DragEnter(event,'s4-target-1')" ondragleave="s4DragLeave(event,'s4-target-1')" ondrop="s4Drop(event,'s4-target-1')"></span>
+            מדידות לכל תליון.<br>
+            במדע אין "מספר קסם" קבוע של חזרות, אלא בחירה לבצע את מספר המדידות הדרוש עד שה-<span class="dq-snt-drop" id="s4-target-2" ondragover="s4DragOver(event,'s4-target-2')" ondragenter="s4DragEnter(event,'s4-target-2')" ondragleave="s4DragLeave(event,'s4-target-2')" ondrop="s4Drop(event,'s4-target-2')"></span>
+            כבר
+            <span class="dq-snt-drop" id="s4-target-3" ondragover="s4DragOver(event,'s4-target-3')" ondragenter="s4DragEnter(event,'s4-target-3')" ondragleave="s4DragLeave(event,'s4-target-3')" ondrop="s4Drop(event,'s4-target-3')"></span>.<br>
+            בנתונים שראינו, ביצוע
+            <span class="dq-snt-drop" id="s4-target-4" ondragover="s4DragOver(event,'s4-target-4')" ondragenter="s4DragEnter(event,'s4-target-4')" ondragleave="s4DragLeave(event,'s4-target-4')" ondrop="s4Drop(event,'s4-target-4')"></span>
+            מדידות בלבד עדיין לא הראה יציבות מספקת, ולכן נדרשה מדידה נוספת כדי להפחית את ה-<span class="dq-snt-drop" id="s4-target-5" ondragover="s4DragOver(event,'s4-target-5')" ondragenter="s4DragEnter(event,'s4-target-5')" ondragleave="s4DragLeave(event,'s4-target-5')" ondrop="s4Drop(event,'s4-target-5')"></span>
+            ולקבל תוצאה
+            <span class="dq-snt-drop" id="s4-target-6" ondragover="s4DragOver(event,'s4-target-6')" ondragenter="s4DragEnter(event,'s4-target-6')" ondragleave="s4DragLeave(event,'s4-target-6')" ondrop="s4Drop(event,'s4-target-6')"></span>.
+          </p>
+
+          <div class="dq-word-bank" id="s4-word-bank" ondragover="event.preventDefault()" ondrop="s4DropToBank(event)">
+            <div class="dq-source-slot" id="slot-s4-drag-4"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-3"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-memutza"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-hityatzev"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-vadaut"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-amina"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-hazarot"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-hishtana"></div>
+            <div class="dq-source-slot" id="slot-s4-drag-shguya"></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="s4-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+      <button class="scq-fb-reveal-btn" id="s4-reveal-btn" type="button" hidden onclick="s4ToggleReveal()">התשובה הנכונה</button>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s4-back" onclick="goTo(3)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s4-hint" type="button" hidden onclick="s4OpenHint()">
+            <img class="scq-hint-icon" id="s4-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s4-check" disabled onclick="s4Check()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 6 — סיום היחידה (מועד א הושלם בהצלחה מלאה) ============
+       מוצג רק אם כל 4 הסעיפים עברו בהצלחה (moedAFullyPassed()). מבנה
+       שוכפל מהתבנית המאומתת של הפרויקט הקודם (Methodica-science-mass
+       -measure-02-05, מסך הסיום שם) — .transition-content/.transition
+       -title-block/.transition-avatar-wrap. אם לא כל הסעיפים עברו,
+       הניווט (מסך 5) לא מגיע לכאן כלל — נשאר כ-TODO (חיבור לסיין הבא,
+       "מועד ב", טרם נבנה; ראו script.js והערה ב-ARCHITECTURE.md, אותה
+       מוסכמה בדיוק כמו בפרויקט הקודם: "כל סיין עצמאי בפני עצמו — חיבור
+       בין הסינים יתבצע ב-LMS בשלב מתקדם"). הוזז ממסך 5 למסך 6 כשנוסף
+       מסך 5 (סעיף ג) — ראו למעלה.
+       דמות: וידאו (MP4, לא GIF — בקשת הלקוח) בלופ, בלי קול ובלי סרגל
+       שליטה (autoplay/loop/muted/playsinline, בלי controls) — "ריקוד
+       + קונפטי" לפי הערת המפיק בשקף. נבחר דינמית לפי
+       window.lomdaState.selectedCharacter (Companion character system),
+       אותה מוסכמה בדיוק כמו כל דמות מלווה אחרת בפרויקט — ראו
+       resolveCharBubbleVideo()/S5_AVATAR_ASSETS ב-script.js. -->
+  <section class="screen" data-screen="5" id="s5">
+    <div class="transition-content">
+      <div class="transition-title-block">
+        <h2 class="transition-title">כל הכבוד!<br>השלמת את היחידה בהצלחה!</h2>
+      </div>
+      <div class="transition-avatar-wrap">
+        <video class="transition-avatar" id="s5-avatar-video" autoplay loop muted playsinline disablepictureinpicture preload="auto" aria-label="דמות מלווה"></video>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s5-back" onclick="goTo(4)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s5-finish" onclick="s5Finish()">סיימתי</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- פופ-אפ רמז מסך 3 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s2-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">שימו לב מתי הממוצע מתחיל להתייצב במדידות שביצעתם.</p>
+      <button class="scq-hint-close" onclick="s2CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 4 — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s3-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">חשבו מה נותן ביטחון גדול יותר במדידה: תוצאה אחת בלבד, או כמה תוצאות שחוזרות על עצמן ומאפשרות לחשב ממוצע?</p>
+      <button class="scq-hint-close" onclick="s3CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- פופ-אפ רמז מסך 5 (סעיף ג) — מחוץ ל-.screen, ישירות ב-#app -->
+  <div id="s4-hint-overlay" class="scq-hint-overlay" hidden>
+    <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
+      <div class="scq-hint-title-row">
+        <p class="scq-hint-title">רמז</p>
+        <img class="scq-hint-bulb" src="assets/images/icon-idea-white-lg.svg" alt="">
+      </div>
+      <p class="scq-hint-body">חפשו בטבלה מתי הממוצע מפסיק להשתנות בצורה משמעותית. חשבו גם מה מוסיפה מדידה נוספת כאשר שלוש המדידות הראשונות עדיין לא נותנות תוצאה יציבה מספיק.</p>
+      <button class="scq-hint-close" onclick="s4CloseHint()">חזרה לשאלה</button>
+    </div>
+  </div>
+
+  <!-- כפתור "מצאתם בעיה?" — רכיב גלובלי יחיד, מחוץ לכל .screen,
+       ישירות ב-#app, לפי 720-templates skill (_global-components.md) -->
+  <button class="flag-btn" aria-label="מצאתם בעיה?" title="מצאתם בעיה?">
+    <span class="flag-btn-icon" aria-hidden="true">
+      <img class="flag-btn-icon-default" src="assets/images/btn-flag-default.png" alt="">
+      <img class="flag-btn-icon-hover" src="assets/images/btn-flag-hover.png" alt="">
+    </span>
+    <span class="flag-btn-label">מצאתם בעיה?</span>
+  </button>
+
+  <!-- הגדלת תמונה (img-zoom) — רכיב גלובלי יחיד, מחוץ לכל .screen,
+       ישירות ב-#app, לפי מפרט 720-templates _global-components.md -->
+  <div id="img-zoom-modal" class="img-zoom-modal hidden" aria-hidden="true" data-zoom-close="true">
+    <div class="img-zoom-modal__panel" role="dialog" aria-modal="true" aria-label="הגדלת תמונה">
+      <button class="img-zoom-close" type="button" data-zoom-close="true" aria-label="סגירת הגדלת תמונה">
+        <svg class="img-zoom-close__icon" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L14 14M14 1L1 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="img-zoom-modal__stage"></div>
+    </div>
+  </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>

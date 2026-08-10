@@ -1,0 +1,2 @@
+192430 bytes written to file C:/Users/user/OneDrive - methodic.co.il/קבצי עבודה/720 מדעים/methodica-science-mass-measure-03/methodica-science-mass-measure-03-06/_shot.png
+[25216:48488:0721/143608.779:ERROR:components\sync\engine\get_updates_processor.cc:424] PostClientToServerMessage() failed during GetUpdates with error Network error (ERR_ABORTED)

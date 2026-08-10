@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEV — סימולציית מאזניים דיגיטליים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; min-height: 100%;
+    background: #d9d7d0; color: #2c2c2c;
+    font-family: 'Assistant', Arial, sans-serif;
+  }
+
+  #page {
+    min-height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 28px 24px 130px;
+  }
+
+  #dims-label {
+    font-family: monospace; font-size: 12px; color: #666; margin-bottom: 10px;
+  }
+
+  /* מסגרת "לחיווי בלבד" סביב הקופסה — כדי שיהיה אפשר לראות בבירור את
+     הגבול המדויק של 427×636 (מידות .dq-sim-placeholder בפועל
+     ב-index.html/styles.css). המסגרת עצמה אינה חלק מהיישומון. */
+  #placeholder-frame {
+    outline: 2px dashed #b0aea5; outline-offset: 3px;
+  }
+
+  /* ==== היישומון עצמו — בדיוק 427×636, כמו .dq-sim-placeholder ==== */
+  #widget {
+    position: relative;
+    width: 427px; height: 636px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .scale-station { position: absolute; width: 190px; height: 150px; }
+  #stationReg  { left: 18px;  top: 330px; }
+  #stationSens { left: 219px; top: 330px; }
+
+  .scale-imgwrap { position: relative; width: 100%; height: 100%; }
+  .scale-img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+
+  .lcd {
+    position: absolute; transform: translate(-50%, -50%);
+    background: #1560d6; color: #eaf3ff; direction: ltr;
+    display: flex; align-items: center; gap: 3px;
+    padding: 3px 7px; border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px; line-height: 1;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.35);
+    border: 1px solid rgba(0,0,0,.3); white-space: nowrap; z-index: 3; user-select: none;
+  }
+  .lcd-val { flex: 1; text-align: right; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+  .lcd-unit { font-size: .62em; opacity: .8; }
+
+  #lcdReg  { top: 68%; left: 40%; width: 37%; }
+  #lcdSens { top: 60%; left: 50%; width: 49%; }
+
+  .scale-label { position: absolute; top: 158px; width: 100%; text-align: center; font-size: 13px; font-weight: 600; color: #333; }
+  .scale-res   { position: absolute; top: 178px; width: 100%; text-align: center; font-size: 11px; color: #8a8a8a; }
+
+  #goldBlock {
+    position: absolute; left: 0; top: 0;
+    width: 150px; height: 115px;
+    cursor: grab; touch-action: none; user-select: none;
+    z-index: 6; transition: transform .3s cubic-bezier(.22,1,.36,1);
+    filter: drop-shadow(0 8px 12px rgba(0,0,0,.3));
+    border-radius: 8px;
+    /* עוגן עליון (לא מרכז) — כשה"משקל" מתכווץ בזמן מנוחה על מאזניים,
+       הקצה העליון (שמונח על משטח השקילה) נשאר קבוע, וההתכווצות "אוכלת"
+       רק מהתחתית, כך שהגוש לא מכסה את מסך ה-LCD מתחתיו. */
+    transform-origin: 50% 0%;
+  }
+  #goldBlock.dragging { cursor: grabbing; transition: none; }
+  #goldBlock img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
+
+  #dev-panel {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.92); border-top: 2px solid #ffe600;
+    color: #fff; font-family: monospace; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; gap: 28px;
+    padding: 10px 16px; z-index: 20;
+  }
+  #dev-panel .dp-label { color: #ffe600; font-weight: 700; letter-spacing: .5px; }
+  #dev-panel .dp-val { color: #ddd; }
+  #dev-panel button {
+    background: transparent; border: 1px solid #ffe600; color: #ffe600;
+    border-radius: 6px; padding: 5px 14px; cursor: pointer; font-size: 13px; font-family: monospace;
+  }
+  #dev-panel button:hover { background: #ffe600; color: #000; }
+</style>
+</head>
+<body>
+
+<div id="page">
+  <div id="dims-label">427 × 636 — גודל .dq-sim-placeholder בפועל (מסך 6/7)</div>
+  <div id="placeholder-frame">
+    <div id="widget">
+
+      <div class="scale-station" id="stationReg">
+        <div class="scale-imgwrap">
+          <img class="scale-img" src="assets/scale-regular.png" alt="מאזניים רגילים">
+          <div class="lcd" id="lcdReg"><span class="lcd-val" id="lcdRegVal">0.0</span><span class="lcd-unit">g</span></div>
+        </div>
+        <div class="scale-label">מאזניים רגילים</div>
+        <div class="scale-res">קריאות: <span id="lcdRegRes">0.1</span> גרם</div>
+      </div>
+
+      <div class="scale-station" id="stationSens">
+        <div class="scale-imgwrap">
+          <img class="scale-img" src="assets/scale-sensitive.png" alt="מאזניים רגישים">
+          <div class="lcd" id="lcdSens"><span class="lcd-val" id="lcdSensVal">0.00</span><span class="lcd-unit">g</span></div>
+        </div>
+        <div class="scale-label">מאזניים רגישים</div>
+        <div class="scale-res">קריאות: <span id="lcdSensRes">0.01</span> גרם</div>
+      </div>
+
+      <div id="goldBlock">
+        <img src="assets/gold-block.png" alt="גוש זהב לשקילה" draggable="false">
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="dev-panel">
+  <span class="dp-label">DEV</span>
+  <span class="dp-val">רגילים: <b id="dpReg">0.0</b> ג'</span>
+  <span class="dp-val">רגישים: <b id="dpSens">0.00</b> ג'</span>
+  <button id="btnReset" type="button">איפוס</button>
+</div>
+
+<script>
+'use strict';
+
+// שקף 10 (תסריט): מאזניים רגילים 9.9 גרם, מאזניים רגישים 10.00 גרם — הפרש 0.1 גרם.
+const REG_TARGET  = 9.9;
+const SENS_TARGET = 10;
+const REG_DECIMALS  = 1;
+const SENS_DECIMALS = 2;
+
+const BLOCK = { w: 150, h: 115 };
+const STATIONS = {
+  reg:  { left: 18,  top: 330, w: 190, h: 150 },
+  sens: { left: 219, top: 330, w: 190, h: 150 }
+};
+const BLOCK_IDLE = { x: (427 - BLOCK.w) / 2, y: 105 };
+
+const goldEl   = document.getElementById('goldBlock');
+const lcdRegVal  = document.getElementById('lcdRegVal');
+const lcdSensVal = document.getElementById('lcdSensVal');
+const dpReg  = document.getElementById('dpReg');
+const dpSens = document.getElementById('dpSens');
+
+// Preload assets so the very first placement has no decode delay.
+['assets/scale-regular.png', 'assets/scale-sensitive.png', 'assets/gold-block.png'].forEach((src) => {
+  const img = new Image();
+  img.src = src;
+});
+
+const state = { blockX: BLOCK_IDLE.x, blockY: BLOCK_IDLE.y, regVal: 0, sensVal: 0, placedOn: null, dragging: false };
+let animTimer = null;
+let jitterTimer = null;
+
+function cancelAnim() {
+  if (animTimer) clearTimeout(animTimer);
+  if (jitterTimer) clearTimeout(jitterTimer);
+  animTimer = null; jitterTimer = null;
+}
+
+function restFor(scale) {
+  const s = STATIONS[scale];
+  return { x: s.left + s.w / 2 - BLOCK.w / 2, y: s.top + 8 };
+}
+
+// כשמונח על מאזניים — הגוש מצטמצם (מעוגן מלמעלה, ראו transform-origin
+// ב-CSS) כדי לשבת על משטח השקילה בלי לכסות את מסך ה-LCD מתחתיו.
+const RESTING_SCALE = 0.62;
+
+function renderBlock() {
+  const scale = state.placedOn ? RESTING_SCALE : 1;
+  goldEl.style.transform = 'translate(' + state.blockX + 'px, ' + state.blockY + 'px) scale(' + scale + ')';
+  goldEl.classList.toggle('dragging', state.dragging);
+}
+
+function renderLcd() {
+  lcdRegVal.textContent  = state.regVal.toFixed(REG_DECIMALS);
+  lcdSensVal.textContent = state.sensVal.toFixed(SENS_DECIMALS);
+  dpReg.textContent  = state.regVal.toFixed(REG_DECIMALS);
+  dpSens.textContent = state.sensVal.toFixed(SENS_DECIMALS);
+}
+
+function placeOn(scale) {
+  const rest = restFor(scale);
+  state.placedOn = scale;
+  state.blockX = rest.x;
+  state.blockY = rest.y;
+  renderBlock();
+  startWeigh(scale);
+}
+
+function startWeigh(scale) {
+  cancelAnim();
+  const target = scale === 'reg' ? REG_TARGET : SENS_TARGET;
+  const other = scale === 'reg' ? 'sens' : 'reg';
+  state[other + 'Val'] = 0;
+  renderLcd();
+  const dur = 1300, t0 = Date.now();
+  function step() {
+    const prog = Math.min(1, (Date.now() - t0) / dur);
+    const eased = 1 - Math.pow(1 - prog, 3);
+    state[scale + 'Val'] = target * eased;
+    renderLcd();
+    if (prog < 1) animTimer = setTimeout(step, 30);
+    else settle(scale, target);
+  }
+  animTimer = setTimeout(step, 30);
+}
+
+// המאזניים הרגישים "מרפרפות" על הספרה האחרונה כמה פעמים לפני שמתייצבות.
+function settle(scale, target) {
+  if (scale !== 'sens') { state.regVal = target; renderLcd(); return; }
+  const res = Math.pow(10, -SENS_DECIMALS);
+  let i = 0;
+  function jitterStep() {
+    i++;
+    if (i >= 7) { state.sensVal = target; renderLcd(); return; }
+    const delta = Math.round((Math.random() - 0.5) * 2) * res;
+    state.sensVal = target + delta;
+    renderLcd();
+    jitterTimer = setTimeout(jitterStep, 110);
+  }
+  jitterTimer = setTimeout(jitterStep, 110);
+}
+
+function removeFromScale() {
+  if (!state.placedOn) return;
+  cancelAnim();
+  state.placedOn = null;
+  state.regVal = 0;
+  state.sensVal = 0;
+  renderLcd();
+}
+
+function handleDrop() {
+  const cx = state.blockX + BLOCK.w / 2, cy = state.blockY + BLOCK.h / 2;
+  const hit = (s) => cx > s.left - 30 && cx < s.left + s.w + 30 && cy > s.top - 50 && cy < s.top + s.h + 30;
+  if (hit(STATIONS.reg)) placeOn('reg');
+  else if (hit(STATIONS.sens)) placeOn('sens');
+}
+
+function onPointerDown(e) {
+  e.preventDefault();
+  const startX = e.clientX, startY = e.clientY;
+  const bx = state.blockX, by = state.blockY;
+  removeFromScale();
+  state.dragging = true;
+  renderBlock();
+  try { goldEl.setPointerCapture(e.pointerId); } catch (err) {}
+
+  function move(ev) {
+    state.blockX = bx + (ev.clientX - startX);
+    state.blockY = by + (ev.clientY - startY);
+    renderBlock();
+  }
+  function up() {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    state.dragging = false;
+    renderBlock();
+    handleDrop();
+  }
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+}
+
+goldEl.addEventListener('pointerdown', onPointerDown);
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  cancelAnim();
+  state.blockX = BLOCK_IDLE.x; state.blockY = BLOCK_IDLE.y;
+  state.regVal = 0; state.sensVal = 0; state.placedOn = null; state.dragging = false;
+  renderBlock(); renderLcd();
+});
+
+renderBlock();
+renderLcd();
+</script>
+
+</body>
+</html>
