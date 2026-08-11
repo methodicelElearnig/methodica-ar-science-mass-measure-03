@@ -270,6 +270,9 @@ img { display: block; max-width: none; }
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
+  /* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
+     ported from Sain 1, missed in this project's first pass. */
+  cursor: grab;
 }
 .tbl-content::-webkit-scrollbar { width: 8px; }
 .tbl-content::-webkit-scrollbar-track { background: rgba(201, 206, 216, 0.4); border-radius: 16px; }
@@ -290,6 +293,69 @@ img { display: block; max-width: none; }
 .tbl-th { background: #D4F3FF; border: 1px solid #D4D4D4; font-size: 18px; font-weight: 700; color: #303030; padding: 6px 12px; white-space: nowrap; }
 .tbl-td { border: 1px solid #D4D4D4; font-size: 18px; font-weight: 400; color: #303030; padding: 6px 12px; white-space: nowrap; background: #fff; }
 .tbl-table tbody tr:nth-child(even) .tbl-td { background: #D4F3FF; }
+
+/* Gesture Hint — Cursor Scroll overlay for #s2-scroll-area (SELF-QA.md §7, Figma node 2915:35184).
+   Ported from Sain 1 (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs)
+   — missed here in the first pass. Positioned as a sibling of .tbl-content using the identical box
+   (top:139px/bottom:74px) so it sits fixed over the scroll viewport instead of scrolling away with
+   page 1's content. See script.js for the show-once/hide-on-real-scroll logic
+   (s2MaybeShowScrollGesture). */
+.gesture-hint-scroll-wrap {
+  position: absolute;
+  top: 139px; left: 0; right: 0; bottom: 74px;
+  pointer-events: none;
+  z-index: 20;
+}
+.gesture-hint-scroll-wrap[hidden] { display: none; }
+.gesture-hint {
+  position: absolute;
+  left: 50%; top: 50%;
+  translate: -50% -50%;
+  width: 0; height: 0;
+  pointer-events: none;
+}
+.gesture-hint-scroll-wrap .gesture-hint { top: 62%; }
+.gesture-hint-hand,
+.gesture-hint-ring {
+  position: absolute;
+  left: 0; top: 0;
+  translate: -50% -50%;
+}
+.gesture-hint-hand { width: 28px; height: 33px; z-index: 3; }
+.gesture-hint-ring {
+  border-radius: 50%;
+  opacity: 0;
+}
+.gesture-hint-ring--small {
+  width: 12px; height: 12px;
+  border: 1.5px solid #B0DFFF;
+  z-index: 2;
+  animation: gesture-ring-small 2s infinite;
+}
+.gesture-hint-ring--big {
+  width: 64px; height: 64px;
+  background: #B0DFFF;
+  border: 2.5px solid #00BAFF;
+  z-index: 1;
+  animation: gesture-ring-big 2s infinite;
+}
+@keyframes gesture-ring-small {
+  0%   { opacity: 0;    scale: 0.2 0.2; }
+  3%   { opacity: 0.75; scale: 1   1; }
+  10%  { opacity: 0;    scale: 1.1 1.1; }
+  100% { opacity: 0;    scale: 1.1 1.1; }
+}
+@keyframes gesture-ring-big {
+  0%    { opacity: 0;    scale: 0.05 0.05; }
+  5%    { opacity: 0.85; }
+  7.5%  {                scale: 0.22 0.22; }
+  22.5% {                scale: 0.6  0.6; }
+  35%   { opacity: 0.65; }
+  37.5% {                scale: 0.85 0.85; }
+  45%   { opacity: 0.35; }
+  50%   { opacity: 0;    scale: 1 1; }
+  100%  { opacity: 0;    scale: 1 1; }
+}
 
 /* ════════════════════════════════════════════════════════
    מסך 4 — TrueFalseQuestion (4 טענות), הועתק ממסך 5 של

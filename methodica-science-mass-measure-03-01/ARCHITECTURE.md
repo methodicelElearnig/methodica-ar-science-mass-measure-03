@@ -161,10 +161,7 @@ node `408:4889` ("Video - state 01 - video start") — **לא** לומדת מק�
       <!-- מסך 4 בלבד: <p class="video-intro-subtitle">…</p> -->
     </div>
     <div class="video-player-wrap">
-      <div class="video-player-bg"></div>
-      <button class="video-play-btn" type="button" aria-label="הפעל סרטון">
-        <svg width="56" height="56" viewBox="0 0 56 56">…circle+triangle…</svg>
-      </button>
+      <div id="s1-yt-player"></div> <!-- YouTube IFrame Player API מחליף את זה ל-iframe -->
     </div>
   </div>
   <div class="char-bubble-wrap">
@@ -204,6 +201,12 @@ Figma node `408:5243` ("content Flip Cards") הוא ה-sub-node שמכיל גם 
    וידאו. ברגע שיסופק קובץ, יש לחבר: `s4Start()`-style handler שמחליף
    ל-playing state + `ended` listener שמפעיל את הכפתור, לפי המוסכמה
    הכללית ב-`figma-lomda-builder` ("Video gating").
+   ✅ **עודכן (2026-08-11):** הווידאו סופק כקישור YouTube (לא כקובץ
+   מקומי) — הוחלט להטמיע דרך YouTube IFrame Player API במקום `<video>`
+   מקומי. `.video-player-bg`/`.video-play-btn` הוסרו לגמרי (ה-iframe של
+   YouTube מגיע עם ה-thumbnail/play button המובנים שלו). ה-gating עצמו
+   מבוסס על `onStateChange` === `YT.PlayerState.ENDED` במקום `ended`
+   של `<video>` — ראו `VIDEO_INTRO_PLAYERS` ב-`script.js`.
 5. **דמות מלווה + בועת דיבור — נוספו ממקור Figma שני** (סופק בהמשך): קובץ
    "לומדת התנסות" (fileKey `Z9sD0kksYj1Ph1kUcs71sw`), node `2291:11788` —
    קומפוננטה מבודדת (בועה עם זנב + תמונת דמות, בלי קואורדינטות עמוד
@@ -240,10 +243,8 @@ disabled כצפוי (תואם ל-Figma), כפתורי חזרה עובדים (מ�
 ### פערים פתוחים שנותרו
 - **`.flag-btn`** — קונפליקט מיקום מול ה-Figma הספציפי הזה (32/32 מול
   16/16 הגלובלי) עדיין לא הוכרע.
-- **וידאו** — עדיין אין קובץ; המשתמשת תטמיע בהמשך ל-`assets/videos/`.
-  יש לחבר או ב-`<video>` אמיתי + `ended` listener שמפעיל את `.btn-continue`
-  (per תסריט ההפקה: "כפתור המשך פעיל רק אחרי ניגון הסרטון"), במקום
-  ה-`.video-player-bg`/`.video-play-btn` הסטטיים הנוכחיים.
+- **וידאו** — ✅ סגור (2026-08-11). סופק כקישור YouTube ומוטמע דרך
+  YouTube IFrame Player API, ראו סעיף 4 למעלה.
 
 ## מסך 3 — SingleChoiceQuestion, בלי תמונה
 
@@ -893,6 +894,54 @@ Playwright: ניתוב gold→מסך6/medicine→מסך7, אין `.btn-hint` ב�
     תקינה (`s16GoToPage(1)`), גרירה (מדומה דרך DragEvent) למילוי 3
     המשבצות, בדיקה נכונה, עדכון qnav (התקדמות ל"שאלה 3"), זרימה מלאה
     14→15→16→17 ברצף אמיתי, ללא שגיאות JS.
+
+    ✅ **עודכן (2026-08-11):** `#s16-scroll-area` הוא מסך הגלילה **היחיד**
+    בפרויקט שבודק בפועל (`scrollHeight > clientHeight`, נמדד ב-Playwright
+    — `.dq-question-panel`/`.s13-content`/`.s15-content` יש להם
+    `overflow-y:auto` הגנתי אבל התוכן שלהם תמיד נכנס בלי גלילה בפועל, כך
+    שלא נוסף להם שום דבר). לכן הוטמע כאן, ורק כאן, ה-Gesture Hint "Cursor
+    Scroll" מ-`SELF-QA.md` §7 (Figma node `2915:35184`) — אייקון יד אמיתי
+    שהורד מ-Figma (`assets/images/gesture-hand-cursor.svg`) + שתי טבעות
+    ripple שמונפשות ב-CSS (`.gesture-hint-scroll-wrap`, `keyframes
+    gesture-ring-small/big`, זהה לתיעוד ב-SELF-QA). ה-wrap הוא sibling של
+    `.tbl-content` (לא child) כדי שיישאר קבוע על המסך בלי להיגלל יחד עם
+    התוכן, ומקונן בתוך `#s16` עצמו (לא מודבק ל-`#app`) כך שניקוי המסך
+    הרגיל של `goTo()` (`.screen{display:none}`) מסלק אותו אוטומטית בלי
+    "sweep" נפרד. לוגיקה: `s16MaybeShowScrollGesture()` ב-`script.js` —
+    מוצג פעם אחת לכל כניסה למסך (לא נטען מחדש בביקור חוזר תוך אותה טעינת
+    עמוד), ונעלם ברגע ניסיון גלילה אמיתי (`wheel`/מקלדת, אותם אירועים
+    בדיוק ש-`s16InitScrollJump` כבר מאזין להם). נוסף גם `cursor: grab`
+    ל-`.tbl-content` לפי כלל ה-"עכבר בצורת יד" של אותו סעיף. אומת
+    ב-Playwright: מוצג בכניסה ראשונה, נעלם אחרי `wheel`, לא חוזר בביקור
+    שני, אין שגיאות JS.
+
+    ✅ **עודכן (2026-08-11):** בנוסף ל-Cursor Scroll, הוטמע גם ה-Gesture
+    Hint "Cursor Drag" מ-`SELF-QA.md` §7 (Figma node `2915:35185`) —
+    **בכל שלושת מסכי הגרירה בפרויקט**, לא רק כאן: מסך 12 (`dq11`/`s11`),
+    עמוד 2 של המסך הזה (`dq16`/`s16`), ומסך 18 (`s17`, קוד DnD מקורי).
+    אייקון היד זהה לזה של Cursor Scroll (אותו asset,
+    `gesture-hand-cursor.svg` — לפי SELF-QA, זהה בין שלושת סוגי המחוות);
+    טבעת ה-ripple שונה: "blob" מעוגל 42×43 (לא מעגל מושלם — אסף אמיתי
+    שהורד מ-Figma, `gesture-ring-drag-big.svg`) בצבעי `#B9ECFF`/`#00BAFF`
+    (לא `#B0DFFF` של Scroll/Click). הערה: SELF-QA.md מתעד שהצבעים האלה
+    אמורים לתאום ל-`--subject-300`/`--subject-400` בפרויקט שבו נכתב
+    המסמך — **בפרויקט הזה טוקנים כאלה לא קיימים** (יש רק `--subject-500`/
+    `-700`), אז הצבעים הוזנו ישירות ב-CSS ולא כ-var() שלא קיים.
+    **לוגיקה משותפת אחת** (`showDragGestureHint(slotEl)` ב-`script.js`)
+    משרתת את כל שלושת המסכים: "האלמנט הראשון הניתן לגרירה" (לא Object
+    key סתמי — סדר ה-DOM בפועל, ראו הערה בקוד למה `S17_ITEM_IDS[0]` היה
+    שגוי עבור מסך 18); "פעם אחת למסך" נשמר כ-`dataset.gestureShown` על
+    ה-slot עצמו (שורד רינדור מחדש של הקלף הפנימי); נעלם באירוע
+    `dragstart` **וגם** `click` (מסך 18 תומך בהצבה בלחיצה כחלופה לגרירה
+    דרך `s17ItemClick`, אז גם זו "תחילת הפעולה המודגמת"). תוקן גם חוסר
+    ב-`pointer-events` ב-`.gesture-hint` הגנרי (היה רק על ה-wrap הספציפי
+    ל-Scroll) — בלעדיו אייקון היד/הטבעות שממוקמים ישירות בתוך ה-slot
+    היו יכולים לחטוף את אירוע ה-drag/click במקום הקלף שמתחתיהם. אומת
+    ב-Playwright בשלושת המסכים: המחווה מופיעה על האלמנט הראשון הנכון,
+    נעלמת מיד עם `dragstart` מדומה, ובמסך 17 גם עם `click`; אומת גם
+    שזרימת גלילה→גרירה אמיתית (wheel אמיתי, לא קפיצה תכנותית ל-
+    `s16GoToPage`) מציגה מחווה אחת בכל רגע נתון — ה-Scroll נעלם *לפני*
+    שה-Drag נחשף, לא שתיהן בו-זמנית.
 21. מסך 18 (`data-screen="17"`, `id="s17"`) — שאלה 3 מתוך 6: DragAndDropQuestion
     "התאמת טקסט לתמונה" — **לא** `makeDragQuestion` factory (המשמש למסכים
     12/17) כי הצורה שונה (התאמת פריטים לאזורים, לא מילוי-חוסר-במשפט) —

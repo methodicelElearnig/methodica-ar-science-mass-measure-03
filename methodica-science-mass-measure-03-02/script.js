@@ -67,12 +67,31 @@ function resetScreenState(n) {
 /* =========================================================
    פונקציית עזר גלובלית — Companion character system
    (720-templates skill: _global-components.md). זהה 1:1 לזו שבסיין 1.
+   עודכן (2026-08-11): תומכת גם ב-<video> (לפי tagName בפועל) — מסכים 1+5
+   הוחלפו מתמונה סטטית לווידאו בלולאה/מושתק, ראו preloadVideo() למטה.
    ========================================================= */
+function preloadVideo(src) {
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'video';
+  link.href = src;
+  document.head.appendChild(link);
+}
+
 function resolveCharBubbleImg(imgId, assetMap) {
-  const img = document.getElementById(imgId);
-  if (!img) return;
+  const el = document.getElementById(imgId);
+  if (!el) return;
   const char = window.lomdaState.selectedCharacter;
-  img.src = (char && assetMap[char]) ? assetMap[char] : '';
+  const src = (char && assetMap[char]) ? assetMap[char] : '';
+  if (el.tagName === 'VIDEO') {
+    if (el.getAttribute('src') !== src) {
+      if (src) el.setAttribute('src', src); else el.removeAttribute('src');
+      el.load();
+    }
+    el.play().catch(function () {});
+  } else {
+    el.src = src;
+  }
 }
 
 /* =========================================================
@@ -86,11 +105,11 @@ function resolveCharBubbleImg(imgId, assetMap) {
    ========================================================= */
 
 const S0_AVATAR_ASSETS = {
-  pink: 'assets/images/pink-avatar-come-on.png',
-  boy: 'assets/images/boy-avatar-come-on.png'
+  pink: 'assets/videos/pink-avatar-come-on.mp4',
+  boy: 'assets/videos/boy-avatar-come-on.mp4'
 };
-new Image().src = S0_AVATAR_ASSETS.pink;
-new Image().src = S0_AVATAR_ASSETS.boy;
+preloadVideo(S0_AVATAR_ASSETS.pink);
+preloadVideo(S0_AVATAR_ASSETS.boy);
 
 function resetScreenState0() {
   resolveCharBubbleImg('s0-avatar-img', S0_AVATAR_ASSETS);
@@ -657,11 +676,11 @@ document.querySelectorAll('#s3 .scq-opt').forEach(function (opt) {
    ========================================================= */
 
 const S4_AVATAR_ASSETS = {
-  pink: 'assets/images/pink-avatar-holds-weight.png',
-  boy: 'assets/images/boy-avatar-hold-golds.png'
+  pink: 'assets/videos/pink-avatar-holds-weight.mp4',
+  boy: 'assets/videos/boy-avatar-hold-golds.mp4'
 };
-new Image().src = S4_AVATAR_ASSETS.pink;
-new Image().src = S4_AVATAR_ASSETS.boy;
+preloadVideo(S4_AVATAR_ASSETS.pink);
+preloadVideo(S4_AVATAR_ASSETS.boy);
 
 function resetScreenState4() {
   resolveCharBubbleImg('s4-avatar-img', S4_AVATAR_ASSETS);

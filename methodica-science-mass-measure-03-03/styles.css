@@ -491,7 +491,13 @@ img { display: block; max-width: none; }
   border-right: 8px solid transparent;
   border-top: 10px solid #fff;
 }
-.char-bubble-avatar img { width: 300px; height: auto; object-fit: contain; }
+.char-bubble-avatar img,
+.char-bubble-avatar video { width: 300px; height: auto; object-fit: contain; }
+/* עודכן (2026-08-11): אותו תיקון כמו בסיין 1 — וידאו 1280×720 עם
+   height:auto התכווץ לקופסה רחבה-נמוכה ריקה מתוכן; קופסה מרובעת קבועה +
+   object-fit:cover ממלאת אותה במלואה, חיתוך אופקי בלבד (לא יכול לגלוש
+   מעבר לגבולות עצמו). */
+.char-bubble-avatar video { height: 300px; object-fit: cover; }
 
 /* ════════════════════════════════════════════════════════
    מסך 3 — שאלת גרירה (DragAndDropQuestion), makeDragQuestion factory
@@ -567,7 +573,7 @@ img { display: block; max-width: none; }
   display: flex; flex-wrap: wrap; gap: 10px; width: 100%;
   direction: rtl; flex-shrink: 0; padding: 8px 0; align-content: flex-start;
 }
-.dq-source-slot { display: inline-flex; align-items: center; }
+.dq-source-slot { display: inline-flex; align-items: center; position: relative; }
 .dq-drag-card {
   background: #fff; border: 1.5px solid #ececec; border-radius: 10px;
   font-size: 24px; font-weight: 400; color: #303030;
@@ -579,5 +585,60 @@ img { display: block; max-width: none; }
 .dq-drag-card.dragging { opacity: 0.38; }
 .dq-drag-card.ghost { color: transparent; background: #f3f4f5; border: 1px solid rgba(174,174,174,0.3); pointer-events: none; }
 .dq-drag-card.locked { cursor: default; }
+
+/* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
+   (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs). Hand icon +
+   ripple rings, 2s keyframe loop; only the rings animate, never the hand. Mounted directly inside
+   the first .dq-source-slot (position:relative, see above) by showDragGestureHint() in script.js. */
+.gesture-hint {
+  position: absolute;
+  left: 50%; top: 50%;
+  translate: -50% -50%;
+  width: 0; height: 0;
+  pointer-events: none;
+}
+.gesture-hint-hand,
+.gesture-hint-ring {
+  position: absolute;
+  left: 0; top: 0;
+  translate: -50% -50%;
+}
+.gesture-hint-hand { width: 28px; height: 33px; z-index: 3; }
+.gesture-hint-ring {
+  border-radius: 50%;
+  opacity: 0;
+}
+@keyframes gesture-ring-small {
+  0%   { opacity: 0;    scale: 0.2 0.2; }
+  3%   { opacity: 0.75; scale: 1   1; }
+  10%  { opacity: 0;    scale: 1.1 1.1; }
+  100% { opacity: 0;    scale: 1.1 1.1; }
+}
+@keyframes gesture-ring-big {
+  0%    { opacity: 0;    scale: 0.05 0.05; }
+  5%    { opacity: 0.85; }
+  7.5%  {                scale: 0.22 0.22; }
+  22.5% {                scale: 0.6  0.6; }
+  35%   { opacity: 0.65; }
+  37.5% {                scale: 0.85 0.85; }
+  45%   { opacity: 0.35; }
+  50%   { opacity: 0;    scale: 1 1; }
+  100%  { opacity: 0;    scale: 1 1; }
+}
+.gesture-hint-ring--drag-big {
+  width: 42px; height: 43px;
+  background-image: url('assets/images/gesture-ring-drag-big.svg');
+  background-size: contain;
+  animation-name: gesture-ring-big;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+.gesture-hint-ring--drag-small {
+  width: 8px; height: 8px;
+  border: 1.5px solid #B9ECFF;
+  animation-name: gesture-ring-small;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
 
 .scq-fb-box.dq-feedbox-pos { left: 341px; bottom: 87px; width: 400px; }

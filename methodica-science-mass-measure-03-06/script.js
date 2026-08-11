@@ -191,11 +191,31 @@ function s1SyncBar(n) {
   }
 }
 
+/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1, missed here in the first pass.
+   Shown once per screen visit, hidden the instant a real scroll is attempted (wheel/keydown). */
+let s1ScrollGestureShown = false;
+function s1MaybeShowScrollGesture() {
+  if (s1ScrollGestureShown) return;
+  s1ScrollGestureShown = true;
+  const gesture = document.getElementById('s1-scroll-gesture');
+  const scrollArea = document.getElementById('s6-scroll-area');
+  if (!gesture || !scrollArea) return;
+  gesture.hidden = false;
+  function dismiss() {
+    gesture.hidden = true;
+    scrollArea.removeEventListener('wheel', dismiss);
+    scrollArea.removeEventListener('keydown', dismiss);
+  }
+  scrollArea.addEventListener('wheel', dismiss);
+  scrollArea.addEventListener('keydown', dismiss);
+}
+
 function resetScreenState1() {
   const scrollArea = document.getElementById('s6-scroll-area');
   if (scrollArea) scrollArea.scrollTop = 0;
   s1CurrentPage = 0;
   s1InitScrollJump();
+  s1MaybeShowScrollGesture();
   s1SyncBar(0);
 }
 
@@ -430,6 +450,32 @@ function s6bSyncBar() {
    שכבר קיימת בסינים 3+5). הסעיף האחרון של מועד ב' — בסיומו נבדקת
    moedBFullyPassed() והניתוב בהתאם.
    ========================================================= */
+
+/* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
+   (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in
+   the first pass. One hint for the *first* draggable element only. `slotEl` must already be
+   `position:relative` (see .dq-source-slot). Uses `slotEl.dataset.gestureShown` (lives on the
+   slot's own stable DOM node, survives the inner draggable card being recreated on every render()).
+   Dismissal listens on the slot (not the card) because drag events bubble and the card gets
+   replaced on re-render. */
+function showDragGestureHint(slotEl) {
+  if (!slotEl || slotEl.dataset.gestureShown) return;
+  slotEl.dataset.gestureShown = 'true';
+  const hint = document.createElement('div');
+  hint.className = 'gesture-hint';
+  hint.innerHTML =
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-big"></div>' +
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
+    '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
+  slotEl.appendChild(hint);
+  function dismiss() {
+    hint.remove();
+    slotEl.removeEventListener('dragstart', dismiss);
+    slotEl.removeEventListener('click', dismiss);
+  }
+  slotEl.addEventListener('dragstart', dismiss);
+  slotEl.addEventListener('click', dismiss);
+}
 
 function makeDragQuestion(cfg) {
   const labels = cfg.labels;
@@ -735,6 +781,7 @@ function makeDragQuestion(cfg) {
     if (done) restoreFinal();
     else if (!hasProgress) resetInitial();
     else { const btn = document.getElementById(cfg.checkBtnId); if (btn) btn.hidden = false; render(); }
+    showDragGestureHint(document.getElementById('slot-' + dragIds[0]));
   }
 
   window[cfg.prefix + 'DragOver'] = dragOver;

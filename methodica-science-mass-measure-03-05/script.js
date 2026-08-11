@@ -191,8 +191,29 @@ function s1FinishWeighing() {
 
 function s1Continue() { goTo(2); }
 
+/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1 (methodica-science-mass-measure-
+   03-01, which this family's SELF-QA.md governs) — missed here in the first pass. Shown once per
+   screen visit, hidden the instant a real scroll is attempted (wheel/keydown). */
+let s1ScrollGestureShown = false;
+function s1MaybeShowScrollGesture() {
+  if (s1ScrollGestureShown) return;
+  s1ScrollGestureShown = true;
+  const gesture = document.getElementById('s1-scroll-gesture');
+  const scrollArea = document.getElementById('s1-scroll-area');
+  if (!gesture || !scrollArea) return;
+  gesture.hidden = false;
+  function dismiss() {
+    gesture.hidden = true;
+    scrollArea.removeEventListener('wheel', dismiss);
+    scrollArea.removeEventListener('keydown', dismiss);
+  }
+  scrollArea.addEventListener('wheel', dismiss);
+  scrollArea.addEventListener('keydown', dismiss);
+}
+
 function resetScreenState1() {
   if (s1Finished) return; // resume-state guard — הושלם כבר, לא מאפסים
+  s1MaybeShowScrollGesture();
   s1RowCount = 1;
   const tbody = document.getElementById('s1-table-body');
   tbody.innerHTML =
@@ -709,6 +730,32 @@ function s4InitScrollJump() {
   });
 }
 
+/* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
+   (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in
+   the first pass. One hint for the *first* draggable element only. `slotEl` must already be
+   `position:relative` (see .dq-source-slot). Uses `slotEl.dataset.gestureShown` (lives on the
+   slot's own stable DOM node, survives the inner draggable card being recreated on every render()).
+   Dismissal listens on the slot (not the card) because drag events bubble and the card gets
+   replaced on re-render. */
+function showDragGestureHint(slotEl) {
+  if (!slotEl || slotEl.dataset.gestureShown) return;
+  slotEl.dataset.gestureShown = 'true';
+  const hint = document.createElement('div');
+  hint.className = 'gesture-hint';
+  hint.innerHTML =
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-big"></div>' +
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
+    '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
+  slotEl.appendChild(hint);
+  function dismiss() {
+    hint.remove();
+    slotEl.removeEventListener('dragstart', dismiss);
+    slotEl.removeEventListener('click', dismiss);
+  }
+  slotEl.addEventListener('dragstart', dismiss);
+  slotEl.addEventListener('click', dismiss);
+}
+
 /* makeDragQuestion factory — זהה 1:1 לזו שבסיין 3 (maxAttempts+onResult) */
 function makeDragQuestion(cfg) {
   const labels = cfg.labels;
@@ -1034,6 +1081,7 @@ function makeDragQuestion(cfg) {
     const hasProgress = attempts > 0 || Object.values(placement).some(function (v) { return v !== 'source'; });
     if (done) restoreFinal();
     else if (!hasProgress) resetInitial();
+    showDragGestureHint(document.getElementById('slot-' + dragIds[0]));
   }
 
   window[cfg.prefix + 'DragOver'] = dragOver;
@@ -1114,9 +1162,32 @@ const dqSectionG = makeDragQuestion({
   texts: TEXTS_S4_DQ
 });
 
+/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1, missed here in the first pass.
+   Shown once per screen visit, hidden the instant a real scroll is attempted (wheel/keydown). Only
+   visible on page 1 (the image+bubble page) — dqSectionG.reset()'s own showDragGestureHint() call
+   covers page 2's drag question separately, so the two never show at once in practice (page 2's
+   hint is mounted inside the word bank, off-screen until the learner scrolls there). */
+let s4ScrollGestureShown = false;
+function s4MaybeShowScrollGesture() {
+  if (s4ScrollGestureShown) return;
+  s4ScrollGestureShown = true;
+  const gesture = document.getElementById('s4-scroll-gesture');
+  const scrollArea = document.getElementById('s4-scroll-area');
+  if (!gesture || !scrollArea) return;
+  gesture.hidden = false;
+  function dismiss() {
+    gesture.hidden = true;
+    scrollArea.removeEventListener('wheel', dismiss);
+    scrollArea.removeEventListener('keydown', dismiss);
+  }
+  scrollArea.addEventListener('wheel', dismiss);
+  scrollArea.addEventListener('keydown', dismiss);
+}
+
 function resetScreenState4() {
   dqSectionG.reset();
   s4InitScrollJump();
+  s4MaybeShowScrollGesture();
   const scrollArea = document.getElementById('s4-scroll-area');
   if (scrollArea) scrollArea.scrollTop = 0;
   s4CurrentPage = 0;

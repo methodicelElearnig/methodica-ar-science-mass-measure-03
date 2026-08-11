@@ -223,6 +223,20 @@
 
     </div>
 
+    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7, Figma node 2915:35184). Ported from Sain 1
+         (methodica-science-mass-measure-03-01) — missed here in the first pass. Sibling of
+         .tbl-content (not a child), so it stays fixed on screen instead of scrolling away with
+         page content; nested inside #s2 itself (not appended to #app), so goTo()'s normal screen
+         cleanup removes it automatically. Shown once per screen visit, hidden the instant a real
+         scroll is attempted — see s2MaybeShowScrollGesture() in script.js. -->
+    <div class="gesture-hint-scroll-wrap" id="s2-scroll-gesture" hidden>
+      <div class="gesture-hint">
+        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
+        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
+        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
+      </div>
+    </div>
+
     <div id="s2-feedbox" class="scq-fb-box">
       <div class="scq-fb-title">
         <span class="scq-fb-title-text"></span>

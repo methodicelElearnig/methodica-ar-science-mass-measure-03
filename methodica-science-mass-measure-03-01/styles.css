@@ -198,7 +198,8 @@ img { display: block; max-width: none; }
   width: 100%;
   aspect-ratio: 296 / 278;
 }
-.option-card-img img {
+.option-card-img img,
+.option-card-img video {
   margin-bottom: -30px !important;
   width: 100%;
   height: 100%;
@@ -207,6 +208,20 @@ img { display: block; max-width: none; }
   display: block;
   pointer-events: none;
   user-select: none;
+}
+/* עודכן (2026-08-11): הווידאו (1280×720, יחס רחב בהרבה מהמסגרת כמעט-
+   ריבועית 296/278) הושאר על "contain"+"bottom"+מרווח שלילי שהיו מכוילים
+   לתמונות ה-PNG הישנות — התוצאה: הרבה שטח לבן ריק למעלה, הדמות קטנה
+   בתחתית. תוקן לפי מוסכמת "מילוי מלא" הקיימת כבר בפרויקט (ראו
+   `#s4 .option-card-img img` למטה): object-fit:cover ממלא את כל
+   המסגרת (שממילא overflow:hidden ב-.option-card-frame, כך שהחיתוך
+   האופקי נשאר בתוך הגבול המעוגל), בלי המרווח השלילי/היסט לתחתית שכבר
+   לא רלוונטיים למקור וידאו. גודל המסגרת עצמה (.option-card-img/.option-
+   card-frame) לא שונה. */
+.option-card-img video {
+  margin-bottom: 0 !important;
+  object-fit: cover;
+  object-position: center !important;
 }
 
 /* Bottom bar — מסך 1 בלבד: כפתור "בחרתי" מיושר שמאל.
@@ -259,9 +274,15 @@ img { display: block; max-width: none; }
   align-items: center;
 }
 
-/* === Continue button (gradient blue pill) === */
+/* === Continue button (gradient blue pill) ===
+   SELF-QA.md §6 fixes (2026-08-11): gradient was missing its middle stop (#0059B2 23.361% — a
+   2-stop simplification reads as a flatter, slightly different blue than Figma's); height relied on
+   padding+line-height arithmetic instead of the explicit 39px every button state must render at
+   (drifted to ~51px); width was a fixed 140px, which silently clips a longer label — min-width. */
 .btn-continue {
-  background: linear-gradient(180deg, #005FBE 9%, #003971 100%);
+  display: flex; align-items: center; justify-content: center;
+  height: 39px;
+  background: linear-gradient(180deg, #005FBE 9%, #0059B2 23.361%, #003971 100%);
   color: #ffffff;
   border: none;
   border-radius: 1000px;
@@ -269,7 +290,8 @@ img { display: block; max-width: none; }
   font-size: 20px;
   font-weight: 400;
   padding: 12px 40px;
-  width: 140px;
+  min-width: 140px;
+  box-sizing: border-box;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -284,17 +306,22 @@ img { display: block; max-width: none; }
   outline-offset: 2px;
 }
 
-/* === Back button (חזרה) — never shown on the first screen === */
+/* === Back button (חזרה) — never shown on the first screen ===
+   SELF-QA.md §6 fixes (2026-08-11): border was 1.5px (spec: 1px on hint/back); height relied on
+   padding+line-height instead of explicit 39px; width was fixed instead of min-width. */
 .btn-back {
+  display: flex; align-items: center; justify-content: center;
+  height: 39px;
   background: #ffffff;
   color: var(--subject-700);
-  border: 1.5px solid var(--subject-700);
+  border: 1px solid var(--subject-700);
   border-radius: 1000px;
   font-family: 'Assistant', sans-serif;
   font-size: 20px;
   font-weight: 400;
   padding: 12px 40px;
-  width: 140px;
+  min-width: 140px;
+  box-sizing: border-box;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -306,19 +333,27 @@ img { display: block; max-width: none; }
 
 /* === Hint button (אפשר רמז?) — visible-from-start is the 720-templates
    default; a specific screen may deviate (hidden/disabled until first
-   wrong attempt) per its own explicit source — see project conventions === */
+   wrong attempt) per its own explicit source — see project conventions ===
+   SELF-QA.md §6 fixes (2026-08-11): was using --subject-500 (#019de5, the focus/dragging token) —
+   the single most commonly confused value in this family; the hint button's own token is
+   --subject-700 (#007ac6). Also: border was 1.5px (spec: 1px), font-size was 18px (spec: 20px,
+   matching check/back), and min-width/explicit height were missing entirely. */
 .btn-hint {
+  height: 39px;
   background: #ffffff;
-  color: var(--subject-500);
-  border: 1.5px solid var(--subject-500);
+  color: var(--subject-700);
+  border: 1px solid var(--subject-700);
   border-radius: 1000px;
   font-family: 'Assistant', sans-serif;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 400;
   padding: 10px 20px;
+  min-width: 140px;
+  box-sizing: border-box;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   white-space: nowrap;
 }
@@ -980,9 +1015,10 @@ img { display: block; max-width: none; }
   max-width: calc(100% - 80px);
 }
 
-/* Player placeholder — 646×363 (≈16:9), Figma node 408:8447/408:8448.
-   רקע לוח-שחמט מזוהה כ"אין תוכן וידאו עדיין" נבנה ב-CSS (לא הורדתי את
-   ה-PNG המקורי מ-Figma — תבנית גנרית פשוטה, זול יותר לתחזק ב-CSS). */
+/* Player — 646×363 (≈16:9), Figma node 408:8447/408:8448. מכיל את
+   ה-iframe שנוצר ע"י YouTube IFrame Player API (ראו VIDEO_INTRO_PLAYERS
+   ב-script.js) — overflow: hidden מעגל את פינות ה-iframe לפי border-radius
+   העטיפה. */
 .video-player-wrap {
   position: relative;
   width: 646px;
@@ -993,34 +1029,12 @@ img { display: block; max-width: none; }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-.video-player-bg {
-  position: absolute;
-  inset: 0;
-  background-color: #ffffff;
-  background-image:
-    conic-gradient(#eeeeee 90deg, transparent 90deg 180deg, #eeeeee 180deg 270deg, transparent 270deg);
-  background-size: 32px 32px;
-}
-.video-play-btn {
-  position: relative;
-  z-index: 2;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.video-play-btn:hover { opacity: 0.88; }
-.video-play-btn:focus-visible {
-  outline: 3px solid var(--subject-500);
-  outline-offset: 2px;
-  border-radius: 50%;
+  /* עודכן (2026-08-11): .char-bubble-wrap הוא z-index:5 — בלי z-index
+     מפורש כאן, הדמות (שעכשיו ממלאת את הקופסה שלה במלואה, ראו התיקון
+     הקודם) מציירת מעל קצה הסרטון בקצת החפיפה הגאומטרית בין שתי
+     הקופסאות (הדמות מסתיימת ב-24+300=324px, הסרטון הממורכז מתחיל
+     ב-317px). היוטיוב צריך להיות תמיד מעל הדמות, לא ההפך. */
+  z-index: 10;
 }
 
 /* דמות מלווה + בועת דיבור (מסכים 2+4) — מקור: Figma "לומדת התנסות"
@@ -1082,10 +1096,23 @@ img { display: block; max-width: none; }
   border-right: 8px solid transparent;
   border-top: 10px solid #fff;
 }
-.char-bubble-avatar img {
+.char-bubble-avatar img,
+.char-bubble-avatar video {
   width: 300px;
   height: auto;
   object-fit: contain;
+}
+/* עודכן (2026-08-11): הווידאו (1280×720) עם height:auto התכווץ לקופסה
+   רחבה-נמוכה (300×168.75, יחס 16:9 של הקובץ עצמו) — אין שם overflow
+   לחתוך, אז contain לא עשה כלום; הדמות יצאה קטנה/חתוכה. תוקן לפי אותה
+   מוסכמת "מילוי מלא" שכבר עובדת ב-.transition-avatar (aspect-ratio קבוע
+   + object-fit:cover): קופסה מרובעת קבועה (המידה שרוב תמונות ה-PNG
+   המקוריות כבר התקרבו אליה בפועל — ראו ARCHITECTURE.md/PROJECT_BRIEF.md),
+   הווידאו ממלא אותה במלואה ונחתך אופקית בלבד (לא אנכית, כי הקופסה קטנה
+   מהיחס הרחב של הווידאו) — לא יכול "לגלוש" מעבר לגבולות עצמו. */
+.char-bubble-avatar video {
+  height: 230px;
+  object-fit: cover;
 }
 
 /* =========================================================
@@ -1485,7 +1512,7 @@ img { display: block; max-width: none; }
   display: flex; flex-wrap: wrap; gap: 10px; width: 100%;
   direction: rtl; flex-shrink: 0; padding: 8px 0; align-content: flex-start;
 }
-.dq-source-slot { display: inline-flex; align-items: center; }
+.dq-source-slot { display: inline-flex; align-items: center; position: relative; }
 
 .dq-drag-card {
   background: #fff; border: 1.5px solid #ececec; border-radius: 10px;
@@ -1774,6 +1801,9 @@ img { display: block; max-width: none; }
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
+  /* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover, not the
+     default arrow/pointer — client's own wording is "the mouse should be in the shape of a hand." */
+  cursor: grab;
 }
 .tbl-content::-webkit-scrollbar { width: 8px; }
 .tbl-content::-webkit-scrollbar-track {
@@ -1852,6 +1882,98 @@ img { display: block; max-width: none; }
 }
 .tbl-table tbody tr:nth-child(even) .tbl-td { background: #D4F3FF; }
 
+/* Gesture Hint — Cursor Scroll overlay for #s16-scroll-area (SELF-QA.md §7, Figma node
+   2915:35184). Positioned as a sibling of .tbl-content using the identical box (top:139px/
+   bottom:74px) so it sits fixed over the scroll viewport instead of scrolling away with page 1's
+   content. Colors/sizes/keyframe timing copied verbatim from SELF-QA.md §7 (Science/Blue variant —
+   see the export-trap warning there before ever re-deriving these from a raw Figma pull). The hand
+   itself never animates, only the two rings (opacity+scale) — see script.js for the show-once/
+   hide-on-real-scroll logic (s16MaybeShowScrollGesture). */
+.gesture-hint-scroll-wrap {
+  position: absolute;
+  top: 139px; left: 0; right: 0; bottom: 74px;
+  pointer-events: none;
+  z-index: 20;
+}
+.gesture-hint-scroll-wrap[hidden] { display: none; }
+.gesture-hint {
+  position: absolute;
+  left: 50%; top: 50%;
+  translate: -50% -50%;
+  width: 0; height: 0;
+  pointer-events: none;
+}
+/* Scroll's wrap is a large box (the whole scroll viewport) — center lower-middle rather than
+   dead-center. Drag's hint mounts directly inside a small pill/slot, where dead-center (the base
+   rule above) is already the right spot — no override needed there. */
+.gesture-hint-scroll-wrap .gesture-hint { top: 62%; }
+.gesture-hint-hand,
+.gesture-hint-ring {
+  position: absolute;
+  left: 0; top: 0;
+  translate: -50% -50%;
+}
+.gesture-hint-hand { width: 28px; height: 33px; z-index: 3; }
+.gesture-hint-ring {
+  border-radius: 50%;
+  opacity: 0;
+}
+.gesture-hint-ring--small {
+  width: 12px; height: 12px;
+  border: 1.5px solid #B0DFFF;
+  z-index: 2;
+  animation: gesture-ring-small 2s infinite;
+}
+.gesture-hint-ring--big {
+  width: 64px; height: 64px;
+  background: #B0DFFF;
+  border: 2.5px solid #00BAFF;
+  z-index: 1;
+  animation: gesture-ring-big 2s infinite;
+}
+@keyframes gesture-ring-small {
+  0%   { opacity: 0;    scale: 0.2 0.2; }
+  3%   { opacity: 0.75; scale: 1   1; }
+  10%  { opacity: 0;    scale: 1.1 1.1; }
+  100% { opacity: 0;    scale: 1.1 1.1; }
+}
+@keyframes gesture-ring-big {
+  0%    { opacity: 0;    scale: 0.05 0.05; }
+  5%    { opacity: 0.85; }
+  7.5%  {                scale: 0.22 0.22; }
+  22.5% {                scale: 0.6  0.6; }
+  35%   { opacity: 0.65; }
+  37.5% {                scale: 0.85 0.85; }
+  45%   { opacity: 0.35; }
+  50%   { opacity: 0;    scale: 1 1; }
+  100%  { opacity: 0;    scale: 1 1; }
+}
+
+/* Gesture Hint — Cursor Drag variant (SELF-QA.md §7, Figma node 2915:35185). Same hand icon, same
+   2s keyframe timing/percentages as Cursor Scroll above (shared across all three gesture types per
+   the spec) — only the ring size/shape/color differ: 42×43 rounded-blob (not a perfect circle, real
+   asset at assets/images/gesture-ring-drag-big.svg) instead of a plain 64×64 circle, and #B9ECFF/
+   #00BAFF instead of #B0DFFF/#00BAFF. SELF-QA.md notes these colors match a --subject-300/--subject-
+   400 token pair in the project it was written for — this project only defines --subject-500/-700
+   (see :root), so the colors are hardcoded here rather than invented tokens that don't exist. Used
+   generically by showDragGestureHint() in script.js for both the makeDragQuestion() factory (dq11,
+   dq16) and screen s17's hand-written drag question. */
+.gesture-hint-ring--drag-big {
+  width: 42px; height: 43px;
+  background-image: url('assets/images/gesture-ring-drag-big.svg');
+  background-size: contain;
+  animation-name: gesture-ring-big;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+.gesture-hint-ring--drag-small {
+  width: 8px; height: 8px;
+  border: 1.5px solid #B9ECFF;
+  animation-name: gesture-ring-small;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
 /* =========================================================
    מסך 18 — שאלה 3 מתוך 6: גרירה, התאמת טקסט לתמונה. בהשראת מסך 20
    (s20-*) של Methodica-science-mass-measure-02-01 — שם: כרטיסי-תמונה
@@ -1889,6 +2011,7 @@ img { display: block; max-width: none; }
   flex-shrink: 0;
 }
 .s17-drag-item {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;

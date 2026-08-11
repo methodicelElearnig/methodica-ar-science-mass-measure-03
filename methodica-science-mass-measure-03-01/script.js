@@ -146,54 +146,100 @@ function advanceFromS0() {
    מסך 2: "שוקלת 1 טון", מסך 4: "חושבת".
    ========================================================= */
 
+/* עודכן (2026-08-11): שלושת פוזות הדמות בבועה (S1/S3 כאן + S12_AVATAR_ASSETS
+   במסך 13 למטה) הוחלפו מתמונה סטטית לווידאו בלולאה/מושתק (assets/videos/
+   *.mp4, גודל המסגרת נשאר זהה) — לפי בקשת המשתמשת. preloadVideo() מחליף
+   את new Image().src בתור מנגנון ה-preload (עדיין לפני שהמסך נהיה גלוי,
+   לפי CLAUDE.md כלל #1). */
+function preloadVideo(src) {
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'video';
+  link.href = src;
+  document.head.appendChild(link);
+}
+
 const CHAR_BUBBLE_ASSETS_S1 = {
-  pink: 'assets/images/pink-avatar-weighting-1-ton.png',
-  boy: 'assets/images/boy-avatar-weighting-1-ton.png'
+  pink: 'assets/videos/pink-avatar-weighting-1-ton.mp4',
+  boy: 'assets/videos/boy-avatar-weighting-1-ton.mp4'
 };
-new Image().src = CHAR_BUBBLE_ASSETS_S1.pink;
-new Image().src = CHAR_BUBBLE_ASSETS_S1.boy;
+preloadVideo(CHAR_BUBBLE_ASSETS_S1.pink);
+preloadVideo(CHAR_BUBBLE_ASSETS_S1.boy);
 
 const CHAR_BUBBLE_ASSETS_S3 = {
-  pink: 'assets/images/pink-avatar-thinking.png',
-  boy: 'assets/images/boy-avatar-thinking.png'
+  pink: 'assets/videos/pink-avatar-thinking.mp4',
+  boy: 'assets/videos/boy-avatar-thinking.mp4'
 };
-new Image().src = CHAR_BUBBLE_ASSETS_S3.pink;
-new Image().src = CHAR_BUBBLE_ASSETS_S3.boy;
+preloadVideo(CHAR_BUBBLE_ASSETS_S3.pink);
+preloadVideo(CHAR_BUBBLE_ASSETS_S3.boy);
 
+/* imgId ליסטורי מהשם — הפונקציה עובדת גם על <video> (הצורה הנוכחית של כל
+   קריאה קיימת לה, ראו למעלה) וגם על <img> (אם ייווסף כזה בעתיד), לפי
+   tagName בפועל — לא נדרשה פונקציה מקבילה נפרדת. */
 function resolveCharBubbleImg(imgId, assetMap) {
-  const img = document.getElementById(imgId);
-  if (!img) return;
+  const el = document.getElementById(imgId);
+  if (!el) return;
   const char = window.lomdaState.selectedCharacter;
-  img.src = (char && assetMap[char]) ? assetMap[char] : '';
+  const src = (char && assetMap[char]) ? assetMap[char] : '';
+  if (el.tagName === 'VIDEO') {
+    if (el.getAttribute('src') !== src) {
+      if (src) el.setAttribute('src', src); else el.removeAttribute('src');
+      el.load();
+    }
+    el.play().catch(function () {});
+  } else {
+    el.src = src;
+  }
 }
 
-/* ⚠️ QA_TEMP — זמני לצורך העברת הלומדה לבדיקה לפני שסרטוני ה-VideoIntro
-   האמיתיים (מסכים 2/4/8, s1/s3/s7) יוטמעו. כרגע כפתור "המשך" בשלושת
-   המסכים האלה נעול לצמיתות (disabled בקוד הסטטי) כי אין עדיין <video>
-   אמיתי + 'ended' listener שמפעיל אותו (ראו ה-TODO-ים ליד
-   .video-player-wrap בכל אחד מהם). הפתרון הזמני: אחרי 2 שניות מכניסה
-   למסך, הכפתור נפתח אוטומטית, כדי שאפשר יהיה לעבור בבדיקה בלי לחכות
-   לסרטון האמיתי.
-   >>> כשהסרטונים האמיתיים מוטמעים: להחזיר את הדגל למטה ל-false (או
-   למחוק את שלוש הקריאות ל-qaTempAutoEnableContinue למטה + את הפונקציה
-   עצמה) ולחבר במקום זאת את מנגנון ה-'ended' listener האמיתי שכבר מתועד
-   ב-TODO-ים. <<< */
-const QA_TEMP_AUTO_ENABLE_VIDEO_CONTINUE = true;
-function qaTempAutoEnableContinue(btnId) {
-  if (!QA_TEMP_AUTO_ENABLE_VIDEO_CONTINUE) return;
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  setTimeout(function () { btn.disabled = false; }, 2000);
+/* =========================================================
+   VideoIntro video-gating (מסכים 2/4/8 — s1/s3/s7) — YouTube IFrame
+   Player API. כפתור "המשך" בשלושת המסכים נשאר disabled בקוד הסטטי עד
+   שהסרטון המתאים מסתיים (אירוע onStateChange === YT.PlayerState.ENDED),
+   לפי תסריט ההפקה: "כפתור המשך פעיל רק אחרי ניגון הסרטון". הפליירים
+   נוצרים פעם אחת ב-onYouTubeIframeAPIReady (לא בכל resetScreenStateN —
+   resetScreenStateN רץ מחדש בכל כניסה למסך, ויצירת YT.Player חוזרת
+   הייתה יוצרת iframe כפול).
+   ========================================================= */
+const VIDEO_INTRO_PLAYERS = [
+  { containerId: 's1-yt-player', videoId: '4eawW2JQd4M', continueBtnId: 's1-continue' },
+  { containerId: 's3-yt-player', videoId: 'U4ZuuzOFXtc', continueBtnId: 's3-continue' },
+  { containerId: 's7-yt-player', videoId: 'oCSBS29FEhw', continueBtnId: 's7-continue' }
+];
+
+function onVideoIntroStateChange(continueBtnId) {
+  return function (event) {
+    if (event.data === YT.PlayerState.ENDED) {
+      const btn = document.getElementById(continueBtnId);
+      if (btn) btn.disabled = false;
+    }
+  };
 }
+
+window.onYouTubeIframeAPIReady = function () {
+  VIDEO_INTRO_PLAYERS.forEach(function (cfg) {
+    new YT.Player(cfg.containerId, {
+      videoId: cfg.videoId,
+      width: '646',
+      height: '363',
+      playerVars: { rel: 0, modestbranding: 1, origin: window.location.origin },
+      events: { onStateChange: onVideoIntroStateChange(cfg.continueBtnId) }
+    });
+  });
+};
+
+(function loadYouTubeIframeApi() {
+  const tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
 
 function resetScreenState1() {
   resolveCharBubbleImg('s1-char-img', CHAR_BUBBLE_ASSETS_S1);
-  qaTempAutoEnableContinue('s1-continue');
 }
 
 function resetScreenState3() {
   resolveCharBubbleImg('s3-char-img', CHAR_BUBBLE_ASSETS_S3);
-  qaTempAutoEnableContinue('s3-continue');
 }
 
 /* =========================================================
@@ -631,14 +677,13 @@ const s6MedicineSim = makeScaleSimulation({
 
 /* =========================================================
    מסך 8 — VideoIntro, בלי דמות/בועית (נקודת התכנסות של מסלולי
-   הלמידה). אין כאן סטייט דינמי משלו מלבד ה-video-gating העתידי
-   (זהה לתבנית מסכים 2+4) — הפונקציה קיימת כ-hook עקבי לפי
-   מוסכמת resetScreenStateN, לחיבור s7Start()/'ended' בהמשך.
+   הלמידה). אין כאן סטייט דינמי משלו — ה-video-gating (VIDEO_INTRO_PLAYERS
+   למעלה, זהה לתבנית מסכים 2+4) פועל ברמת onYouTubeIframeAPIReady, לא
+   דרך resetScreenStateN. הפונקציה נשארת כ-hook ריק כדי לשמור על מוסכמת
+   resetScreenStateN העקבית לכל מסך.
    ========================================================= */
 
-function resetScreenState7() {
-  qaTempAutoEnableContinue('s7-continue'); // QA_TEMP — ראו הערה ליד ההגדרה למעלה
-}
+function resetScreenState7() {}
 
 /* =========================================================
    מסך 9 — שאלת בחירה יחידה עם תמונה (SingleChoiceQuestion), הועתק 1:1
@@ -1078,6 +1123,39 @@ document.querySelectorAll('#s10 .scq-opt').forEach(function (opt) {
    ראשון שגוי. תוכן: תסריט הפקה, שקפים 28-32.
    ========================================================= */
 
+/* Gesture Hint — Cursor Drag (SELF-QA.md §7). Generic show-once/hide-on-drag-start helper shared by
+   every drag-and-drop screen in this project (the makeDragQuestion() factory below, and screen s17's
+   hand-written drag question) — one hint for the *first* draggable element only, not one per pill.
+   `slotEl` must already be `position:relative` (see .dq-source-slot / .s17-drag-item's own slot rule)
+   so the hint can center on it via `position:absolute`. Uses `slotEl.dataset.gestureShown` (not a
+   module-level flag) so "shown once" state lives on the slot's own stable DOM node — it survives the
+   inner draggable card being torn down/recreated on every render() without needing a separate
+   per-screen variable, and naturally resets on a full page reload like every other resume-state guard
+   in this codebase. Dismissal listens on the slot (not the card) because drag events bubble and the
+   card itself gets replaced on re-render — binding on the card directly would need re-binding every
+   time. */
+function showDragGestureHint(slotEl) {
+  if (!slotEl || slotEl.dataset.gestureShown) return;
+  slotEl.dataset.gestureShown = 'true';
+  const hint = document.createElement('div');
+  hint.className = 'gesture-hint';
+  hint.innerHTML =
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-big"></div>' +
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
+    '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
+  slotEl.appendChild(hint);
+  function dismiss() {
+    hint.remove();
+    slotEl.removeEventListener('dragstart', dismiss);
+    slotEl.removeEventListener('click', dismiss);
+  }
+  slotEl.addEventListener('dragstart', dismiss);
+  /* also dismiss on plain click — screen s17's item has a click-to-place fallback
+     (s17ItemClick) alongside drag; that's the same "start of the demonstrated action" for a
+     learner using that input path instead of dragging. */
+  slotEl.addEventListener('click', dismiss);
+}
+
 function makeDragQuestion(cfg) {
   const labels = cfg.labels;
   const correctMap = cfg.correctMap;
@@ -1399,6 +1477,7 @@ function makeDragQuestion(cfg) {
     else if (!hasProgress) resetInitial();
     /* אחרת: יש התקדמות (הוצב קלף ו/או בוצע ניסיון) — לא מאפסים,
        משאירים את ה-DOM/state כמו שהלומד עזב אותם */
+    showDragGestureHint(document.getElementById('slot-' + dragIds[0]));
   }
 
   window[cfg.prefix + 'DragOver'] = dragOver;
@@ -1474,11 +1553,11 @@ function resetScreenState11() {
    ========================================================= */
 
 const S12_AVATAR_ASSETS = {
-  pink: 'assets/images/pink-avatar-holds-weight.png',
-  boy: 'assets/images/boy-avatar-hold-golds.png'
+  pink: 'assets/videos/pink-avatar-holds-weight.mp4',
+  boy: 'assets/videos/boy-avatar-hold-golds.mp4'
 };
-new Image().src = S12_AVATAR_ASSETS.pink;
-new Image().src = S12_AVATAR_ASSETS.boy;
+preloadVideo(S12_AVATAR_ASSETS.pink);
+preloadVideo(S12_AVATAR_ASSETS.boy);
 
 function resetScreenState12() {
   resolveCharBubbleImg('s12-avatar-img', S12_AVATAR_ASSETS);
@@ -2001,6 +2080,30 @@ const dq16 = makeDragQuestion({
   texts: TEXTS_S16_DQ
 });
 
+/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Shown once per screen visit (not once per lomda —
+   s16GestureShown is a plain module-level flag, so a revisit after a full page reload would show it
+   again, matching every other "resume state" pattern in this codebase that resets on reload). Hidden
+   the instant the learner attempts a real scroll (wheel or arrow keys) — matches
+   s16InitScrollJump()'s own trigger set, so "start of the action" is the same wheel/keydown event in
+   both places, not a separate/later signal like the scroll-snap animation finishing. */
+let s16GestureShown = false;
+
+function s16MaybeShowScrollGesture() {
+  if (s16GestureShown) return;
+  s16GestureShown = true;
+  const gesture = document.getElementById('s16-scroll-gesture');
+  const scrollArea = document.getElementById('s16-scroll-area');
+  if (!gesture || !scrollArea) return;
+  gesture.hidden = false;
+  function dismiss() {
+    gesture.hidden = true;
+    scrollArea.removeEventListener('wheel', dismiss);
+    scrollArea.removeEventListener('keydown', dismiss);
+  }
+  scrollArea.addEventListener('wheel', dismiss);
+  scrollArea.addEventListener('keydown', dismiss);
+}
+
 function resetScreenState16() {
   updateQuestionNavB('s16');
   s16InitScrollJump();
@@ -2008,6 +2111,7 @@ function resetScreenState16() {
   const scrollArea = document.getElementById('s16-scroll-area');
   if (scrollArea) scrollArea.scrollTop = 0;
   dq16.reset();
+  s16MaybeShowScrollGesture();
 }
 
 /* =========================================================
@@ -2308,6 +2412,13 @@ function resetScreenState17() {
   hintBtn.disabled = false;
   const revealBtn = document.getElementById('s17-reveal-btn');
   if (revealBtn) { revealBtn.hidden = true; revealBtn.textContent = 'התשובה הנכונה'; }
+
+  /* Gesture Hint — Cursor Drag (SELF-QA.md §7). "First draggable element" = first DOM child of the
+     source bank, not S17_ITEM_IDS[0] (that array's own order is 'rice'/'gold'/'drug' — unrelated to
+     the visual left-to-right order the learner actually sees). Only reached on a genuinely fresh
+     entry (hasProgress already returned above otherwise), matching makeDragQuestion()'s own
+     show-once call site. */
+  showDragGestureHint(document.querySelector('#s17-source-bank .s17-drag-item'));
 }
 
 /* =========================================================

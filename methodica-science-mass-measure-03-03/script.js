@@ -103,19 +103,18 @@ function s0BackToPreviousSain() {
 
 /* =========================================================
    מסך 2 — משימת כיתה. בלי בדיקת נכון/שגוי (מסך מידע/הנחיות בלבד) —
-   "חזרתי, אפשר להמשיך" תמיד פעיל. דמות+בועית: placeholder זמני (אין
-   פוזה ייעודית עדיין למסך הזה).
-   ========================================================= */
+   "חזרתי, אפשר להמשיך" תמיד פעיל. דמות+בועית: פוזה "come-on" (זהה
+   לסיין 2), הועתקה מ-assets/videos/ שם. עודכן (2026-08-11): הוחלף
+   מתמונה סטטית לווידאו בלולאה/מושתק — נעשה שימוש ב-resolveCharBubbleVideo
+   הקיים כבר בקובץ הזה (למסך 1), לא ב-resolveCharBubbleImg. */
 
 const S1_CHAR_ASSETS = {
-  pink: 'assets/images/pink-avatar-come-on.png',
-  boy: 'assets/images/boy-avatar-come-on.png'
+  pink: 'assets/videos/pink-avatar-come-on.mp4',
+  boy: 'assets/videos/boy-avatar-come-on.mp4'
 };
-new Image().src = S1_CHAR_ASSETS.pink;
-new Image().src = S1_CHAR_ASSETS.boy;
 
 function resetScreenState1() {
-  resolveCharBubbleImg('s1-char-img', S1_CHAR_ASSETS);
+  resolveCharBubbleVideo('s1-char-img', S1_CHAR_ASSETS);
 }
 
 function s1Continue() { goTo(2); }
@@ -126,6 +125,35 @@ function s1Continue() { goTo(2); }
    כמו בסיין 1) כדי לתמוך ב"ניסיון מענה אחד" (הערת המפיק בשקפים
    110-112) בלי לשנות את ברירת המחדל הכללית של הפקטורי.
    ========================================================= */
+
+/* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
+   (methodica-science-mass-measure-03-01) — this project's own SELF-QA.md governs the whole family
+   (03-01 through -06), and this factory's drag question was missed in the first pass. One hint for
+   the *first* draggable element only (not one per pill). `slotEl` must already be
+   `position:relative` (see .dq-source-slot) so the hint can center on it via `position:absolute`.
+   Uses `slotEl.dataset.gestureShown` (not a module-level flag) so "shown once" lives on the slot's
+   own stable DOM node — survives the inner draggable card being torn down/recreated on every
+   render() without a separate per-screen variable, and resets naturally on a full page reload.
+   Dismissal listens on the slot (not the card) because drag events bubble and the card gets
+   replaced on re-render. */
+function showDragGestureHint(slotEl) {
+  if (!slotEl || slotEl.dataset.gestureShown) return;
+  slotEl.dataset.gestureShown = 'true';
+  const hint = document.createElement('div');
+  hint.className = 'gesture-hint';
+  hint.innerHTML =
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-big"></div>' +
+    '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
+    '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
+  slotEl.appendChild(hint);
+  function dismiss() {
+    hint.remove();
+    slotEl.removeEventListener('dragstart', dismiss);
+    slotEl.removeEventListener('click', dismiss);
+  }
+  slotEl.addEventListener('dragstart', dismiss);
+  slotEl.addEventListener('click', dismiss);
+}
 
 function makeDragQuestion(cfg) {
   const labels = cfg.labels;
@@ -489,6 +517,7 @@ const dq2 = makeDragQuestion({
 
 function resetScreenState2() {
   dq2.reset();
+  showDragGestureHint(document.getElementById('slot-s2-drag-maznaim'));
 }
 
 /* ---------- Dev postMessage bridge (index_dev.html free nav) ---------- */

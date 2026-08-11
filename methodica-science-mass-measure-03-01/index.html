@@ -33,7 +33,9 @@
              onkeydown="handleCardKey(event, this)">
           <div class="option-card-frame">
             <div class="option-card-img">
-              <img src="assets/images/pink-avatar-holds-weight.png" alt="דמות ורודה מחזיקה מאזניים" draggable="false">
+              <video autoplay loop muted playsinline aria-label="דמות ורודה מחזיקה מאזניים">
+                <source src="assets/videos/pink-avatar-holds-weight.mp4" type="video/mp4">
+              </video>
             </div>
           </div>
         </div>
@@ -48,7 +50,9 @@
              onkeydown="handleCardKey(event, this)">
           <div class="option-card-frame">
             <div class="option-card-img">
-              <img src="assets/images/boy-avatar-hold-golds.png" alt="דמות תכולה עם משקפיים מחזיקה מטילי זהב" draggable="false">
+              <video autoplay loop muted playsinline aria-label="דמות תכולה עם משקפיים מחזיקה מטילי זהב">
+                <source src="assets/videos/boy-avatar-hold-golds.mp4" type="video/mp4">
+              </video>
             </div>
           </div>
         </div>
@@ -81,10 +85,12 @@
        (pink/boy, ראו Companion character system). מוצב פינה שמאל-תחתונה
        (המיקום המדויק על הקנבס לא היה בנתוני ה-node עצמו — הועתק מהמוסכמה
        הגלובלית הקיימת ל-widget דמות+בועה, ראו ARCHITECTURE.md).
-       כפתור "להמשיך?" תואם למצב Disabled שמופיע בפיגמה — יופעל בפועל
-       ע"י video-gating (`ended` event) ברגע שיסופק קובץ וידאו אמיתי
-       ל-assets/videos/ (לפי תסריט ההפקה: "כפתור המשך פעיל רק אחרי ניגון
-       הסרטון"). -->
+       כפתור "להמשיך?" תואם למצב Disabled שמופיע בפיגמה — נפתח בפועל
+       ע"י video-gating אמיתי (YouTube IFrame Player API, אירוע
+       `onStateChange` === `YT.PlayerState.ENDED`) לפי תסריט ההפקה:
+       "כפתור המשך פעיל רק אחרי ניגון הסרטון". קובץ הווידאו סופק כקישור
+       YouTube (לא קובץ מקומי ל-assets/videos/) — ראו VIDEO_INTRO_PLAYERS
+       ב-script.js. -->
   <section class="screen" data-screen="1" id="s1">
 
     <div class="video-intro-content">
@@ -93,15 +99,7 @@
       </div>
 
       <div class="video-player-wrap">
-        <div class="video-player-bg"></div>
-        <!-- TODO: כשיסופק קובץ וידאו ל-assets/videos/, להחליף ב-<video> אמיתי
-             + לחבר s1Start()/'ended' listener שמפעיל את #s1-continue -->
-        <button class="video-play-btn" type="button" aria-label="הפעל סרטון">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="28" cy="28" r="28" fill="#303030"/>
-            <path d="M22.5 19C22.5 17.86 23.74 17.15 24.73 17.73L38.5 25.85C39.47 26.42 39.47 27.83 38.5 28.4L24.73 36.52C23.74 37.1 22.5 36.39 22.5 35.25V19Z" fill="white"/>
-          </svg>
-        </button>
+        <div id="s1-yt-player"></div>
       </div>
     </div>
 
@@ -110,7 +108,7 @@
         <p>הקשיבו לפודקאסט של נועם ודניאלה וענו בעצמכם...</p>
       </div>
       <div class="char-bubble-avatar">
-        <img id="s1-char-img" src="" alt="הדמות הנלווית">
+        <video id="s1-char-img" autoplay loop muted playsinline></video>
       </div>
     </div>
 
@@ -205,15 +203,7 @@
       </div>
 
       <div class="video-player-wrap">
-        <div class="video-player-bg"></div>
-        <!-- TODO: כשיסופק קובץ וידאו ל-assets/videos/, להחליף ב-<video> אמיתי
-             + לחבר s3Start()/'ended' listener שמפעיל את #s3-continue -->
-        <button class="video-play-btn" type="button" aria-label="הפעל סרטון">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="28" cy="28" r="28" fill="#303030"/>
-            <path d="M22.5 19C22.5 17.86 23.74 17.15 24.73 17.73L38.5 25.85C39.47 26.42 39.47 27.83 38.5 28.4L24.73 36.52C23.74 37.1 22.5 36.39 22.5 35.25V19Z" fill="white"/>
-          </svg>
-        </button>
+        <div id="s3-yt-player"></div>
       </div>
     </div>
 
@@ -222,7 +212,7 @@
         <p>נו? התשובה שלכם הייתה נכונה?</p>
       </div>
       <div class="char-bubble-avatar">
-        <img id="s3-char-img" src="" alt="הדמות הנלווית">
+        <video id="s3-char-img" autoplay loop muted playsinline></video>
       </div>
     </div>
 
@@ -480,15 +470,7 @@
       </div>
 
       <div class="video-player-wrap">
-        <div class="video-player-bg"></div>
-        <!-- TODO: כשיסופק קובץ וידאו ל-assets/videos/, להחליף ב-<video> אמיתי
-             + לחבר s7Start()/'ended' listener שמפעיל את #s7-continue -->
-        <button class="video-play-btn" type="button" aria-label="הפעל סרטון">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="28" cy="28" r="28" fill="#303030"/>
-            <path d="M22.5 19C22.5 17.86 23.74 17.15 24.73 17.73L38.5 25.85C39.47 26.42 39.47 27.83 38.5 28.4L24.73 36.52C23.74 37.1 22.5 36.39 22.5 35.25V19Z" fill="white"/>
-          </svg>
-        </button>
+        <div id="s7-yt-player"></div>
       </div>
     </div>
 
@@ -798,7 +780,7 @@
         <p class="transition-sub">צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
       </div>
       <div class="transition-avatar-wrap">
-        <img src="" alt="דמות מלווה" class="transition-avatar" id="s12-avatar-img">
+        <video class="transition-avatar" id="s12-avatar-img" autoplay loop muted playsinline></video>
         <div class="transition-bubble">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</div>
       </div>
     </div>
@@ -1229,6 +1211,22 @@
         </div>
       </section>
 
+    </div>
+
+    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7, Figma node 2915:35184, real hand-cursor asset
+         downloaded and used verbatim — colors are the Science/Blue variant, not the ...Science-labeled
+         Math/Purple one the raw Figma export confusingly wraps). Sibling of .tbl-content, not a child
+         of it, so it stays fixed on screen instead of scrolling away with page content; nested inside
+         #s16 itself (not appended to #app), so goTo()'s normal .screen{display:none} cleanup removes
+         it automatically if the learner navigates away before dismissing it — no separate orphan-sweep
+         needed. Shown once per screen visit and hidden the instant a real scroll is attempted (wheel/
+         arrow keys) — see s16MaybeShowScrollGesture() in script.js. -->
+    <div class="gesture-hint-scroll-wrap" id="s16-scroll-gesture" hidden>
+      <div class="gesture-hint">
+        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
+        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
+        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
+      </div>
     </div>
 
     <div id="s16-feedbox" class="scq-fb-box">
