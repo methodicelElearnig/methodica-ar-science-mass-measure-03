@@ -325,7 +325,7 @@ function resetScreenState1() {
   checkBtn.disabled = true;
   checkBtn.onclick = s1Check;
   const hintBtn = document.getElementById('s1-hint');
-  hintBtn.hidden = true;
+  hintBtn.hidden = false;
   hintBtn.disabled = false;
   document.getElementById('s1-hint-overlay').hidden = true;
 }
@@ -482,7 +482,7 @@ function resetScreenState2() {
   checkBtn.disabled = true;
   checkBtn.onclick = s2Check;
   const hintBtn = document.getElementById('s2-hint');
-  hintBtn.hidden = true;
+  hintBtn.hidden = false;
   hintBtn.disabled = false;
   document.getElementById('s2-hint-overlay').hidden = true;
 }
@@ -654,7 +654,7 @@ function resetScreenState3() {
   checkBtn.disabled = true;
   checkBtn.onclick = s3Check;
   const hintBtn = document.getElementById('s3-hint');
-  hintBtn.hidden = true;
+  hintBtn.hidden = false;
   hintBtn.disabled = false;
   document.getElementById('s3-hint-overlay').hidden = true;
 }
@@ -900,7 +900,7 @@ function resetScreenState6() {
   checkBtn.disabled = true;
   checkBtn.onclick = s6Check;
   const hintBtn = document.getElementById('s6-hint');
-  hintBtn.hidden = true;
+  hintBtn.hidden = false;
   hintBtn.disabled = false;
   document.getElementById('s6-hint-overlay').hidden = true;
 }
@@ -1050,7 +1050,7 @@ function resetScreenState7() {
   btn.onclick = s7Check;
   document.getElementById('s7-feedbox').classList.remove('visible');
   const hintBtn = document.getElementById('s7-hint');
-  hintBtn.hidden = true;
+  hintBtn.hidden = false;
   hintBtn.disabled = false;
   document.getElementById('s7-hint-overlay').hidden = true;
   const revealBtn = document.getElementById('s7-reveal-btn');
@@ -1201,7 +1201,7 @@ function resetScreenState8() {
   checkBtn.disabled = true;
   checkBtn.onclick = s8Check;
   const hintBtn = document.getElementById('s8-hint');
-  hintBtn.hidden = true;
+  hintBtn.hidden = false;
   hintBtn.disabled = false;
   document.getElementById('s8-hint-overlay').hidden = true;
 }
@@ -1365,7 +1365,7 @@ function resetScreenState9() {
   checkBtn.disabled = true;
   checkBtn.onclick = s9Check;
   const hintBtn = document.getElementById('s9-hint');
-  hintBtn.hidden = true;
+  hintBtn.hidden = false;
   hintBtn.disabled = false;
   document.getElementById('s9-hint-overlay').hidden = true;
 }
