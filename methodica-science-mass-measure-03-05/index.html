@@ -90,6 +90,7 @@
     </div>
 
     <div class="tbl-content s1-scroll-area" id="s1-scroll-area" tabindex="0">
+     <div class="tbl-content-inner">
 
       <!-- ===== עמוד 1 — תיאור התרחיש ===== -->
       <section class="tbl-page">
@@ -119,7 +120,9 @@
            <p class="scq-qtitle">
            שקלו כעת.
            </p>
-          <p class="scq-qbody">החליטו מתי נאספו מספיק נתונים כדי לסמוך על התוצאה.<br>בשלב זה, הפסיקו לשקול והמשיכו לשאלות.</p>
+          <p class="scq-qbody">
+            שקלו כעת ותעדו כל מדידה בעמודת 'מסה'.<br/>
+            החליטו מתי נאספו מספיק נתונים כדי לסמוך על התוצאה.<br>בשלב זה, הפסיקו לשקול והמשיכו לשאלות.</p>
         </div>
 
         <table class="tbl-table" id="s1-measure-table" dir="rtl">
@@ -149,6 +152,7 @@
         <button class="btn-continue s1-finish-btn" id="s1-finish-weighing" type="button" onclick="s1FinishWeighing()">סיימתי לשקול</button>
       </section>
 
+     </div>
     </div>
 
     <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1 — missed here in the
@@ -351,23 +355,25 @@
        4 חלקים: היישומון+א+ב+ג) והניתוב בהתאם (ראו script.js). -->
   <section class="screen" data-screen="4" id="s4">
     <div class="tbl-content s4-scroll-area" id="s4-scroll-area" tabindex="0">
+     <div class="tbl-content-inner">
 
-      <!-- ===== עמוד 1 — תמונה+בועה (לפי פיגמה) ===== -->
-      <section class="tbl-page s4-page-top">
-        <div class="s4-text-block">
+      <!-- ===== חלק 1 — תמונה+בועה ===== -->
+      <section class="tbl-page">
+        <div class="tbl-page-header">
           <p class="s4-title">סעיף ג</p>
           <p class="s4-body">מוריה, מנהלת המפעל מבקשת את המלצתכם:</p>
         </div>
-        <div class="s4-bubble s4-bubble--tail-right">
-          <p>תוכלו בבקשה להמליץ לי כמה מדידות לבצע לכל תליון כדי להשיג איזון בין דיוק מדעי והשקעת זמן במדידות?</p>
+        <div class="s4-visual-group">
+          <img class="s4-img-placeholder" src="assets/images/screen05-woman-setting.jpg" alt="מוריה, מנהלת המפעל">
+          <div class="s4-bubble s4-bubble--tail-right">
+            <p>תוכלו בבקשה להמליץ לי כמה מדידות לבצע לכל תליון כדי להשיג איזון בין דיוק מדעי והשקעת זמן במדידות?</p>
+          </div>
         </div>
-        <img class="s4-img-placeholder" src="assets/images/screen05-woman-setting.jpg" alt="מוריה, מנהלת המפעל">
       </section>
 
-      <!-- ===== עמוד 2 — שאלת גרירה: השלמת המלצה למוריה ===== -->
-      <section class="tbl-page s4-page-two">
+      <!-- ===== חלק 2 — שאלת גרירה: השלמת המלצה למוריה ===== -->
+      <section class="tbl-page">
         <div class="s4-dq-content">
-          <p class="scq-qtitle">סעיף ג</p>
           <p class="dq-instruction-bold">השלימו את ההמלצה למוריה בעזרת המילים המתאימות:</p>
 
           <p class="dq-sentence-text">
@@ -398,11 +404,12 @@
         </div>
       </section>
 
+     </div>
     </div>
 
-    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1 — missed here in the
-         first pass. Sibling of .tbl-content (not a child), nested inside #s4 itself. Shown once,
-         hidden on real scroll — see s4MaybeShowScrollGesture() in script.js. -->
+    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7). Sibling of #s4-scroll-area, not a child, so it
+         stays fixed on screen instead of scrolling away. Shown once, hidden on real scroll — see
+         s4MaybeShowScrollGesture() in script.js. -->
     <div class="gesture-hint-scroll-wrap" id="s4-scroll-gesture" hidden>
       <div class="gesture-hint">
         <div class="gesture-hint-ring gesture-hint-ring--big"></div>

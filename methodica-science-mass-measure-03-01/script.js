@@ -35,6 +35,75 @@ function scaleApp() {
 }
 window.addEventListener('resize', scaleApp);
 
+/* Fake scrollbar (2026-09-09) — replaces the native styled scrollbar on every overflow-y:auto
+   container. Root cause: current Chrome no longer honors ::-webkit-scrollbar-button{display:none}
+   (verified live: the up/down arrows render regardless, even with !important + a full reload) —
+   only hiding the native scrollbar entirely works, so we do that and draw our own track+thumb here,
+   perfectly matching the Figma spec colors (see .fake-scrollbar-track/-thumb in styles.css) with no
+   arrow buttons because nothing native is left to render them.
+   `el` must have overflow-y:auto/scroll; its own box (top/height, and right edge for the 12px strip)
+   is measured via getBoundingClientRect() and divided by the current canvas scale (same formula as
+   scaleApp() above) to convert real/rendered pixels back into the #app-local coordinate space the
+   track/thumb are positioned in. */
+function initFakeScrollbar(el) {
+  if (!el || el.dataset.fakeScrollbarInit) return;
+  el.dataset.fakeScrollbarInit = 'true';
+  el.classList.add('native-scrollbar-hidden');
+  const parent = el.parentElement;
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+  const track = document.createElement('div');
+  track.className = 'fake-scrollbar-track';
+  const thumb = document.createElement('div');
+  thumb.className = 'fake-scrollbar-thumb';
+  track.appendChild(thumb);
+  parent.appendChild(track);
+
+  function scale() { return Math.min(window.innerWidth / 1280, window.innerHeight / 710); }
+
+  function layout() {
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+    const height = elRect.height / s;
+    track.style.top = ((elRect.top - parentRect.top) / s) + 'px';
+    track.style.height = height + 'px';
+    track.style.left = ((elRect.right - parentRect.left) / s - 12) + 'px';
+    const needsScroll = el.scrollHeight > el.clientHeight + 1;
+    track.style.display = needsScroll ? 'block' : 'none';
+    if (!needsScroll) return;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const scrollRatio = el.scrollTop / (el.scrollHeight - el.clientHeight);
+    thumb.style.height = thumbHeight + 'px';
+    thumb.style.top = (maxThumbTop * scrollRatio) + 'px';
+  }
+  el.addEventListener('scroll', layout);
+  window.addEventListener('resize', layout);
+
+  let dragging = false, startY = 0, startScrollTop = 0;
+  thumb.addEventListener('mousedown', function (e) {
+    dragging = true; startY = e.clientY; startScrollTop = el.scrollTop;
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const height = elRect.height / s;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const deltaY = (e.clientY - startY) / s;
+    const scrollableDist = el.scrollHeight - el.clientHeight;
+    el.scrollTop = startScrollTop + (deltaY / maxThumbTop) * scrollableDist;
+  });
+  document.addEventListener('mouseup', function () { dragging = false; document.body.style.userSelect = ''; });
+  layout();
+  new MutationObserver(layout).observe(el, { childList: true, subtree: true, characterData: true });
+}
+
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
   document.querySelectorAll('.screen').forEach(function (el) {
@@ -45,6 +114,14 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* Deferred to next frame: target is still display:none at this exact point (same ordering
+     constraint as showDragGestureHint(), see its own comment) — initFakeScrollbar() needs real
+     geometry, so it must run after 'active' has actually painted. Centralized here (rather than
+     one call per resetScreenStateX()) so no scrollable container in a newly-added screen is ever
+     missed. */
+  requestAnimationFrame(function () {
+    target.querySelectorAll('.dq-question-panel, .s13-content, .s15-content, .s17-content').forEach(initFakeScrollbar);
+  });
 }
 
 function resetScreenState(n) {
@@ -202,9 +279,9 @@ function resolveCharBubbleImg(imgId, assetMap) {
    הייתה יוצרת iframe כפול).
    ========================================================= */
 const VIDEO_INTRO_PLAYERS = [
-  { containerId: 's1-yt-player', videoId: '4eawW2JQd4M', continueBtnId: 's1-continue' },
-  { containerId: 's3-yt-player', videoId: 'U4ZuuzOFXtc', continueBtnId: 's3-continue' },
-  { containerId: 's7-yt-player', videoId: 'oCSBS29FEhw', continueBtnId: 's7-continue' }
+  { containerId: 's1-yt-player', videoId: 'g0lcVHET3tI', continueBtnId: 's1-continue' },
+  { containerId: 's3-yt-player', videoId: 'QObJvc8ae3k', continueBtnId: 's3-continue' },
+  { containerId: 's7-yt-player', videoId: 'ev-yCBqIF7k', continueBtnId: 's7-continue' }
 ];
 
 function onVideoIntroStateChange(continueBtnId) {
@@ -507,18 +584,24 @@ function viqFinish(n) {
      (115-61)/2 = 27 — פער גדול בהרבה מזה של הזהב, ולכן קופסת התרופה
      "צפה" גבוה משמעותית מהמיועד בלי התיקון הזה.
    ========================================================= */
-/* הגדלת הסימולציה (מסכים 6+7) — בקשה מפורשת: הלקוח ציין שטח ריק
-   משמעותי במסכים, וביקש להגדיל את המאזניים ואת האלמנט הנגרר. כל
-   המידות כאן הוגדלו פי 1.4 (קנה-מידה אחיד, כדי לשמר את יחסי-הרוחב/
-   גובה ואת חישובי ה-visualPad/surfaceY המקוריים ללא עיוות): תחנה
-   190×150→266×210, בלוק זהב 145×110→203×154, פלייסהולדר 427→600px
-   (ראו .dq-sim-placeholder/.dq-question-panel ב-styles.css — שניהם
-   עודכנו יחד). surfaceY חושב מחדש מהשברים המקוריים (630/1254,
-   570/1254) על גובה התחנה החדש, לא בהכפלה גולמית. */
-const GOLD_SIM_BLOCK = { w: 203, h: 154, visualPad: 9.4 };
+/* הגדלה נוספת של הסימולציה (מסכים 6+7) — בקשה מפורשת נוספת (2026-09-08):
+   להגדיל עוד יותר את כל אלמנטי היישומון (מאזניים כולל הצג, הבלוק
+   הנגרר), מעבר להגדלה פי 1.4 הקודמת. כל המידות כאן הוגדלו פי 1.2
+   נוסף (קנה-מידה אחיד, כדי לשמר את יחסי-הרוחב/גובה ואת חישובי
+   ה-visualPad/surfaceY ללא עיוות): תחנה 266×210→319×252, בלוק זהב
+   203×154→244×185, פלייסהולדר 600→720px (ראו .dq-sim-placeholder/
+   .dq-question-panel ב-styles.css — שניהם עודכנו יחד, וכן ה-"720"
+   הקבוע ב-IDLE.x למטה, שמניח את רוחב הפלייסהולדר). surfaceY חושב
+   מחדש מהשברים המקוריים (630/1254, 570/1254) על גובה התחנה החדש,
+   לא בהכפלה גולמית. IDLE.y הוקטן 90→70 כדי לפנות מקום אנכי לתחנה
+   הגבוהה יותר ולטקסט המוגדל מתחתיה (ראו .dq-sim-label/.dq-sim-res
+   ב-styles.css, גם הם הוגדלו ל-22px) בתוך גובה הפלייסהולדר הקבוע
+   (636px, לא משתנה — זה גובה התוכן הזמין מתחת ל-top-bar ומעל
+   ה-bottom-bar, לא חלק מהסקאלה). */
+const GOLD_SIM_BLOCK = { w: 244, h: 185, visualPad: 11.2 };
 const GOLD_SIM_STATIONS = {
-  reg:  { left: 24,  top: 280, w: 266, h: 210, surfaceY: 106 },
-  sens: { left: 310, top: 280, w: 266, h: 210, surfaceY: 95 }
+  reg:  { left: 29,  top: 288, w: 319, h: 252, surfaceY: 127 },
+  sens: { left: 372, top: 288, w: 319, h: 252, surfaceY: 115 }
 };
 
 function makeScaleSimulation(cfg) {
@@ -531,7 +614,7 @@ function makeScaleSimulation(cfg) {
 
   const BLOCK = cfg.block || GOLD_SIM_BLOCK;
   const STATIONS = GOLD_SIM_STATIONS;
-  const IDLE = { x: (600 - BLOCK.w) / 2, y: cfg.idleY != null ? cfg.idleY : 90 };
+  const IDLE = { x: (720 - BLOCK.w) / 2, y: cfg.idleY != null ? cfg.idleY : 70 };
 
   const state = { blockX: IDLE.x, blockY: IDLE.y, regVal: 0, sensVal: 0, placedOn: null, dragging: false };
   let animTimer = null;
@@ -647,12 +730,40 @@ function makeScaleSimulation(cfg) {
 
   blockEl.addEventListener('pointerdown', onPointerDown);
 
+  /* Gesture hint (2026-09-09, client request): show the same hand+rings used by every other drag
+     question (showDragGestureHint()'s CSS classes — .gesture-hint, .gesture-hint-ring--drag-big/
+     -small, .gesture-hint-hand) on the draggable block itself, so it's clear the block needs to be
+     pressed/dragged. Not
+     showDragGestureHint() itself — that function offsets past the target's edge specifically to
+     avoid covering a text LABEL, which doesn't apply here (the block is a plain image with no text)
+     — so this stays dead-center on the block via the shared CSS's own left:50%/top:50% default,
+     with no inline offset override. blockEl is already position:absolute (see .dq-sim-block),
+     satisfying the same "slotEl must be positioned" requirement. Dismissed on pointerdown (this
+     simulation's own drag-start event, not the native HTML5 dragstart the other drag questions use). */
+  function showBlockGestureHint() {
+    if (blockEl.dataset.gestureShown) return;
+    blockEl.dataset.gestureShown = 'true';
+    const hint = document.createElement('div');
+    hint.className = 'gesture-hint';
+    hint.innerHTML =
+      '<div class="gesture-hint-ring gesture-hint-ring--drag-big"></div>' +
+      '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
+      '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
+    blockEl.appendChild(hint);
+    function dismiss() {
+      hint.remove();
+      blockEl.removeEventListener('pointerdown', dismiss);
+    }
+    blockEl.addEventListener('pointerdown', dismiss);
+  }
+
   function reset() {
     cancelAnim();
     state.blockX = IDLE.x; state.blockY = IDLE.y;
     state.regVal = 0; state.sensVal = 0; state.placedOn = null; state.dragging = false;
     renderBlock();
     renderLcd();
+    showBlockGestureHint();
   }
 
   reset();
@@ -667,12 +778,12 @@ const s5GoldSim = makeScaleSimulation({
 const s6MedicineSim = makeScaleSimulation({
   rootId: 's6-sim',
   regTarget: 2.00, sensTarget: 2.037, regDecimals: 2, sensDecimals: 3,
-  // גובה הבקבוקון "ביד" (161) תואם בכוונה לגובה גוש הזהב (GOLD_SIM_BLOCK).
-  // visualPad=38: התמונה הריבועית (1024×1024) בתיבה צרה-וגבוהה 85×161
+  // גובה הבקבוקון "ביד" (193) תואם בכוונה לגובה גוש הזהב (GOLD_SIM_BLOCK).
+  // visualPad=45.5: התמונה הריבועית (1024×1024) בתיבה צרה-וגבוהה 102×193
   // מותירה שוליים שקופים גדולים בהרבה מאלה של הזהב — ראו ההערה על
-  // cfg.block.visualPad למעלה. (שני המספרים הוגדלו פי 1.4 יחד עם שאר
-  // הסימולציה — 61×115/27 המקוריים → 85×161/38.)
-  block: { w: 85, h: 161, visualPad: 38 }
+  // cfg.block.visualPad למעלה. (שני המספרים הוגדלו פי 1.2 נוסף יחד עם
+  // שאר הסימולציה — 85×161/38 הקודמים → 102×193/45.5.)
+  block: { w: 102, h: 193, visualPad: 45.5 }
 });
 
 /* =========================================================
@@ -1137,6 +1248,17 @@ document.querySelectorAll('#s10 .scq-opt').forEach(function (opt) {
 function showDragGestureHint(slotEl) {
   if (!slotEl || slotEl.dataset.gestureShown) return;
   slotEl.dataset.gestureShown = 'true';
+  /* Found the actual text-bearing element BEFORE appending the hint below — slotEl might just be a
+     text-holding element itself (s17's .s17-drag-item, text as a direct child) or a wrapper around
+     one (.dq-source-slot > .dq-drag-card); descending into the single child that carries the same
+     full text as its parent finds whichever one actually renders the label. Must run before
+     slotEl.appendChild(hint), since that call gives slotEl (and every ancestor of the label down to
+     it) a second child — the hint itself — which would immediately break the "exactly one child"
+     check below and leave textHost stuck one level too high. */
+  let textHost = slotEl;
+  while (textHost.children.length === 1 && textHost.children[0].textContent === textHost.textContent) {
+    textHost = textHost.children[0];
+  }
   const hint = document.createElement('div');
   hint.className = 'gesture-hint';
   hint.innerHTML =
@@ -1144,6 +1266,61 @@ function showDragGestureHint(slotEl) {
     '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
     '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
   slotEl.appendChild(hint);
+  /* Positioned past the target's own right edge instead of dead-center on it (2026-09-08, client
+     feedback: the hand+rings were sitting directly on top of — and hiding — the dragged element's
+     own label text).
+     Measured from the actual rendered LABEL TEXT's own right edge (via Range, not slotEl's
+     offsetWidth) — reported 2026-09-10 still covering the label on "הפחתות"/"5.90"/"טבעת זהב":
+     offsetWidth-based math assumed the text sits centered with a wide, fairly constant margin
+     inside a fixed-width pill, which happened to not hold for these specific labels/positions
+     (word-bank order reshuffles every load, and the source-bank items don't all share one fixed
+     width) — sizing off the container's width is only ever a proxy for "past the text", and a
+     wrong one whenever the real margin is smaller than assumed. Reading the text's own painted
+     extent removes the guesswork: the hand can only ever land past where the text actually ends,
+     regardless of pill width, label length, or shuffle position.
+     Gap is RING_HALF (21px, half of .gesture-hint-ring--drag-big's 42px width) MINUS 1px, measured
+     from the anchor to the text edge — i.e. the ring's own near edge lands 1px before the text, just
+     touching it without crossing in. A pass at binding this to the smaller HAND radius instead (+16
+     total, on the reasoning "only the opaque hand can really hide a letter, the ring is a translucent
+     decoration") was tried and reverted 2026-09-10: checked against the *unpaused, running* animation
+     (not a frame frozen mid-cycle) — around 30-40% into its 2s loop the ring is both near full 42px
+     scale AND still ~0.6-0.65 opacity (see the `gesture-ring-big` keyframes), which reads as a clearly
+     visible pale-blue disc, not a faint outline — at +16 that disc sat squarely over the label's last
+     glyph for a real, visible stretch of the loop, not just a 1px graze. RING_HALF-1 keeps that disc
+     off the letters entirely while still landing the cluster closer to/on the card than the original
+     RING_HALF+4 (+25) margin did, since narrow chips (this project's fixed 180px pill has plenty of
+     room either way, but the shared -03-05/-03-06 min-width:90px chips don't) only have so much real
+     margin between the text and the card's own edge to spend.
+     Falls back to the old container-edge math (still +8, safe there — see the 2026-09-09 log in git
+     history) if the range ever comes back empty (e.g. a ghost placeholder with no text).
+     Deferred to rAF (2026-09-08, still covering text after the above fix): this function always runs
+     from inside resetScreenState*(), which goTo() calls BEFORE target.classList.add('active') — so at
+     this point the screen is still display:none and any width/rect read is 0. Reading it one frame
+     later, after the screen is actually visible, gives real values.
+     Divided by the #app scale factor (2026-09-10, reported "hand points at nothing" once tested at a
+     real window size instead of exactly 1280×710): getBoundingClientRect()/Range.getBoundingClientRect()
+     report SCREEN-space pixels — i.e. already multiplied by whatever scaleApp() set #app's CSS
+     transform:scale(...) to for the current window — while hint.style.left is a LOCAL CSS value that
+     gets scaled again by that same transform when painted. Subtracting two screen-space rects and
+     feeding the raw result straight into a local `left` therefore only came out right by coincidence
+     at scale 1 (a 1280×710 viewport); at any other window size the on-screen gap this produces is off
+     by the scale factor, landing the hint away from the card entirely. `appRect.width / 1280` recovers
+     the current scale the same way it's already read elsewhere in this file (see onPointerDown in
+     makeScaleSimulation); dividing the measured screen-space distance by it converts it back to the
+     local units style.left expects. The +20 gap itself is already a local value (derived from the
+     ring's own local 42px width) and must not be divided. */
+  requestAnimationFrame(function () {
+    const range = document.createRange();
+    range.selectNodeContents(textHost);
+    const textRect = range.getBoundingClientRect();
+    const appRect = document.getElementById('app').getBoundingClientRect();
+    const scale = appRect.width / 1280;
+    if (textRect.width > 0) {
+      hint.style.left = ((textRect.right - slotEl.getBoundingClientRect().left) / scale + 20) + 'px';
+    } else {
+      hint.style.left = 'calc(50% + ' + (slotEl.offsetWidth / 2 + 8) + 'px)';
+    }
+  });
   function dismiss() {
     hint.remove();
     slotEl.removeEventListener('dragstart', dismiss);
@@ -1477,7 +1654,10 @@ function makeDragQuestion(cfg) {
     else if (!hasProgress) resetInitial();
     /* אחרת: יש התקדמות (הוצב קלף ו/או בוצע ניסיון) — לא מאפסים,
        משאירים את ה-DOM/state כמו שהלומד עזב אותם */
-    showDragGestureHint(document.getElementById('slot-' + dragIds[0]));
+    /* gestureHintDragId: optional override (used by dq11 — "חזרות", dragIds[0]/the actual first
+       DOM slot, isn't the chip the client wants the hint on; they specified "הפחתות" by name).
+       Falls back to dragIds[0] (the first labels key) for every other question, unchanged. */
+    showDragGestureHint(document.getElementById('slot-' + (cfg.gestureHintDragId || dragIds[0])));
   }
 
   window[cfg.prefix + 'DragOver'] = dragOver;
@@ -1522,6 +1702,7 @@ const dq11 = makeDragQuestion({
   feedboxId: 's11-feedbox',
   revealBtnId: 's11-reveal-btn',
   wordBankId: 's11-word-bank',
+  gestureHintDragId: 's11-drag-hafhatot', // client asked for the hint on "הפחתות" specifically, not dragIds[0] ("חזרות")
   onContinue: function () { goTo(12); },
   onResult: function (outcome) {
     stationProgress.q11 = outcome;
@@ -1992,43 +2173,11 @@ document.querySelectorAll('#s15 .s15-card').forEach(function (opt) {
 });
 
 /* =========================================================
-   מסך 17 — שאלה 2 מתוך 6: טבלה (עמוד 1) + שאלת גרירה (עמוד 2), עם
-   גלילה. אפקט "קפיצת עמוד" הועתק בדיוק ממסך 2 (id="s1") של
-   Methodica-science-mass-measure-02-04: מנעול tblJumping מונע קפיצות
-   כפולות מרצף wheel אחד, scrollTo({behavior:'smooth'}) לעמוד היעד לפי
-   offsetTop, שחרור המנעול אחרי 500ms (מתואם לזמן אנימציית ה-smooth
-   scroll הטבעית). שאלת הגרירה משתמשת ב-makeDragQuestion (אותו factory
+   מסך 17 — שאלה 2 מתוך 6: כותרת+משפט, ומיד מתחת שורה עם שאלת הגרירה
+   מימין + טבלת התוצאות משמאל (ראו styles.css להקשר על ביטול הגלילה,
+   2026-09-08). שאלת הגרירה משתמשת ב-makeDragQuestion (אותו factory
    ממסך 12) — אינסטנס נוסף (dq16), לא קוד חדש.
    ========================================================= */
-
-let s16CurrentPage = 0;
-let s16Jumping = false;
-
-function s16GoToPage(index) {
-  const pages = document.querySelectorAll('#s16-scroll-area .tbl-page');
-  if (index < 0 || index >= pages.length || s16Jumping || index === s16CurrentPage) return;
-  s16Jumping = true;
-  s16CurrentPage = index;
-  document.getElementById('s16-scroll-area').scrollTo({ top: pages[index].offsetTop, behavior: 'smooth' });
-  setTimeout(function () { s16Jumping = false; }, 500);
-}
-
-function s16InitScrollJump() {
-  const scrollArea = document.getElementById('s16-scroll-area');
-  if (!scrollArea || scrollArea.dataset.jumpInit) return;
-  scrollArea.dataset.jumpInit = 'true';
-
-  scrollArea.addEventListener('wheel', function (e) {
-    e.preventDefault();
-    if (s16Jumping || e.deltaY === 0) return;
-    s16GoToPage(s16CurrentPage + (e.deltaY > 0 ? 1 : -1));
-  }, { passive: false });
-
-  scrollArea.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); s16GoToPage(s16CurrentPage + 1); }
-    if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); s16GoToPage(s16CurrentPage - 1); }
-  });
-}
 
 const TEXTS_S16_DQ = {
   correct: {
@@ -2080,38 +2229,9 @@ const dq16 = makeDragQuestion({
   texts: TEXTS_S16_DQ
 });
 
-/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Shown once per screen visit (not once per lomda —
-   s16GestureShown is a plain module-level flag, so a revisit after a full page reload would show it
-   again, matching every other "resume state" pattern in this codebase that resets on reload). Hidden
-   the instant the learner attempts a real scroll (wheel or arrow keys) — matches
-   s16InitScrollJump()'s own trigger set, so "start of the action" is the same wheel/keydown event in
-   both places, not a separate/later signal like the scroll-snap animation finishing. */
-let s16GestureShown = false;
-
-function s16MaybeShowScrollGesture() {
-  if (s16GestureShown) return;
-  s16GestureShown = true;
-  const gesture = document.getElementById('s16-scroll-gesture');
-  const scrollArea = document.getElementById('s16-scroll-area');
-  if (!gesture || !scrollArea) return;
-  gesture.hidden = false;
-  function dismiss() {
-    gesture.hidden = true;
-    scrollArea.removeEventListener('wheel', dismiss);
-    scrollArea.removeEventListener('keydown', dismiss);
-  }
-  scrollArea.addEventListener('wheel', dismiss);
-  scrollArea.addEventListener('keydown', dismiss);
-}
-
 function resetScreenState16() {
   updateQuestionNavB('s16');
-  s16InitScrollJump();
-  s16CurrentPage = 0;
-  const scrollArea = document.getElementById('s16-scroll-area');
-  if (scrollArea) scrollArea.scrollTop = 0;
   dq16.reset();
-  s16MaybeShowScrollGesture();
 }
 
 /* =========================================================
@@ -2209,6 +2329,13 @@ function s17Drop(event, targetZone) {
   const itemEl = document.getElementById(itemId);
   if (zoneEl && itemEl) {
     zoneEl.classList.remove('s17-drag-over');
+    /* רק פריט אחד מותר בכל תא שחרור בו-זמנית — בקשה מפורשת (2026-09-08).
+       אם כבר יש פריט אחר באזור היעד, הוא מוחזר למחסן המקור לפני שהפריט
+       הנגרר נכנס, לפי אותה מוסכמת "החלפה" כמו ב-makeDragQuestion.drop(). */
+    const existing = zoneEl.querySelector('.s17-drag-item');
+    if (existing && existing !== itemEl) {
+      document.getElementById('s17-source-bank').appendChild(existing);
+    }
     if (itemEl.parentElement) itemEl.parentElement.removeChild(itemEl);
     zoneEl.appendChild(itemEl);
   }

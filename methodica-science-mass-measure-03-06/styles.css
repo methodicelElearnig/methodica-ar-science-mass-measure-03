@@ -199,6 +199,8 @@ img { display: block; max-width: none; }
 .tbl-content {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 74px;
+  /* top overridden to 139px below (.tbl-content.s6-scroll-area) — see that rule's comment for why
+     the clearance moved here instead of living on every .tbl-page. */
   /* left/right עברו מ-position ל-padding, כדי שפס הגלילה יישב צמוד
      לקנבס (לא במרווח 40px) — תוקן בכל מסכי הגלילה בפרויקט (1/4/5/6)
      לפי בקשת המשתמשת. תוכן פנימי נשאר באותו מרווח, כי הפדינג מפצה
@@ -206,33 +208,82 @@ img { display: block; max-width: none; }
   padding-left: 40px; padding-right: 40px;
   overflow-y: auto;
   overflow-x: hidden;
-  scroll-snap-type: y mandatory;
-  /* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
-     ported from Sain 1, missed in this project's first pass. */
+  /* scroll-snap-type/scroll-snap-align/scroll-snap-stop removed (2026-09-08, client feedback:
+     "הסקרול באר ארוך בצורה לא תקינה", same root cause as Sain 5 screen 5 before its fix) —
+     .tbl-page's forced min-height:100% inflated the real scrollHeight far past the actual (much
+     shorter) content of each of the 5 sections, making the scrollbar thumb tiny relative to an
+     oversized track. Converted to normal continuous flow like the rest of the family; the shared
+     bottom action bar now tracks which section is in view via scroll position instead of a
+     discrete page index (see s1UpdateCurrentPageFromScroll() in script.js). */
+  /* dir="rtl" (inherited from <html>) makes the browser render the native vertical scrollbar
+     on the LEFT. Force ltr here so the scrollbar sits on the right (product requirement), and
+     restore true rtl for all actual content via .tbl-content-inner below. */
+  direction: ltr;
+}
+/* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
+   ported from Sain 1. Updated 2026-09-08: scoped to just the scrollbar strip instead of the whole
+   content box (client feedback — the hand cursor covering the entire screen, far from the actual
+   scrollbar, was confusing). `.near-scrollbar` is toggled by JS (initScrollbarHoverCursor in
+   script.js) based on mouse distance from the container's right edge, where the scrollbar sits. */
+.tbl-content.near-scrollbar { cursor: grab; }
+/* Figma source of truth: node 1723:43076 ("scrolling"), file eSbp4bKHgBky0rakDb8l9N — width 12px,
+   track rgba(201,206,216,0.4) + 0.5px solid #f3f4f5 border, thumb rgba(0,0,0,0.56).
+   REWRITTEN 2026-09-09: the "cover every -button sub-selector" approach above was STILL not enough —
+   verified live (real headless Chrome, pixel-sampled) that the up/down arrows render regardless,
+   even with !important and a full reload. Current Chrome does not let you keep a styled native
+   scrollbar without its arrow buttons at all anymore; only hiding the ENTIRE native scrollbar works.
+   So the container hides its native scrollbar completely and gets a JS-driven fake scrollbar instead
+   (initFakeScrollbar() in script.js) — a real div-based track+thumb, draggable, synced to scroll
+   position, with no arrow buttons because there's nothing native left to render them. */
+.native-scrollbar-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.native-scrollbar-hidden { scrollbar-width: none; }
+.fake-scrollbar-track {
+  position: absolute;
+  width: 12px;
+  background: rgba(201, 206, 216, 0.4);
+  border: 0.5px solid #f3f4f5;
+  border-radius: 16px;
+  z-index: 5;
+}
+.fake-scrollbar-thumb {
+  position: absolute;
+  left: 0;
+  width: 12px;
+  background: rgba(0, 0, 0, 0.56);
+  border-radius: 24px;
   cursor: grab;
 }
-.tbl-content::-webkit-scrollbar { width: 8px; }
-.tbl-content::-webkit-scrollbar-track { background: rgba(201, 206, 216, 0.4); border-radius: 16px; }
-.tbl-content::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.56); border-radius: 24px; }
+.fake-scrollbar-thumb:active { cursor: grabbing; }
+/* עוטף את כל התוכן האמיתי של .tbl-content ומחזיר rtl אמיתי (ה-ltr
+   למעלה משמש רק כדי להזיז את פס הגלילה הטבעי לימין). height:100%
+   כי .tbl-page (הילד היחיד כאן) נשען על min-height:100% מול תיבת
+   ההורה שלו. */
+.tbl-content-inner { direction: rtl; height: 100%; }
 /* #s6-scroll-area הוא ה-.tbl-content היחיד בפרויקט הזה, ו-.tbl-page
    כבר מספק לבד את המרווח מהקנבס (padding-right:40/left:24 למטה) —
    בלי האיפוס הזה נוצר padding כפול (40 מכאן + 40 מ-.tbl-page = 80),
    שדחף את כל התוכן ל-right:1200 במקום ה-right:1240 הסטנדרטי (זהה
    לבאג שתוקן בסיין 5, .s4-scroll-area). */
 #s6-scroll-area { padding-left: 0; padding-right: 0; }
+/* מרווח 139px (המוסכמה הסטנדרטית של "כפתור מצאתם בעיה?"/.flag-btn) הועבר
+   מ-padding-top על כל .tbl-page (כפי שהיה קודם) אל הקונטיינר עצמו — בדיוק
+   כמו .tbl-content.s4-scroll-area בסיין 5 (מסך 5, אחרי התיקון שם). כשה-139px
+   חי על כל סקשן בנפרד, המרווח הזה נספר שוב ושוב בכל מעבר בין סקשנים בזרימה
+   רגילה (32px padding-bottom של סקשן קודם + 139px padding-top של הסקשן הבא
+   = כ-171px "מת" — בדיוק המרווח הכתום שהמשתמשת סימנה כבעיה, 2026-09-10),
+   למרות שהוא נחוץ בפועל רק פעם אחת: לוודא שתוכן שקופץ לראש חלון-הגלילה
+   (s1GoToPage) לא נתקע מתחת לכפתור הדגל, ללא קשר לאיזה סקשן זה. הזזת ההסט
+   לקונטיינר פותרת את זה מבנית פעם אחת לכל הסקשנים גם יחד — לא משנה את
+   scrollTop/offsetTop הפנימיים (אלה יחסיים לתיבת-התוכן של הקונטיינר עצמו,
+   לא למיקומו המוחלט על המסך), רק את מיקום כל תיבת-הגלילה על המסך. */
+.tbl-content.s6-scroll-area { top: 139px; }
 .tbl-page {
-  min-height: 100%;
   box-sizing: border-box;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* RTL column: flex-start = physical right */
   gap: 20px;
-  /* top:139px — זהה למוסכמת top:139 הסטנדרטית של מסכי "שאלה" בכל
-     הפרויקט (.scq-question, וכן סיין 5/מסך 5 עמוד 2 אחרי התיקון שם).
-     עקבי בכל 5 הסקשנים כאן (per בקשה מפורשת ליישור אחיד מול הרפרנס). */
-  padding: 139px 40px 32px 24px;
+  padding: 24px 40px 32px 24px;
 }
 .tbl-page-header { display: flex; flex-direction: column; gap: 16px; width: 100%; }
 .tbl-table { width: 100%; max-width: 900px; border-collapse: collapse; direction: rtl; text-align: center; flex-shrink: 0; }
@@ -366,7 +417,11 @@ img { display: block; max-width: none; }
   width: 0; height: 0;
   pointer-events: none;
 }
-.gesture-hint-scroll-wrap .gesture-hint { top: 62%; }
+/* 2026-09-08: horizontal anchor moved from center (left:50%, the base .gesture-hint rule) to the
+   scroll container's right edge, where the native scrollbar physically sits (these containers force
+   direction:ltr — see CLAUDE.md). Client feedback: the hand must sit ON the scrollbar itself, not
+   floating in the middle of the content. */
+.gesture-hint-scroll-wrap .gesture-hint { top: 62%; left: auto; right: 10px; }
 .gesture-hint-hand,
 .gesture-hint-ring {
   position: absolute;

@@ -30,6 +30,71 @@ function scaleApp() {
 }
 window.addEventListener('resize', scaleApp);
 
+/* Fake scrollbar (2026-09-09) — replaces the native styled scrollbar on every overflow-y:auto
+   container. Root cause: current Chrome no longer honors ::-webkit-scrollbar-button{display:none}
+   (verified live: the up/down arrows render regardless, even with !important + a full reload) —
+   only hiding the native scrollbar entirely works, so we do that and draw our own track+thumb here,
+   matching the Figma spec colors (see .fake-scrollbar-track/-thumb in styles.css) with no arrow
+   buttons because nothing native is left to render them. */
+function initFakeScrollbar(el) {
+  if (!el || el.dataset.fakeScrollbarInit) return;
+  el.dataset.fakeScrollbarInit = 'true';
+  el.classList.add('native-scrollbar-hidden');
+  const parent = el.parentElement;
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+  const track = document.createElement('div');
+  track.className = 'fake-scrollbar-track';
+  const thumb = document.createElement('div');
+  thumb.className = 'fake-scrollbar-thumb';
+  track.appendChild(thumb);
+  parent.appendChild(track);
+
+  function scale() { return Math.min(window.innerWidth / 1280, window.innerHeight / 710); }
+
+  function layout() {
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+    const height = elRect.height / s;
+    track.style.top = ((elRect.top - parentRect.top) / s) + 'px';
+    track.style.height = height + 'px';
+    track.style.left = ((elRect.right - parentRect.left) / s - 12) + 'px';
+    const needsScroll = el.scrollHeight > el.clientHeight + 1;
+    track.style.display = needsScroll ? 'block' : 'none';
+    if (!needsScroll) return;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const scrollRatio = el.scrollTop / (el.scrollHeight - el.clientHeight);
+    thumb.style.height = thumbHeight + 'px';
+    thumb.style.top = (maxThumbTop * scrollRatio) + 'px';
+  }
+  el.addEventListener('scroll', layout);
+  window.addEventListener('resize', layout);
+
+  let dragging = false, startY = 0, startScrollTop = 0;
+  thumb.addEventListener('mousedown', function (e) {
+    dragging = true; startY = e.clientY; startScrollTop = el.scrollTop;
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const height = elRect.height / s;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const deltaY = (e.clientY - startY) / s;
+    const scrollableDist = el.scrollHeight - el.clientHeight;
+    el.scrollTop = startScrollTop + (deltaY / maxThumbTop) * scrollableDist;
+  });
+  document.addEventListener('mouseup', function () { dragging = false; document.body.style.userSelect = ''; });
+  layout();
+  new MutationObserver(layout).observe(el, { childList: true, subtree: true, characterData: true });
+}
+
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
   document.querySelectorAll('.screen').forEach(function (el) {
@@ -40,6 +105,9 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  requestAnimationFrame(function () {
+    target.querySelectorAll('.tbl-content').forEach(initFakeScrollbar);
+  });
 }
 
 function resetScreenState(n) {
@@ -92,11 +160,13 @@ function resetScreenState0() {
 
 function s0Continue() { goTo(1); }
 
-/* קישור בין סינים: מסך ראשון בסיין 4 -> מסך אחרון בסיין 3 (s2, המסך
-   האחרון בפועל שם). נתיב יחסי + #screen=N, אותה מוסכמה בדיוק כמו
-   בפרויקט הקודם, Methodica-science-mass-measure-02-linked. */
+/* קישור בין סינים: מסך ראשון בסיין 4 -> מסך אחרון בסיין 2 (s9, המסך
+   האחרון בפועל שם). עודכן 2026-09-08: סיין 3 הוצא מרצף הלומדה ואוחסן
+   בארכיון (../../archive/methodica-science-mass-measure-03-03), לכן
+   הקישור מדלג עליו ישירות לסיין 2 — אותו יעד שסיין 3 עצמו הפנה אליו
+   לפני ההוצאה מהרצף. נתיב יחסי + #screen=N. */
 function s0BackToPreviousSain() {
-  window.location.href = '../methodica-science-mass-measure-03-03/index.html#screen=2';
+  window.location.href = '../methodica-science-mass-measure-03-02/index.html#screen=9';
 }
 
 /* =========================================================
@@ -296,34 +366,30 @@ document.querySelectorAll('#s1 .scq-opt').forEach(function (opt) {
    -02-04 (זהה למה שכבר שוכפל למסך 17 בסיין 1).
    ========================================================= */
 
-let s2CurrentPage = 0;
-let s2Jumping = false;
-
-function s2GoToPage(index) {
-  const pages = document.querySelectorAll('#s2-scroll-area .tbl-page');
-  if (index < 0 || index >= pages.length || s2Jumping || index === s2CurrentPage) return;
-  s2Jumping = true;
-  s2CurrentPage = index;
-  document.getElementById('s2-scroll-area').scrollTo({ top: pages[index].offsetTop, behavior: 'smooth' });
-  setTimeout(function () { s2Jumping = false; }, 500);
-}
-
-function s2InitScrollJump() {
-  const scrollArea = document.getElementById('s2-scroll-area');
-  if (!scrollArea || scrollArea.dataset.jumpInit) return;
-  scrollArea.dataset.jumpInit = 'true';
-
-  scrollArea.addEventListener('wheel', function (e) {
-    e.preventDefault();
-    if (s2Jumping || e.deltaY === 0) return;
-    s2GoToPage(s2CurrentPage + (e.deltaY > 0 ? 1 : -1));
-  }, { passive: false });
-
-  scrollArea.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); s2GoToPage(s2CurrentPage + 1); }
-    if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); s2GoToPage(s2CurrentPage - 1); }
+/* SELF-QA.md §7 "Cursor shape" — the hand-shaped (grab) cursor over a scrollable container must only
+   show near the actual scrollbar strip, not across the whole content box (client feedback, 2026-09-08:
+   the grab cursor covering the entire screen was confusing). Toggles `.near-scrollbar` on `el` based
+   on how close the mouse is to its right edge (where the scrollbar physically sits, since these
+   containers force direction:ltr — see CLAUDE.md). thresholdPx is generous on purpose (wider than the
+   8px scrollbar itself) so it's easy to hit without pixel-perfect aim. */
+function initScrollbarHoverCursor(el, thresholdPx) {
+  if (!el || el.dataset.scrollbarCursorInit) return;
+  el.dataset.scrollbarCursorInit = 'true';
+  const threshold = thresholdPx || 20;
+  el.addEventListener('mousemove', function (e) {
+    const rect = el.getBoundingClientRect();
+    const distFromRight = rect.right - e.clientX;
+    el.classList.toggle('near-scrollbar', distFromRight >= 0 && distFromRight <= threshold);
   });
+  el.addEventListener('mouseleave', function () { el.classList.remove('near-scrollbar'); });
 }
+
+/* עודכן (2026-09-08, בקשה מפורשת): בוטל מנגנון "קפיצת העמוד"
+   (s2GoToPage/s2InitScrollJump/wheel+keydown page-snap) — התוכן זורם
+   עכשיו כזרימה רגילה (ראו .tbl-page ב-styles.css), הגלילה הטבעית של
+   הדפדפן מספיקה בלי JS מיוחד. initScrollbarHoverCursor (אפקט היד ליד
+   פס הגלילה) נשאר ונקרא ישירות מ-resetScreenState2 — לא נגעתי בפס
+   הגלילה עצמו כלל, לפי בקשה מפורשת. */
 
 const S2 = {
   correctId: 'd',
@@ -447,8 +513,7 @@ document.getElementById('s2-hint-overlay').addEventListener('click', function (e
 
 /* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1 (methodica-science-mass-measure-
    03-01, which this family's SELF-QA.md governs) — missed here in the first pass. Shown once per
-   screen visit, hidden the instant a real scroll is attempted (wheel/keydown — the same events
-   s2InitScrollJump() already listens for, so "start of the action" fires at one shared moment). */
+   screen visit, hidden the instant a real scroll is attempted (wheel/keydown). */
 let s2ScrollGestureShown = false;
 function s2MaybeShowScrollGesture() {
   if (s2ScrollGestureShown) return;
@@ -468,10 +533,9 @@ function s2MaybeShowScrollGesture() {
 
 function resetScreenState2() {
   updateQuestionNav('s2');
-  s2InitScrollJump();
+  initScrollbarHoverCursor(document.getElementById('s2-scroll-area'));
   s2MaybeShowScrollGesture();
   if (s2Done || s2Attempts > 0 || s2Selected) return; // resume-state guard
-  s2CurrentPage = 0;
   const scrollArea = document.getElementById('s2-scroll-area');
   if (scrollArea) scrollArea.scrollTop = 0;
   s2Selected = null;

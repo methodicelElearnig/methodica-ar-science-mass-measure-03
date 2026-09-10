@@ -352,6 +352,7 @@
     </div>
 
     <div class="dq-question-panel">
+      <div class="dq-question-panel-inner">
        <p class="tf-qtitle">זהב</p>
       <p class="dq-instruction">לפניכם שני סוגי מאזניים:
         <br/>
@@ -360,6 +361,7 @@
         <span class="dq-snt-pre">מהו הפער שקיבלתם?</span>
         <input id="s5-input" class="viq-input" type="number" step="any" inputmode="decimal" dir="ltr" aria-label="הפער, בגרם" oninput="viqOnInput(5)">
         <span class="dq-snt-post">גרם</span>
+      </div>
       </div>
     </div>
 
@@ -421,6 +423,7 @@
     </div>
 
     <div class="dq-question-panel">
+      <div class="dq-question-panel-inner">
       <p class="tf-qtitle">תרופות</p>
       <p class="dq-instruction">לפניכם שני סוגי מאזניים:
         <br/>
@@ -429,6 +432,7 @@
         <span class="dq-snt-pre">מהו הפער שקיבלתם?</span>
         <input id="s6-input" class="viq-input" type="number" step="any" inputmode="decimal" dir="ltr" aria-label="הפער, בגרם" oninput="viqOnInput(6)">
         <span class="dq-snt-post">גרם</span>
+      </div>
       </div>
     </div>
 
@@ -519,7 +523,7 @@
         <div class="scq-qtext">
           <div class="scq-qtext-body">
             <p class="scq-qtitle">סטיית מדידה</p><br/>
-            <p class="scq-qbody">נועם סיפר שגם המאזניים המדויקים ביותר אינם מושלמים לחלוטין.<br>מהי לדעתכם הדרך הטובה ביותר לצמצם את השפעתן של טעויות מדידה אקראיות?</p>
+            <p class="scq-qbody">נועם סיפר שגם המאזניים המדויקים ביותר אינם מושלמים לחלוטין.<br><b>מהי לדעתכם הדרך הטובה ביותר לצמצם את השפעתן של טעויות מדידה אקראיות?</b></p>
           </div>
         </div>
         <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
@@ -708,12 +712,20 @@
     </div></div>
 
     <div class="dq-question-panel" id="s11-question-panel">
+      <div class="dq-question-panel-inner">
       <p class="scq-qtitle">חישוב ממוצע</p>
       <p class="dq-instruction">שקלנו קופסת טונה 3 פעמים וקיבלנו את התוצאות הבאות:</p>
-      <div class="dq-measurements-row">
-        <span class="dq-measurement-chip">מדידה 1: 141 גרם</span>
-        <span class="dq-measurement-chip">מדידה 2: 144 גרם</span>
-        <span class="dq-measurement-chip">מדידה 3: 141 גרם</span>
+      <div class="dq-measurements-table-wrap">
+        <table class="dq-measurements-table" dir="rtl">
+          <thead>
+            <tr><th>מדידה</th><th>תוצאה (בגרם)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>141</td></tr>
+            <tr><td>2</td><td>144</td></tr>
+            <tr><td>3</td><td>141</td></tr>
+          </tbody>
+        </table>
       </div>
       <p class="dq-instruction-bold">השלימו את החסר מתוך מחסן המילים:</p>
 
@@ -723,11 +735,10 @@
           <div class="dq-snt-drop" id="s11-target-1" ondragover="s11DragOver(event,'s11-target-1')" ondragenter="s11DragEnter(event,'s11-target-1')" ondragleave="s11DragLeave(event,'s11-target-1')" ondrop="s11Drop(event,'s11-target-1')"></div>
           <span class="dq-snt-post">של המדידה וחישוב</span>
           <div class="dq-snt-drop" id="s11-target-2" ondragover="s11DragOver(event,'s11-target-2')" ondragenter="s11DragEnter(event,'s11-target-2')" ondragleave="s11DragLeave(event,'s11-target-2')" ondrop="s11Drop(event,'s11-target-2')"></div>
-          <br/><span class="dq-snt-post">התוצאות שהוא 142 גרם,</span>
+          <br/><span class="dq-snt-post">התוצאות שהוא 142 גרם, עוזרים לנו למזער את אי-הוודאות ולקבל נתונים אמינים.
+          </span>
         </div>
-        <div class="dq-sentence">
-          <span class="dq-snt-pre">עוזרים לנו למזער את אי-הוודאות ולקבל נתונים אמינים.</span>
-        </div>
+
       </div>
 
       <div class="dq-word-bank" id="s11-word-bank" ondragover="event.preventDefault()" ondrop="s11DropToBank(event)">
@@ -735,6 +746,7 @@
         <div class="dq-source-slot" id="slot-s11-drag-mimutza"></div>
         <div class="dq-source-slot" id="slot-s11-drag-hafhatot"></div>
         <div class="dq-source-slot" id="slot-s11-drag-sikum"></div>
+      </div>
       </div>
     </div>
 
@@ -777,11 +789,10 @@
       <div class="transition-title-block">
         <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על</p>
         <h2 class="transition-title">6 שאלות</h2>
-        <p class="transition-sub">צריך לענות נכון על 4 שאלות (80%) לפחות.</p>
+        <p class="transition-sub">צריך לענות נכון על 4 שאלות לפחות.</p>
       </div>
       <div class="transition-avatar-wrap">
         <video class="transition-avatar" id="s12-avatar-img" autoplay loop muted playsinline></video>
-        <div class="transition-bubble">לא הכל ברור? אפשר לפנות אל הצ'אט או אל המורה לחיזוק!</div>
       </div>
     </div>
 
@@ -812,11 +823,11 @@
        המפורשת ("אייקון אינפורמיישן... יפתח הובר"). -->
   <section class="screen" data-screen="13" id="s13">
     <div class="s13-content">
+      <div class="s13-content-inner">
       <div class="s13-text">
         <p>אנחנו חלק מקבוצת מחקר בהודו המפתחת תוסף גדילה לצמח האורז שיוכל לעזור בצמצום רעב בהודו (בהצלחה!).<br/>
-        כדי להראות שהצמחים גדלים, במהלך המחקר <strong>נשקול צמחי אורז צעירים שקיבלו את התוסף וכאלה שלא ונשווה בין המדידות</strong>
-        .<br/> המדידות יתבצעו אחת לשבוע.<br/>
-        הצעד הראשון הוא לבחור במאזניים המתאימים מבין האפשרויות:</p>
+        כדי להראות שהצמחים גדלים, במהלך המחקר <strong>נשקול צמחי אורז צעירים שקיבלו את התוסף וכאלה שלא ונשווה בין המדידות</strong>.<br/> המדידות יתבצעו אחת לשבוע.<br/>
+        במחקר נצטרך להשתמש במאזניים המתאימים ביותר מבין האפשרויות:</p>
       </div>
 
       <div class="s13-cards">
@@ -847,6 +858,7 @@
             <p class="s13-card-precision">רמת דיוק: 0.001 גרם (מיליגרם)</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -1021,6 +1033,7 @@
     </div>
 
     <div class="s15-content">
+      <div class="s15-content-inner">
       <div class="scq-qtext-900">
         <div class="scq-qtext-body">
           <p class="scq-qtitle">סעיף ב</p>
@@ -1060,6 +1073,7 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
 
     <div id="s15-feedbox" class="scq-fb-box">
@@ -1085,22 +1099,16 @@
     </div>
   </section>
 
-  <!-- ============ מסך 17 — שאלה 2 מתוך 6: טבלה + שאלת גרירה, עם גלילה ============
-       אפקט הגלילה (.tbl-content/.tbl-page, snap-scroll "קפיצת עמוד" ב-
-       wheel/מקלדת) הועתק בדיוק ממסך 2 (data-screen="1", id="s1") של
-       Methodica-science-mass-measure-02-04 — פס גלילה מותאם 8px
-       (::-webkit-scrollbar), scroll-snap-type:y mandatory, JS: kGoToPage
-       עם scrollTo({behavior:'smooth'}) + נעילת tblJumping + wheel/
-       keydown handlers (זהה מכניקה, prefix s16 כאן).
-       עמוד 1 (לפני הגלילה): טבלת תוצאות מדידה — מבנה/עיצוב (.tbl-table/
-       .tbl-th/.tbl-td, zebra striping שורות זוגיות) הועתק ממסך 5
-       (data-screen="4") של Methodica-science-mass-measure-02-06,
-       מותאם לתוכן שלנו (2 עמודות: מספר חזרה / תוצאה בגרמים).
-       עמוד 2 (אחרי הגלילה): שאלת גרירה — factory זהה ל-makeDragQuestion
-       שנבנה למסך 12 (dq11), אינסטנס נוסף (dq16) עם תוכן חדש. 2
-       ניסיונות, רמז מוסתר עד ניסיון ראשון שגוי. תוכן: תסריט הפקה,
-       שקפים 45-50. שאלה 2 היא סעיף יחיד (לא כמו שאלה 1) — סיום ישיר
-       מעדכן stationBProgress/qnav ומקדם ל"שאלה 3". -->
+  <!-- ============ מסך 17 — שאלה 2 מתוך 6: טבלה + שאלת גרירה ============
+       עודכן (2026-09-08, בקשה מפורשת): בוטלה הגלילה/"קפיצת עמוד" שהייתה
+       כאן במקור לגמרי, ונמחקה טבלת "עמוד 1" (הייתה כפילות של הטבלה
+       שכבר מוצגת ליד השאלה). מסך סטטי אחד: כותרת+משפט, ומיד מתחת שורה
+       עם שאלת הגרירה מימין + טבלת התוצאות (.tbl-table/.tbl-th/.tbl-td,
+       zebra striping שורות זוגיות) משמאל. שאלת הגרירה — factory זהה
+       ל-makeDragQuestion שנבנה למסך 12 (dq11), אינסטנס נוסף (dq16) עם
+       תוכן חדש. 2 ניסיונות, רמז מוסתר עד ניסיון ראשון שגוי. תוכן: תסריט
+       הפקה, שקפים 45-50. שאלה 2 היא סעיף יחיד (לא כמו שאלה 1) — סיום
+       ישיר מעדכן stationBProgress/qnav ומקדם ל"שאלה 3". -->
   <section class="screen" data-screen="16" id="s16">
     <div class="qnav" id="s16-qnav">
       <div class="qnav-item">
@@ -1134,14 +1142,46 @@
       </div>
     </div>
 
-    <div class="tbl-content" id="s16-scroll-area" tabindex="0">
-
-      <!-- ===== עמוד 1 — טבלת תוצאות מדידה ===== -->
-      <section class="tbl-page">
+    <div class="s16-content">
+      <div class="s16-question-col" id="s16-question-panel">
         <div class="tbl-page-header">
           <p class="scq-qtitle">ניתוח המדידות – האם התוצאות אמינות?</p>
-          <p class="scq-qbody">הניסוי החל. הוספנו את התוסף לשתיל האורז. לאחר שבוע של טיפול, מדדנו את השתיל 4 פעמים.</p>
+          <p class="scq-qbody">הניסוי החל. הוספנו את התוסף לשתיל האורז. לאחר שבוע של טיפול,
+            <br/>
+            מדדנו את השתיל 4 פעמים.</p>
         </div>
+
+        <p class="dq-instruction">השלימו את הפסקה בעזרת מחסן המילים והמספרים:</p>
+
+        <div class="dq-fill-sentences">
+          <div class="dq-sentence">
+            <span class="dq-snt-pre">התוצאה שאינה הגיונית היא</span>
+            <div class="dq-snt-drop" id="s16-target-1" ondragover="s16DragOver(event,'s16-target-1')" ondragenter="s16DragEnter(event,'s16-target-1')" ondragleave="s16DragLeave(event,'s16-target-1')" ondrop="s16Drop(event,'s16-target-1')"></div>
+          </div>
+          <div class="dq-sentence">
+            <span class="dq-snt-pre">מדענים מכנים תוצאה כזו</span>
+            <div class="dq-snt-drop" id="s16-target-2" ondragover="s16DragOver(event,'s16-target-2')" ondragenter="s16DragEnter(event,'s16-target-2')" ondragleave="s16DragLeave(event,'s16-target-2')" ondrop="s16Drop(event,'s16-target-2')"></div>
+          </div>
+          <div class="dq-sentence">
+            <span class="dq-snt-pre">מכיוון שהיא לא הופיעה שוב במדידות החוזרות, לא השתמשנו בה לחישוב הממוצע.</span>
+          </div>
+          <div class="dq-sentence">
+            <span class="dq-snt-pre">הממוצע של שלוש המדידות התקינות הוא</span>
+            <div class="dq-snt-drop" id="s16-target-3" ondragover="s16DragOver(event,'s16-target-3')" ondragenter="s16DragEnter(event,'s16-target-3')" ondragleave="s16DragLeave(event,'s16-target-3')" ondrop="s16Drop(event,'s16-target-3')"></div>
+          </div>
+        </div>
+
+        <div class="dq-word-bank" id="s16-word-bank" ondragover="event.preventDefault()" ondrop="s16DropToBank(event)">
+          <div class="dq-source-slot" id="slot-s16-drag-590"></div>
+          <div class="dq-source-slot" id="slot-s16-drag-510"></div>
+          <div class="dq-source-slot" id="slot-s16-drag-meduyeket"></div>
+          <div class="dq-source-slot" id="slot-s16-drag-hariga"></div>
+          <div class="dq-source-slot" id="slot-s16-drag-shgiat"></div>
+          <div class="dq-source-slot" id="slot-s16-drag-1532"></div>
+        </div>
+      </div>
+
+      <div class="s16-table-recap">
         <table class="tbl-table" dir="rtl">
           <thead>
             <tr>
@@ -1156,76 +1196,6 @@
             <tr><td class="tbl-td">4</td><td class="tbl-td">5.12</td></tr>
           </tbody>
         </table>
-      </section>
-
-      <!-- ===== עמוד 2 — שאלת גרירה ===== -->
-      <section class="tbl-page" id="s16-question-panel">
-        <div class="s16-question-col">
-          <p class="dq-instruction">השלימו את הפסקה בעזרת מחסן המילים והמספרים:</p>
-
-          <div class="dq-fill-sentences">
-            <div class="dq-sentence">
-              <span class="dq-snt-pre">התוצאה שאינה הגיונית היא</span>
-              <div class="dq-snt-drop" id="s16-target-1" ondragover="s16DragOver(event,'s16-target-1')" ondragenter="s16DragEnter(event,'s16-target-1')" ondragleave="s16DragLeave(event,'s16-target-1')" ondrop="s16Drop(event,'s16-target-1')"></div>
-            </div>
-            <div class="dq-sentence">
-              <span class="dq-snt-pre">מדענים מכנים תוצאה כזו</span>
-              <div class="dq-snt-drop" id="s16-target-2" ondragover="s16DragOver(event,'s16-target-2')" ondragenter="s16DragEnter(event,'s16-target-2')" ondragleave="s16DragLeave(event,'s16-target-2')" ondrop="s16Drop(event,'s16-target-2')"></div>
-            </div>
-            <div class="dq-sentence">
-              <span class="dq-snt-pre">מכיוון שהיא לא הופיעה שוב במדידות החוזרות,
-                <br/> לא השתמשנו בה לחישוב הממוצע.</span>
-            </div>
-            <div class="dq-sentence">
-              <span class="dq-snt-pre">הממוצע של שלוש המדידות התקינות הוא</span>
-              <div class="dq-snt-drop" id="s16-target-3" ondragover="s16DragOver(event,'s16-target-3')" ondragenter="s16DragEnter(event,'s16-target-3')" ondragleave="s16DragLeave(event,'s16-target-3')" ondrop="s16Drop(event,'s16-target-3')"></div>
-            </div>
-          </div>
-
-          <div class="dq-word-bank" id="s16-word-bank" ondragover="event.preventDefault()" ondrop="s16DropToBank(event)">
-            <div class="dq-source-slot" id="slot-s16-drag-590"></div>
-            <div class="dq-source-slot" id="slot-s16-drag-510"></div>
-            <div class="dq-source-slot" id="slot-s16-drag-meduyeket"></div>
-            <div class="dq-source-slot" id="slot-s16-drag-hariga"></div>
-            <div class="dq-source-slot" id="slot-s16-drag-shgiat"></div>
-            <div class="dq-source-slot" id="slot-s16-drag-1532"></div>
-          </div>
-        </div>
-
-        <!-- טבלת התוצאות (עמוד 1) חוזרת כאן בצד שמאל, לפי התסריט (שקפים 45-50) -->
-        <div class="s16-table-recap">
-          <table class="tbl-table" dir="rtl">
-            <thead>
-              <tr>
-                <th class="tbl-th">מספר חזרה על השקילה</th>
-                <th class="tbl-th">התוצאה (בגרמים)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td class="tbl-td">1</td><td class="tbl-td">5.09</td></tr>
-              <tr><td class="tbl-td">2</td><td class="tbl-td">5.11</td></tr>
-              <tr><td class="tbl-td">3</td><td class="tbl-td">5.90</td></tr>
-              <tr><td class="tbl-td">4</td><td class="tbl-td">5.12</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-    </div>
-
-    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7, Figma node 2915:35184, real hand-cursor asset
-         downloaded and used verbatim — colors are the Science/Blue variant, not the ...Science-labeled
-         Math/Purple one the raw Figma export confusingly wraps). Sibling of .tbl-content, not a child
-         of it, so it stays fixed on screen instead of scrolling away with page content; nested inside
-         #s16 itself (not appended to #app), so goTo()'s normal .screen{display:none} cleanup removes
-         it automatically if the learner navigates away before dismissing it — no separate orphan-sweep
-         needed. Shown once per screen visit and hidden the instant a real scroll is attempted (wheel/
-         arrow keys) — see s16MaybeShowScrollGesture() in script.js. -->
-    <div class="gesture-hint-scroll-wrap" id="s16-scroll-gesture" hidden>
-      <div class="gesture-hint">
-        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
-        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
-        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
       </div>
     </div>
 
@@ -1300,9 +1270,10 @@
     </div>
 
     <div class="s17-content">
+      <div class="s17-content-inner">
       <div class="s17-text-group">
         <p class="scq-qtitle">מדידת מסה במבחן המציאות</p>
-        <p class="scq-qbody">לאחר שהצלחנו בפרויקט האורז, פנו אלינו כמה מפעלים וביקשו עזרה בבחירת מאזניים.<br>גררו את המוצר אל המאזניים המתאימים ביותר לשקילתו</p>
+        <p class="scq-qbody">לאחר שהצלחנו בפרויקט האורז, פנו אלינו כמה מפעלים וביקשו עזרה בבחירת מאזניים.<br><b>גררו את המוצר אל המאזניים המתאימים ביותר לשקילתו</b></p>
       </div>
 
       <div class="s17-source-bank" id="s17-source-bank" ondragover="s17DragOver(event)" ondrop="s17DropToSource(event)">
@@ -1333,6 +1304,7 @@
           <div class="s17-zone" id="s17-zone-analytic"
                ondragover="s17DragOver(event)" ondragenter="s17DragEnter(event,'s17-zone-analytic')" ondragleave="s17DragLeave(event,'s17-zone-analytic')" ondrop="s17Drop(event,'analytic')"></div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -1449,6 +1421,16 @@
     </div>
 
     <div class="scq-question">
+      <div class="scq-img"><div class="scq-img-inner">
+        <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                data-zoom-src="assets/images/שיחה-בין-המוכרים.png" data-zoom-alt="יורם מוכר הירקות ואדיר הצורף מתווכחים מי מהם צריך מאזניים מדויקים יותר">
+          <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <img class="scq-img--contain" src="assets/images/שיחה-בין-המוכרים.png" alt="יורם מוכר הירקות ואדיר הצורף מתווכחים מי מהם צריך מאזניים מדויקים יותר">
+      </div></div>
       <div class="scq-content">
         <div class="scq-qtext">
           <div class="scq-qtext-body">
@@ -1609,11 +1591,11 @@
         </div>
         <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
           <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s21Select('a')">
-            <span class="scq-opt-text">לשרשרת הזהב, כי היא מסתה קטנה יותר והיא זולה יותר</span>
+            <span class="scq-opt-text">לשרשרת הזהב, כי מסתה קטנה והיא יקרה יותר</span>
             <span class="scq-radio"></span>
           </div>
           <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s21Select('b')">
-            <span class="scq-opt-text">לחנוכיה, כי היא מסתה כבדה יותר והיא יקרה יותר</span>
+            <span class="scq-opt-text">לחנוכיה, כי מסתה כבדה והיא זולה יותר</span>
             <span class="scq-radio"></span>
           </div>
           <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s21Select('c')">

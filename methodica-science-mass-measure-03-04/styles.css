@@ -252,13 +252,10 @@ img { display: block; max-width: none; }
 .qnav-line.line-done { background: rgba(0, 0, 0, 0.6); }
 
 /* ════════════════════════════════════════════════════════
-   מסך 3 — מסך גלילה (טבלה + SCQ). אפקט "קפיצת עמוד" הועתק בדיוק
-   ממסך 2 (id="s1") של Methodica-science-mass-measure-02-04 — זהה
-   למה שכבר שוכפל למסך 17 בסיין 1. .tbl-content הוא מיכל overflow-y
-   עם scroll-snap-type:y mandatory ופס גלילה מותאם; כל .tbl-page הוא
-   min-height:100% עם scroll-snap-align:start. הגלילה בפועל מתבצעת
-   ע"י JS (wheel/מקלדת → קפיצה חלקה, ראו script.js s2GoToPage/
-   s2InitScrollJump).
+   מסך 3 — מסך גלילה (טבלה + SCQ). .tbl-content הוא מיכל overflow-y
+   עם פס גלילה מותאם; שני ה-.tbl-page-ים בתוכו זורמים בזרימה רגילה
+   (עודכן 2026-09-08, בקשה מפורשת — בוטל מנגנון "קפיצת העמוד"/
+   scroll-snap שהיה כאן, ראו הערה ליד .tbl-page למטה).
    ════════════════════════════════════════════════════════ */
 .tbl-content {
   position: absolute;
@@ -269,19 +266,58 @@ img { display: block; max-width: none; }
   padding-left: 40px; padding-right: 40px;
   overflow-y: auto;
   overflow-x: hidden;
-  scroll-snap-type: y mandatory;
-  /* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
-     ported from Sain 1, missed in this project's first pass. */
+  /* Scrollbar-side fix: this element inherits dir="rtl" from <html>, which pushes the native
+     vertical scrollbar to the LEFT. Forcing direction:ltr here moves it back to the physical
+     right edge; .tbl-content-inner (wrapping the original .tbl-page children) restores true RTL
+     for all actual content. See CLAUDE.md — scrollbar-must-be-on-the-right fix for this family. */
+  direction: ltr;
+}
+/* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
+   ported from Sain 1. Updated 2026-09-08: scoped to just the scrollbar strip instead of the whole
+   content box (client feedback — the hand cursor covering the entire screen, far from the actual
+   scrollbar, was confusing). `.near-scrollbar` is toggled by JS (initScrollbarHoverCursor in
+   script.js) based on mouse distance from the container's right edge, where the scrollbar sits. */
+.tbl-content.near-scrollbar { cursor: grab; }
+/* Figma source of truth: node 1723:43076 ("scrolling"), file eSbp4bKHgBky0rakDb8l9N — width 12px,
+   track rgba(201,206,216,0.4) + 0.5px solid #f3f4f5 border, thumb rgba(0,0,0,0.56).
+   REWRITTEN 2026-09-09: the "cover every -button sub-selector" approach above (base + :start/:end/
+   :decrement/:increment) was STILL not enough — verified live (real headless Chrome, pixel-sampled)
+   that the up/down arrows render regardless, even with !important and a full reload. Current Chrome
+   does not let you keep a styled native scrollbar without its arrow buttons at all anymore; only
+   hiding the ENTIRE native scrollbar works. So the container hides its native scrollbar completely
+   and gets a JS-driven fake scrollbar instead (initFakeScrollbar() in script.js) — a real div-based
+   track+thumb, draggable, synced to scroll position, with no arrow buttons because there's nothing
+   native left to render them. */
+.native-scrollbar-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.native-scrollbar-hidden { scrollbar-width: none; }
+.fake-scrollbar-track {
+  position: absolute;
+  width: 12px;
+  background: rgba(201, 206, 216, 0.4);
+  border: 0.5px solid #f3f4f5;
+  border-radius: 16px;
+  z-index: 5;
+}
+.fake-scrollbar-thumb {
+  position: absolute;
+  left: 0;
+  width: 12px;
+  background: rgba(0, 0, 0, 0.56);
+  border-radius: 24px;
   cursor: grab;
 }
-.tbl-content::-webkit-scrollbar { width: 8px; }
-.tbl-content::-webkit-scrollbar-track { background: rgba(201, 206, 216, 0.4); border-radius: 16px; }
-.tbl-content::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.56); border-radius: 24px; }
+.fake-scrollbar-thumb:active { cursor: grabbing; }
+.tbl-content-inner {
+  direction: rtl;
+  height: 100%;
+}
+/* עודכן (2026-09-08, בקשה מפורשת): בוטל מנגנון ה"עמודים"/scroll-snap
+   (min-height:100%, scroll-snap-align/stop) — התוכן זורם עכשיו בזרימה
+   רגילה, שני ה-.tbl-page-ים פשוט נערמים אחד אחרי השני עם ה-padding-
+   bottom הרגיל (32px) כרווח ביניהם, בלי לאלץ כל "עמוד" לתפוס גובה-מסך
+   מלא. פס הגלילה עצמו (.tbl-content) לא נגע בו כלל. */
 .tbl-page {
-  min-height: 100%;
   box-sizing: border-box;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* RTL column: flex-start = physical right */
@@ -290,8 +326,8 @@ img { display: block; max-width: none; }
 }
 .tbl-page-header { display: flex; flex-direction: column; gap: 16px; width: 100%; }
 .tbl-table { width: 100%; max-width: 900px; border-collapse: collapse; direction: rtl; text-align: center; flex-shrink: 0; }
-.tbl-th { background: #D4F3FF; border: 1px solid #D4D4D4; font-size: 18px; font-weight: 700; color: #303030; padding: 6px 12px; white-space: nowrap; }
-.tbl-td { border: 1px solid #D4D4D4; font-size: 18px; font-weight: 400; color: #303030; padding: 6px 12px; white-space: nowrap; background: #fff; }
+.tbl-th { background: #D4F3FF; border: 1px solid #D4D4D4; font-size: 22px; font-weight: 700; color: #303030; padding: 6px 12px; white-space: nowrap; }
+.tbl-td { border: 1px solid #D4D4D4; font-size: 22px; font-weight: 400; color: #303030; padding: 6px 12px; white-space: nowrap; background: #fff; }
 .tbl-table tbody tr:nth-child(even) .tbl-td { background: #D4F3FF; }
 
 /* Gesture Hint — Cursor Scroll overlay for #s2-scroll-area (SELF-QA.md §7, Figma node 2915:35184).
@@ -314,7 +350,11 @@ img { display: block; max-width: none; }
   width: 0; height: 0;
   pointer-events: none;
 }
-.gesture-hint-scroll-wrap .gesture-hint { top: 62%; }
+/* 2026-09-08: horizontal anchor moved from center (left:50%, the base .gesture-hint rule) to the
+   scroll container's right edge, where the native scrollbar physically sits (these containers force
+   direction:ltr — see CLAUDE.md). Client feedback: the hand must sit ON the scrollbar itself, not
+   floating in the middle of the content. */
+.gesture-hint-scroll-wrap .gesture-hint { top: 62%; left: auto; right: 10px; }
 .gesture-hint-hand,
 .gesture-hint-ring {
   position: absolute;

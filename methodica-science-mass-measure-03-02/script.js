@@ -36,6 +36,71 @@ function scaleApp() {
 }
 window.addEventListener('resize', scaleApp);
 
+/* Fake scrollbar (2026-09-09) — replaces the native styled scrollbar on every overflow-y:auto
+   container. Root cause: current Chrome no longer honors ::-webkit-scrollbar-button{display:none}
+   (verified live: the up/down arrows render regardless, even with !important + a full reload) —
+   only hiding the native scrollbar entirely works, so we do that and draw our own track+thumb here,
+   matching the Figma spec colors (see .fake-scrollbar-track/-thumb in styles.css) with no arrow
+   buttons because nothing native is left to render them. */
+function initFakeScrollbar(el) {
+  if (!el || el.dataset.fakeScrollbarInit) return;
+  el.dataset.fakeScrollbarInit = 'true';
+  el.classList.add('native-scrollbar-hidden');
+  const parent = el.parentElement;
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+  const track = document.createElement('div');
+  track.className = 'fake-scrollbar-track';
+  const thumb = document.createElement('div');
+  thumb.className = 'fake-scrollbar-thumb';
+  track.appendChild(thumb);
+  parent.appendChild(track);
+
+  function scale() { return Math.min(window.innerWidth / 1280, window.innerHeight / 710); }
+
+  function layout() {
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+    const height = elRect.height / s;
+    track.style.top = ((elRect.top - parentRect.top) / s) + 'px';
+    track.style.height = height + 'px';
+    track.style.left = ((elRect.right - parentRect.left) / s - 12) + 'px';
+    const needsScroll = el.scrollHeight > el.clientHeight + 1;
+    track.style.display = needsScroll ? 'block' : 'none';
+    if (!needsScroll) return;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const scrollRatio = el.scrollTop / (el.scrollHeight - el.clientHeight);
+    thumb.style.height = thumbHeight + 'px';
+    thumb.style.top = (maxThumbTop * scrollRatio) + 'px';
+  }
+  el.addEventListener('scroll', layout);
+  window.addEventListener('resize', layout);
+
+  let dragging = false, startY = 0, startScrollTop = 0;
+  thumb.addEventListener('mousedown', function (e) {
+    dragging = true; startY = e.clientY; startScrollTop = el.scrollTop;
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const height = elRect.height / s;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const deltaY = (e.clientY - startY) / s;
+    const scrollableDist = el.scrollHeight - el.clientHeight;
+    el.scrollTop = startScrollTop + (deltaY / maxThumbTop) * scrollableDist;
+  });
+  document.addEventListener('mouseup', function () { dragging = false; document.body.style.userSelect = ''; });
+  layout();
+  new MutationObserver(layout).observe(el, { childList: true, subtree: true, characterData: true });
+}
+
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
   document.querySelectorAll('.screen').forEach(function (el) {
@@ -46,6 +111,9 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  requestAnimationFrame(function () {
+    target.querySelectorAll('.s7-content').forEach(initFakeScrollbar);
+  });
 }
 
 function resetScreenState(n) {
@@ -936,6 +1004,7 @@ let s7Attempts = 0;
 let s7Done = false;
 let s7AnswerSnapshot = null; // הערך שהלומד הזין בפועל בניסיון האחרון (לא הערך הנכון)
 let s7Revealed = false;
+let s7ScrollGestureShown = false;
 
 function s7OnInput() {
   const input = document.getElementById('s7-input');
@@ -1035,8 +1104,35 @@ document.getElementById('s7-hint-overlay').addEventListener('click', function (e
   if (e.target === this) s7CloseHint();
 });
 
+/* Gesture Hint — Cursor Scroll. Ported from methodica-science-mass-measure-03-04's
+   s2MaybeShowScrollGesture(). Shown once per screen visit, hidden the instant a real scroll is
+   attempted (wheel/keydown on .s7-content). */
+function s7MaybeShowScrollGesture() {
+  if (s7ScrollGestureShown) return;
+  s7ScrollGestureShown = true;
+  const gesture = document.getElementById('s7-scroll-gesture');
+  const scrollArea = document.querySelector('#s7 .s7-content');
+  if (!gesture || !scrollArea) return;
+  /* נדחה למסגרת הבאה: זו נקראת מתוך resetScreenState7(), שגם היא נקראת ע"י goTo()
+     *לפני* target.classList.add('active') — באותו הרגע המסך עדיין display:none וגם
+     scrollHeight וגם clientHeight נקראים 0, כך שבדיקת overflow סינכרונית תמיד "תיכשל"
+     (תדלג על הרמז) גם כשיש בפועל גלילה. במסגרת הבאה המסך כבר גלוי והמדידה אמינה. */
+  requestAnimationFrame(function () {
+    if (scrollArea.scrollHeight <= scrollArea.clientHeight) return; // אין בכלל מה לגלול — אין טעם ברמז
+    gesture.hidden = false;
+    function dismiss() {
+      gesture.hidden = true;
+      scrollArea.removeEventListener('wheel', dismiss);
+      scrollArea.removeEventListener('keydown', dismiss);
+    }
+    scrollArea.addEventListener('wheel', dismiss);
+    scrollArea.addEventListener('keydown', dismiss);
+  });
+}
+
 function resetScreenState7() {
   updateQuestionNav2('s7');
+  s7MaybeShowScrollGesture();
   if (s7Done || s7Attempts > 0) return; // resume-state guard
   const input = document.getElementById('s7-input');
   input.value = '';
@@ -1291,10 +1387,12 @@ function s9Check() {
     s9ShowFeedback('correct', true);
     q1SectionDone('d', 'success');
     updateQuestionNav2('s9');
-    /* קישור בין סינים: מסך אחרון בסיין 2 -> מסך ראשון בסיין 3 (נתיב יחסי,
-       אותה מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science-mass
-       -measure-02-linked). goTo(10) היה no-op (TOTAL_SCREENS=10). */
-    s9SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-03/index.html'; });
+    /* קישור בין סינים: מסך אחרון בסיין 2 -> מסך ראשון בסיין 4 (נתיב יחסי).
+       עודכן 2026-09-08: סיין 3 הוצא מרצף הלומדה ואוחסן בארכיון
+       (../../archive/methodica-science-mass-measure-03-03), לכן הקישור
+       מדלג עליו ישירות לסיין 4 — אותו יעד שסיין 3 עצמו הפנה אליו לפני
+       ההוצאה מהרצף. goTo(10) היה no-op (TOTAL_SCREENS=10). */
+    s9SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-04/index.html'; });
     return;
   }
 
@@ -1319,10 +1417,12 @@ function s9Check() {
     s9ShowFeedback('wrong2', false);
     q1SectionDone('d', 'fail');
     updateQuestionNav2('s9');
-    /* קישור בין סינים: מסך אחרון בסיין 2 -> מסך ראשון בסיין 3 (נתיב יחסי,
-       אותה מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science-mass
-       -measure-02-linked). goTo(10) היה no-op (TOTAL_SCREENS=10). */
-    s9SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-03/index.html'; });
+    /* קישור בין סינים: מסך אחרון בסיין 2 -> מסך ראשון בסיין 4 (נתיב יחסי).
+       עודכן 2026-09-08: סיין 3 הוצא מרצף הלומדה ואוחסן בארכיון
+       (../../archive/methodica-science-mass-measure-03-03), לכן הקישור
+       מדלג עליו ישירות לסיין 4 — אותו יעד שסיין 3 עצמו הפנה אליו לפני
+       ההוצאה מהרצף. goTo(10) היה no-op (TOTAL_SCREENS=10). */
+    s9SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-04/index.html'; });
   }
 }
 

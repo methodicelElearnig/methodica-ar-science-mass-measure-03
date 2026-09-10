@@ -254,7 +254,10 @@ img { display: block; max-width: none; }
 .tbl-content {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 74px;
-  direction: rtl; /* מבטיח שהסקרול-בר יושב בצד הפיזי הנכון (ימין ב-RTL), לא תלוי בירושה בלבד */
+  direction: ltr; /* מכריח את פס הגלילה הדפדפני להיצמד לקצה הפיזי הימני —
+     direction:rtl (כפי שהיה כאן קודם) הוא בדיוק מה שדוחף אותו לשמאל
+     בהתנהגות סטנדרטית של דפדפנים. ה-RTL האמיתי לתוכן עצמו משוחזר ע"י
+     .tbl-content-inner (עוטף את כל הילדים) שמגדיר לעצמו direction:rtl. */
   /* left/right עברו מ-position ל-padding, כדי שפס הגלילה יישב צמוד
      לקנבס (לא במרווח 40px). תוכן פנימי נשאר באותו מרווח, כי הפדינג
      מפצה על ההסטה. */
@@ -262,9 +265,20 @@ img { display: block; max-width: none; }
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
-  /* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
-     ported from Sain 1, missed in this project's first pass. */
-  cursor: grab;
+}
+/* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
+   ported from Sain 1. Updated 2026-09-08: scoped to just the scrollbar strip instead of the whole
+   content box (client feedback — the hand cursor covering the entire screen, far from the actual
+   scrollbar, was confusing). `.near-scrollbar` is toggled by JS (initScrollbarHoverCursor in
+   script.js) based on mouse distance from the container's right edge, where the scrollbar sits. */
+.tbl-content.near-scrollbar { cursor: grab; }
+.tbl-content-inner {
+  /* משחזר RTL אמיתי לכל התוכן הפנימי (direction עובר בירושה, ולכן בלי
+     זה כל צאצא שלא מגדיר direction משלו היה הופך ל-ltr בעקבות השינוי
+     מעל). height:100% משמר בסיס אחוזים לצאצאים כמו .tbl-page שמסתמכים
+     על min-height:100% ביחס לקופסה של מעטפת הגלילה. */
+  direction: rtl;
+  height: 100%;
 }
 /* s1: הסימולציה תופסת את הפינה הפיזית השמאלית (left:0, width:427px —
    left/width הן מיקום פיזי אמיתי, לא מושפעות מ-direction). מעטפת
@@ -272,9 +286,34 @@ img { display: block; max-width: none; }
    שהסימולציה נגמרת) עד right:0 (קצה ימין פיזי של הקנבס). padding
    מאופס בשני הצדדים כי .tbl-page מטפל בריווח הפנימי בעצמו (24px/40px). */
 .tbl-content.s1-scroll-area { left: 427px; top: 40px; padding-left: 0; padding-right: 0; }
-.tbl-content::-webkit-scrollbar { width: 8px; }
-.tbl-content::-webkit-scrollbar-track { background: rgba(201, 206, 216, 0.4); border-radius: 16px; }
-.tbl-content::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.56); border-radius: 24px; }
+/* Figma source of truth: node 1723:43076 ("scrolling"), file eSbp4bKHgBky0rakDb8l9N — width 12px,
+   track rgba(201,206,216,0.4) + 0.5px solid #f3f4f5 border, thumb rgba(0,0,0,0.56).
+   REWRITTEN 2026-09-09: the "cover every -button sub-selector" approach above was STILL not enough —
+   verified live (real headless Chrome, pixel-sampled) that the up/down arrows render regardless,
+   even with !important and a full reload. Current Chrome does not let you keep a styled native
+   scrollbar without its arrow buttons at all anymore; only hiding the ENTIRE native scrollbar works.
+   So the container hides its native scrollbar completely and gets a JS-driven fake scrollbar instead
+   (initFakeScrollbar() in script.js) — a real div-based track+thumb, draggable, synced to scroll
+   position, with no arrow buttons because there's nothing native left to render them. */
+.native-scrollbar-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.native-scrollbar-hidden { scrollbar-width: none; }
+.fake-scrollbar-track {
+  position: absolute;
+  width: 12px;
+  background: rgba(201, 206, 216, 0.4);
+  border: 0.5px solid #f3f4f5;
+  border-radius: 16px;
+  z-index: 5;
+}
+.fake-scrollbar-thumb {
+  position: absolute;
+  left: 0;
+  width: 12px;
+  background: rgba(0, 0, 0, 0.56);
+  border-radius: 24px;
+  cursor: grab;
+}
+.fake-scrollbar-thumb:active { cursor: grabbing; }
 .tbl-page {
   min-height: 100%;
   box-sizing: border-box;
@@ -436,31 +475,49 @@ img { display: block; max-width: none; }
 }
 
 /* ════════════════════════════════════════════════════════
-   מסך 5 — סעיף ג: מסך גלילה. עמוד 1 = פיגמה (SOURCE OF TRUTH,
-   fileKey Z9sD0kksYj1Ph1kUcs71sw, node 2312:12312) — קואורדינטות
-   מוחלטות מ-get_metadata (קנבס הפיגמה 1280×710, זהה לשלנו, בלי סקאלה).
-   מעטפת הגלילה כאן פרוסה על פני כל רוחב המסך (left:0/right:0, לא
-   ה-40px ברירת המחדל) כדי שהקואורדינטות המוחלטות של הפיגמה יתאימו
-   1:1 בלי המרה. עמוד 2 = שאלת גרירה (ראו בלוק dq-* למטה).
-   ⚠️ אומת מול get_metadata בפועל (2026): ה-Figma המקורי (node 2312:12312)
-   קבע text frame ב-y:71 / bubble+img ב-y:292 — קומפוזיציה שונה במכוון
-   ממסך 4 (s3). אבל לפי בקשה מפורשת של הלקוחה, נדרש יישור אחיד לחלוטין
-   ל-X/Y של שאר מסכי ה"שאלה" בפרויקט (top:139, כמו s2/s3, ראו
-   .scq-question) — כדי שהמסך ירגיש עקבי, גם על חשבון סטייה מה-Figma
-   הספציפי הזה. זו החלטה מודעת ומאושרת (לא טעות של "לשכוח" את ה-Figma):
-   אל תחזיר ל-top:71 בלי לוודא מול הלקוחה מחדש. */
-.tbl-content.s4-scroll-area { left: 0; right: 0; top: 0; padding-left: 0; padding-right: 0; }
-
-.tbl-page.s4-page-top { position: relative; }
-
-.s4-text-block { position: absolute; right: 40px; top: 139px; width: 939px; max-width: calc(100% - 80px); }
+   מסך 5 — סעיף ג. עודכן (2026-09-08, בקשה מפורשת): נבנה מחדש עם אותם
+   class-ים בדיוק כמו מסך 3 בסיין 4 (.tbl-content/.tbl-content-inner/
+   .tbl-page — הרפרנס המאומת שעבד נכון) במקום מחלקות ייעודיות
+   (.s4-content וכו') — אותה שיטה בדיוק, לא המצאה חדשה. שני חלקים
+   (תמונה+בועה, שאלת גרירה) זורמים בזרימה רגילה בתוך .tbl-page-ים,
+   בלי scroll-snap/עמודים-בגובה-מסך-מלא (בוטל, ראו override למטה —
+   .tbl-page הבסיסי עדיין scroll-snap עבור מסך 2/#s1-scroll-area באותו
+   פרויקט, לא נגעתי בו; ה-override כאן ממוקד רק ל-#s4-scroll-area).
+   פס הגלילה עצמו (.tbl-content, המשותף לשני המסכים) לא נגע בו כלל. */
+.tbl-content.s4-scroll-area {
+  left: 0; right: 0;
+  /* top:139px — בדיוק כמו .tbl-content במסך 3 בסיין 4 (שם זה מוגדר
+     ישירות על הקונטיינר, לא כ-padding פנימי) — המוסכמה הסטנדרטית
+     לתחילת-תוכן בכל מסכי הפרויקט (.scq-question וכו', top:139px). */
+  top: 139px;
+}
+#s4-scroll-area .tbl-page {
+  /* מבטל את ה-scroll-snap/min-height:100% של .tbl-page הבסיסי (עדיין
+     בתוקף במסך 2/#s1-scroll-area) — כאן שני העמודים זורמים בזרימה
+     רגילה, בדיוק כמו במסך 3 בסיין 4. */
+  min-height: auto;
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
+}
 .s4-title { margin: 0 0 16px; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; }
 .s4-body { margin: 0; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; }
 
-/* bubble/img הוזזו מטה ב-68px (139-71) ביחס לערכי הפיגמה המקוריים
-   (292→360), כדי לשמור על אותו מרווח יחסי לכותרת אחרי ההזזה שלה. */
+/* קבוצת בועה+תמונה — שורה פנימית, לא מתכווצת (רוחב קבוע מהפיגמה).
+   image ראשון ב-DOM (=פיזית ימין תחת RTL), בועה שנייה (=פיזית שמאל,
+   זנב פונה ימינה לעבר התמונה) — תואם למיקום היחסי המקורי בפיגמה
+   (בועה שמאלה מהתמונה). */
+.s4-visual-group {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  direction: rtl;
+  align-items: flex-start;
+  gap: 11px;
+}
 .s4-bubble {
-  position: absolute; left: 138px; top: 250px; width: 326px; height: 131px;
+  position: relative; /* עוגן ל-::after (הזנב) */
+  flex-shrink: 0;
+  width: 326px; height: 131px;
   background: #fff; border: 2px solid var(--subject-500); border-radius: 20px;
   box-sizing: border-box; padding: 16px 20px;
   display: flex; align-items: center; justify-content: center;
@@ -480,19 +537,12 @@ img { display: block; max-width: none; }
 
 /* תמונה — הפיגמה עצמה מציגה placeholder אפור (בלי תמונה אמיתית),
    ממומש כפי שהוא, ראו ARCHITECTURE.md */
-.s4-img-placeholder { position: absolute; left: 475px; top: 250px; width: 330px; height: 274px; border-radius: 16px; object-fit: cover; }
+.s4-img-placeholder { flex-shrink: 0; width: 330px; height: 274px; border-radius: 16px; object-fit: cover; }
 
-/* עמוד 2 הוא שאלה עצמאית (DragAndDropQuestion, ה-fill-in-blank),
-   בלי שום קשר ל-node הפיגמה של עמוד 1 (זה שקבע top:71 לכותרת שם —
-   ראו הערה מעל .s4-text-block). מבחינת תפקיד, עמוד 2 שקול לכל שאלת
-   "סעיף" אחרת בפרויקט (סעיף א ב-s2, סעיף ב ב-s3) — שתיהן משתמשות
-   ב-.scq-question שממוקם ב-top:139px (ראו .scq-question ב-CSS).
-   לכן כותרת "סעיף ג" כאן צריכה להיות ב-top:139px, בדיוק כמו הכותרות
-   ב-s2/s3 — לא ב-top:71 (זה היה שיוך שגוי למיקום הספציפי־לפיגמה
-   של עמוד 1, לא למוסכמת ה"שאלה" הכללית). .s4-dq-content ברוחב/יישור
-   זהים ל-.s4-text-block (right edge זהה בזכות padding-right:40 המשותף
-   של .tbl-page, width זהה 939px). */
-.tbl-page.s4-page-two { padding-top: 139px; }
+/* חלק 2 — שאלה עצמאית (DragAndDropQuestion, fill-in-blank), בלי כותרת
+   משלה (הוסרה, הייתה כפולה לזו שבחלק 1). יושב בתוך .tbl-page רגיל
+   (אותו class כמו חלק 1) — ה-padding/gap/align-items שלו כבר מגיעים
+   מהמחלקה המשותפת, לא צריך wrapper ייעודי נוסף. */
 .s4-dq-content { display: flex; flex-direction: column; gap: 20px; width: 939px; max-width: calc(100% - 80px); }
 
 /* ════════════════════════════════════════════════════════
@@ -561,11 +611,8 @@ img { display: block; max-width: none; }
 
 /* Gesture Hint — Cursor Scroll + Cursor Drag (SELF-QA.md §7, Figma nodes 2915:35184/2915:35185).
    Ported from Sain 1 (methodica-science-mass-measure-03-01, which this family's SELF-QA.md
-   governs) — missed here in the first pass. Scroll-wrap coordinates are per-screen (not a single
-   shared box like Sain 1) because this project's .tbl-content is itself per-screen-positioned
-   (.s1-scroll-area sits beside the scale simulation, .s4-scroll-area is full-width) — see the
-   #s1-scroll-gesture/#s4-scroll-gesture overrides below, mirroring .tbl-content.s1-scroll-area/
-   .tbl-content.s4-scroll-area exactly. */
+   governs) — missed here in the first pass. #s4-scroll-gesture coordinates mirror
+   .tbl-content.s4-scroll-area's own box exactly (top:139/left:0/right:0/bottom:74). */
 .gesture-hint-scroll-wrap {
   position: absolute;
   pointer-events: none;
@@ -573,7 +620,7 @@ img { display: block; max-width: none; }
 }
 .gesture-hint-scroll-wrap[hidden] { display: none; }
 #s1-scroll-gesture { top: 40px; left: 427px; right: 0; bottom: 74px; }
-#s4-scroll-gesture { top: 0; left: 0; right: 0; bottom: 74px; }
+#s4-scroll-gesture { top: 139px; left: 0; right: 0; bottom: 74px; }
 
 .gesture-hint {
   position: absolute;
@@ -582,7 +629,11 @@ img { display: block; max-width: none; }
   width: 0; height: 0;
   pointer-events: none;
 }
-.gesture-hint-scroll-wrap .gesture-hint { top: 62%; }
+/* 2026-09-08: horizontal anchor moved from center (left:50%, the base .gesture-hint rule) to the
+   scroll container's right edge, where the native scrollbar physically sits (these containers force
+   direction:ltr — see CLAUDE.md). Client feedback: the hand must sit ON the scrollbar itself, not
+   floating in the middle of the content. */
+.gesture-hint-scroll-wrap .gesture-hint { top: 62%; left: auto; right: 10px; }
 .gesture-hint-hand,
 .gesture-hint-ring {
   position: absolute;

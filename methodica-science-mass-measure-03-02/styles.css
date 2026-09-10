@@ -672,6 +672,14 @@ img { display: block; max-width: none; }
   width: 604px;
   max-width: 100%;
 }
+/* מסך 9 (s8) — המסיחים כאן ארוכים במיוחד ("לא נכון – הכדור אינו עומד
+   בתקן FIFA, משום שיש לחשב את החציון ולא את הממוצע.") ונגלשים לשתי
+   שורות ברוחב הכללי (604px). מורחב ל-800px — כמעט כל השטח הזמין בפועל
+   (.scq-question: 1200px שורה - 380px תמונה - 16px רווח = 804px זמינים
+   ל-.scq-content, שלא נוגע בו כלל), בלי לצמצם את התמונה או השוליים.
+   scoped ל-#s8 בלבד, לא שינוי גלובלי ל-.scq-answers — מסכי SCQ אחרים
+   בפרויקט (עם/בלי תמונה) ממשיכים ב-604px הסטנדרטי. */
+#s8 .scq-answers { width: 800px; }
 .scq-opt {
   width: 100%;
   display: flex;
@@ -814,12 +822,113 @@ img { display: block; max-width: none; }
   left: 40px;
   right: 40px;
   bottom: 90px;
+  overflow-y: auto;
+  direction: ltr; /* keeps native vertical scrollbar on the physical right edge under html[dir=rtl] */
+}
+.s7-content-inner {
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* RTL column: flex-start = physical right */
   gap: 24px;
-  overflow-y: auto;
+  direction: rtl; /* restores true RTL layout for everything inside */
+  height: 100%;
 }
+
+/* Scrollbar visual spec (720 - UI Templates, Figma node 1723:43076) — width 12px, track
+   rgba(201,206,216,0.4) + 0.5px solid #f3f4f5 border, thumb rgba(0,0,0,0.56).
+   REWRITTEN 2026-09-09: current Chrome no longer honors ::-webkit-scrollbar-button{display:none} —
+   verified live (real headless Chrome, pixel-sampled) that the up/down arrow buttons render
+   regardless of that rule, even with !important and a full reload; only hiding the ENTIRE native
+   scrollbar actually works. So the container hides its native scrollbar completely and gets a
+   JS-driven fake scrollbar instead (initFakeScrollbar() in script.js) — a real div-based track+thumb,
+   draggable, synced to scroll position, with no arrow buttons because there's nothing native left to
+   render them. */
+.native-scrollbar-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.native-scrollbar-hidden { scrollbar-width: none; }
+.fake-scrollbar-track {
+  position: absolute;
+  width: 12px;
+  background: rgba(201, 206, 216, 0.4);
+  border: 0.5px solid #f3f4f5;
+  border-radius: 16px;
+  z-index: 5;
+}
+.fake-scrollbar-thumb {
+  position: absolute;
+  left: 0;
+  width: 12px;
+  background: rgba(0, 0, 0, 0.56);
+  border-radius: 24px;
+  cursor: grab;
+}
+.fake-scrollbar-thumb:active { cursor: grabbing; }
+
+/* Gesture Hint — Cursor Scroll overlay for .s7-content. Ported from
+   methodica-science-mass-measure-03-04 (s2MaybeShowScrollGesture pattern). Positioned as a sibling
+   of .s7-content using the identical box (top:139px/left:40px/right:40px/bottom:90px) so it sits
+   fixed over the scroll viewport instead of scrolling away with the content. See script.js for the
+   show-once/hide-on-real-scroll logic (s7MaybeShowScrollGesture). */
+.gesture-hint-scroll-wrap {
+  position: absolute;
+  top: 139px; left: 40px; right: 40px; bottom: 90px;
+  pointer-events: none;
+  z-index: 20;
+}
+.gesture-hint-scroll-wrap[hidden] { display: none; }
+.gesture-hint {
+  position: absolute;
+  left: 50%; top: 50%;
+  translate: -50% -50%;
+  width: 0; height: 0;
+  pointer-events: none;
+}
+/* 2026-09-08: horizontal anchor moved from center (left:50%, the base .gesture-hint rule) to the
+   scroll container's right edge, where the native scrollbar physically sits (these containers force
+   direction:ltr — see CLAUDE.md). Client feedback: the hand must sit ON the scrollbar itself, not
+   floating in the middle of the content. */
+.gesture-hint-scroll-wrap .gesture-hint { top: 62%; left: auto; right: 10px; }
+.gesture-hint-hand,
+.gesture-hint-ring {
+  position: absolute;
+  left: 0; top: 0;
+  translate: -50% -50%;
+}
+.gesture-hint-hand { width: 28px; height: 33px; z-index: 3; }
+.gesture-hint-ring {
+  border-radius: 50%;
+  opacity: 0;
+}
+.gesture-hint-ring--small {
+  width: 12px; height: 12px;
+  border: 1.5px solid #B0DFFF;
+  z-index: 2;
+  animation: gesture-ring-small 2s infinite;
+}
+.gesture-hint-ring--big {
+  width: 64px; height: 64px;
+  background: #B0DFFF;
+  border: 2.5px solid #00BAFF;
+  z-index: 1;
+  animation: gesture-ring-big 2s infinite;
+}
+@keyframes gesture-ring-small {
+  0%   { opacity: 0;    scale: 0.2 0.2; }
+  3%   { opacity: 0.75; scale: 1   1; }
+  10%  { opacity: 0;    scale: 1.1 1.1; }
+  100% { opacity: 0;    scale: 1.1 1.1; }
+}
+@keyframes gesture-ring-big {
+  0%    { opacity: 0;    scale: 0.05 0.05; }
+  5%    { opacity: 0.85; }
+  7.5%  {                scale: 0.22 0.22; }
+  22.5% {                scale: 0.6  0.6; }
+  35%   { opacity: 0.65; }
+  37.5% {                scale: 0.85 0.85; }
+  45%   { opacity: 0.35; }
+  50%   { opacity: 0;    scale: 1 1; }
+  100%  { opacity: 0;    scale: 1 1; }
+}
+
 .s7-cards {
   display: flex;
   flex-direction: row;

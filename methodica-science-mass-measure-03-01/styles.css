@@ -936,6 +936,24 @@ img { display: block; max-width: none; }
   object-fit: cover;
   cursor: zoom-in;
 }
+/* מסך 20 (s19) — התמונה (שיחה-בין-המוכרים.png, 1771×931, יחס-רוחב/גובה
+   רחב) חייבת contain ולא cover: cover בתוך המסגרת הריבועית 380×380
+   הייתה חותכת רוב רוחב התמונה (רק פס מרכזי צר היה נראה). contain
+   משאיר "letterbox" לבן מעל/מתחת (הרקע הלבן של .scq-img-inner כבר
+   קיים), אבל מציג את כל התמונה — שני המוכרים, לא רק אחד מהם.
+   class על ה-img עצמו (לא סלקטור #s19-scoped) בכוונה: imgZoomOpen()
+   ב-script.js משכפל את .scq-img-inner כולו (cloneNode) ומזריק אותו
+   לתוך #img-zoom-modal, שאינו צאצא של #s19 — סלקטור מבוסס-מיקום כמו
+   "#s19 .scq-img-inner img" לא היה תופס יותר על השכפול, וה-popup
+   המוגדל היה חוזר ל-cover הגלובלי (בדיוק הבאג שדווח: התמונה המוגדלת
+   חתוכה). class נשאר על האלמנט גם אחרי השכפול, לכן תופס בשני המקומות. */
+.scq-img-inner img.scq-img--contain { object-fit: contain; }
+/* מסך 20 (s19) — נבנה מחדש (2026-09-09) לפי הרפרנס התקין, מסך 22 (s21): אין יותר מסגרת
+   מוגדלת/שוליים מצומצמים ייעודיים למסך הזה — אותה מסגרת 380×380 ואותם שוליים left:40/right:40
+   סטנדרטיים כמו בכל שאר מסכי ה-SCQ. הניסיון הקודם (מסגרת 450×237 + שוליים 10px, כדי "להכיל" את
+   התמונה הרחבה 1771×931 בלי letterbox) יצר פריסה שבורה בפועל ולא תאם את הרפרנס — .scq-img--contain
+   למעלה כבר דואג לכך שהתמונה לא תיחתך גם בתוך המסגרת הריבועית הסטנדרטית (עם letterbox לבן
+   מעל/מתחת, בדיוק כמו שהרפרנס עצמו לא מטפל בזה אחרת). */
 
 .scq-opt.correct {
   border-width: 1.5px;
@@ -1166,7 +1184,9 @@ img { display: block; max-width: none; }
    לנצל שטח ריק משמעותי שהיה במסכים האלה. .dq-question-panel הוזז
    בהתאם (left:600, ראו למטה) כדי להתחיל בדיוק איפה שהפלייסהולדר
    המורחב נגמר. */
-#s5 .dq-sim-placeholder, #s6 .dq-sim-placeholder { width: 600px; }
+/* הגדלה נוספת (2026-09-08, בקשה מפורשת נוספת) — 600→720px, ראו הערה
+   ב-script.js מעל GOLD_SIM_STATIONS. */
+#s5 .dq-sim-placeholder, #s6 .dq-sim-placeholder { width: 720px; }
 
 /* =========================================================
    סימולציית גרירת זהב/תרופה למאזניים — ממלאת את .dq-sim-placeholder
@@ -1182,11 +1202,11 @@ img { display: block; max-width: none; }
   overflow: hidden;
 }
 
-/* מידות מוגדלות פי 1.4 (בקשה מפורשת, ראו הערה ב-script.js מעל
-   GOLD_SIM_STATIONS) — 190×150→266×210. */
-.dq-sim-station { position: absolute; width: 266px; height: 210px; }
-.dq-sim-station.reg  { left: 24px;  top: 280px; }
-.dq-sim-station.sens { left: 310px; top: 280px; }
+/* מידות מוגדלות פי 1.4 ואז פי 1.2 נוסף (2026-09-08, ראו הערה ב-script.js
+   מעל GOLD_SIM_STATIONS) — 190×150→266×210→319×252. */
+.dq-sim-station { position: absolute; width: 319px; height: 252px; }
+.dq-sim-station.reg  { left: 29px;  top: 288px; }
+.dq-sim-station.sens { left: 372px; top: 288px; }
 
 .dq-sim-imgwrap { position: relative; width: 100%; height: 100%; }
 .dq-sim-scale-img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
@@ -1196,7 +1216,7 @@ img { display: block; max-width: none; }
   background: #1560d6; color: #eaf3ff; direction: ltr;
   display: flex; align-items: center; gap: 3px;
   padding: 3px 7px; border-radius: 4px;
-  font-family: 'Share Tech Mono', 'Assistant', monospace; font-size: 14px; line-height: 1;
+  font-family: 'Share Tech Mono', 'Assistant', monospace; font-size: 22px; line-height: 1;
   box-shadow: inset 0 1px 3px rgba(0,0,0,.5), 0 1px 0 rgba(255,255,255,.35);
   border: 1px solid rgba(0,0,0,.3); white-space: nowrap; z-index: 3; user-select: none;
 }
@@ -1206,44 +1226,86 @@ img { display: block; max-width: none; }
 .dq-sim-lcd-reg  { top: 68%; left: 40%; width: 37%; }
 .dq-sim-lcd-sens { top: 60%; left: 50%; width: 49%; }
 
-/* top מוזז בהתאם לגובה התחנה החדש (210 במקום 150, פער של 60px). */
-.dq-sim-label { position: absolute; top: 218px; width: 100%; text-align: center; font-size: 13px; font-weight: 600; color: #333; }
-.dq-sim-res   { position: absolute; top: 238px; width: 100%; text-align: center; font-size: 11px; color: #8a8a8a; }
+/* top מוזז בהתאם לגובה התחנה החדש (252, ראו .dq-sim-station). גודל הטקסט
+   הוגדל ל-22px ופונט Assistant הוצהר במפורש (בקשת הלקוחה, 2026-09-08) —
+   הפער בין השורות גדל בהתאם (74px בין ה-top-ים, במקום 20px) כדי שלא
+   תיווצר חפיפה בין שתי השורות בגופן הגדול יותר. */
+.dq-sim-label { position: absolute; top: 260px; width: 100%; text-align: center; font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 600; color: #333; }
+.dq-sim-res   { position: absolute; top: 292px; width: 100%; text-align: center; font-family: 'Assistant', sans-serif; font-size: 22px; color: #8a8a8a; }
 
 .dq-sim-block {
   position: absolute; left: 0; top: 0;
-  width: 203px; height: 154px; /* תואם GOLD_SIM_BLOCK ב-script.js — שנו יחד (הוגדל פי 1.4, היה 145×110) */
+  width: 244px; height: 185px; /* תואם GOLD_SIM_BLOCK ב-script.js — שנו יחד (הוגדל פי 1.4 ואז פי 1.2 נוסף, היה 145×110→203×154) */
   cursor: grab; touch-action: none; user-select: none;
   z-index: 6; transition: transform .3s cubic-bezier(.22,1,.36,1);
   filter: drop-shadow(0 8px 12px rgba(0,0,0,.3));
   border-radius: 8px;
 }
 .dq-sim-block.dragging { cursor: grabbing; transition: none; }
-.dq-sim-block img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
+/* Direct-child combinator only (not a plain descendant selector): the gesture-hint hand icon
+   (showBlockGestureHint() in script.js) is also an <img>, but it lives nested inside
+   .dq-sim-block > .gesture-hint > img, not directly inside .dq-sim-block. A descendant selector
+   here used to match it too, and — at higher specificity than .gesture-hint-hand's own single-class
+   rule — forced it to width:100%/height:100% of its positioned ancestor .gesture-hint (which is
+   itself width:0/height:0), collapsing the hand to 0×0 and leaving only the ring animation visible. */
+.dq-sim-block > img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
 
 /* מסך 7 — קופסת התרופה היא בקבוקון זקוף (יחס-רוחב/גובה ~0.53), בניגוד
    לגוש הזהב ה"שוכב" של מסך 6 (~1.3) — רוחב שונה, אבל אותו גובה בכוונה
    (תואם ל-cfg.block שמועבר ל-makeScaleSimulation('s6-sim', ...)
-   ב-script.js — ראו ההערה שם על כיווץ-המנוחה). הוגדל פי 1.4, היה 61×115. */
-#s6-sim .dq-sim-block { width: 85px; height: 161px; }
+   ב-script.js — ראו ההערה שם על כיווץ-המנוחה). הוגדל פי 1.4 ואז פי 1.2
+   נוסף, היה 61×115→85×161. */
+#s6-sim .dq-sim-block { width: 102px; height: 193px; }
 
-/* s5/s6: פלייסהולדר הסימולציה מורחב ל-600px (ראו .dq-sim-placeholder
+/* s5/s6: פלייסהולדר הסימולציה מורחב ל-720px (ראו .dq-sim-placeholder
    למעלה) — פאנל השאלה מוזח בהתאם, ולא דרך שינוי הכלל הבסיסי (left:427
    עדיין ברירת המחדל למסכים אחרים שמשתמשים ב-.dq-question-panel, כמו
    מסך 11 שכבר עוקף אותו בנפרד). */
-#s5 .dq-question-panel, #s6 .dq-question-panel { left: 600px; }
+#s5 .dq-question-panel, #s6 .dq-question-panel { left: 720px; }
 
 .dq-question-panel {
   position: absolute;
   left: 427px; top: 0; right: 0; bottom: 74px;
+  padding: 83px 40px 16px 0;
+  overflow-y: auto;
+  direction: ltr; /* forces the native scrollbar to the physical right edge (RTL page would otherwise put it on the left) */
+}
+.dq-question-panel-inner {
+  direction: rtl; /* restores true RTL layout for everything inside */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 83px 40px 16px 0;
   gap: 16px;
-  overflow-y: auto;
-  direction: rtl;
 }
+
+/* Scrollbar visual spec (720 - UI Templates, Figma node 1723:43076) — width 12px, track
+   rgba(201,206,216,0.4) + 0.5px solid #f3f4f5 border, thumb rgba(0,0,0,0.56).
+   REWRITTEN 2026-09-09: current Chrome no longer honors ::-webkit-scrollbar-button{display:none} —
+   verified live (real headless Chrome, pixel-sampled) that the up/down arrow buttons render
+   regardless of that rule, even with !important and a full reload; only hiding the ENTIRE native
+   scrollbar actually works. So every overflow-y:auto container hides its native scrollbar completely
+   and gets a JS-driven fake scrollbar instead (initFakeScrollbar() in script.js, .fake-scrollbar-track
+   /.fake-scrollbar-thumb below) — a real div-based track+thumb, draggable, synced to scroll position,
+   with no arrow buttons because there's nothing native left to render them. */
+.native-scrollbar-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.native-scrollbar-hidden { scrollbar-width: none; }
+.fake-scrollbar-track {
+  position: absolute;
+  width: 12px;
+  background: rgba(201, 206, 216, 0.4);
+  border: 0.5px solid #f3f4f5;
+  border-radius: 16px;
+  z-index: 5;
+}
+.fake-scrollbar-thumb {
+  position: absolute;
+  left: 0;
+  width: 12px;
+  background: rgba(0, 0, 0, 0.56);
+  border-radius: 24px;
+  cursor: grab;
+}
+.fake-scrollbar-thumb:active { cursor: grabbing; }
 
 .dq-part-badge {
   background: linear-gradient(to bottom, #005fbe 9%, #003971);
@@ -1445,24 +1507,50 @@ img { display: block; max-width: none; }
   margin: 0; line-height: 1.3; flex-shrink: 0;
 }
 
-/* מסך 12 (s11): כל מדידה במסגרת עדינה משלה, כדי שהלומד יבין שמדובר
-   בשלוש מדידות נפרדות ולא ברצף טקסט אחד. */
-.dq-measurements-row {
-  display: flex;
-  direction: rtl;
-  flex-wrap: wrap;
-  gap: 12px;
+/* מסך 12 (s11) — טבלת מדידות, במקום שלושה מלבנים כחולים בודדים
+   (.dq-measurements-row/.dq-measurement-chip הישנים) — בקשה מפורשת
+   (2026-09-08), עיצוב לפי פיגמה כמקור אמת יחיד (720 - UI Templates,
+   node 1126:21308, "Table"): כותרת ברקע תכלת #D4F3FF עם פינות עליונות
+   מעוגלות (8px, ראו .dq-measurements-table-wrap להלן — clip דרך
+   overflow:hidden על העוטף, לא border-radius ישיר על ה-th, כי זה לא
+   אמין תמיד יחד עם border-collapse), טקסט Assistant — SemiBold 22px
+   בכותרת, Regular 24px בתאים (בדיוק לפי המידות בפיגמה). שורות עם
+   zebra striping (זוגי=תכלת #D4F3FF, אי-זוגי=לבן), אותה מוסכמה
+   כמו .tbl-table/.tbl-th/.tbl-td במסכים 16-17 באותו פרויקט. */
+.dq-measurements-table-wrap {
   width: 100%;
   flex-shrink: 0;
-}
-.dq-measurement-chip {
-  background-color:  #019de551;
   border-radius: 8px;
-  padding: 6px 14px;
+  overflow: hidden;
+}
+.dq-measurements-table {
+  border-collapse: collapse;
+  width: 50%;
+  height: fit-content;
+}
+.dq-measurements-table th,
+.dq-measurements-table td {
+  border: 1px solid #d4d4d4;
+  height: 52px;
+  padding: 4px 12px;
+  text-align: right;
   font-family: 'Assistant', sans-serif;
+  box-sizing: border-box;
+}
+.dq-measurements-table th {
+  background: #d4f3ff;
+  font-size: 22px;
+  font-weight: 600;
+  color: #303030;
+}
+.dq-measurements-table td {
+  background: #ffffff;
   font-size: 24px;
   font-weight: 400;
   color: #303030;
+}
+.dq-measurements-table tbody tr:nth-child(even) td {
+  background: #d4f3ff;
 }
 
 .dq-fill-sentences {
@@ -1549,10 +1637,14 @@ img { display: block; max-width: none; }
   left: 40px;
   right: 40px;
   bottom: 90px;
+  overflow-y: auto;
+  direction: ltr; /* forces the native scrollbar to the physical right edge (RTL page would otherwise put it on the left) */
+}
+.s13-content-inner {
+  direction: rtl; /* restores true RTL layout for everything inside */
   display: flex;
   flex-direction: column;
   gap: 24px;
-  overflow-y: auto;
 }
 .s13-text {
   display: flex;
@@ -1679,11 +1771,15 @@ img { display: block; max-width: none; }
   left: 40px;
   right: 40px;
   bottom: 90px;
+  overflow-y: auto;
+  direction: ltr; /* forces the native scrollbar to the physical right edge (RTL page would otherwise put it on the left) */
+}
+.s15-content-inner {
+  direction: rtl; /* restores true RTL layout for everything inside */
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* RTL column: flex-start = physical right (see .dq-question-panel) */
   gap: 15px;
-  overflow-y: auto;
 }
 .s15-cards {
   display: flex;
@@ -1782,56 +1878,30 @@ img { display: block; max-width: none; }
 }
 
 /* =========================================================
-   מסך 17 — שאלה 2 מתוך 6: טבלה (עמוד 1) + שאלת גרירה (עמוד 2), עם
-   אפקט "קפיצת עמוד" בגלילה. הועתק בדיוק ממסך 2 (id="s1") של
-   Methodica-science-mass-measure-02-04: .tbl-content הוא מיכל
-   overflow-y:auto עם scroll-snap-type:y mandatory ופס גלילה מותאם
-   (webkit בלבד); כל .tbl-page הוא min-height:100% עם scroll-snap-
-   align:start. הגלילה בפועל מתבצעת ע"י JS (wheel/מקלדת → קפיצה חלקה
-   לעמוד הבא/קודם דרך scrollTo({behavior:'smooth'})), לא ע"י CSS
-   snap טבעי בלבד — ראו script.js (s16GoToPage/s16InitScrollJump).
-   ========================================================= */
-.tbl-content {
+   מסך 17 — שאלה 2 מתוך 6: שורה RTL אמיתית — טור ימני (כותרת+משפט,
+   שאלת הגרירה) + טבלת התוצאות משמאל, שתיהן מתחילות מאותו קו עליון
+   (align-items:flex-start על השורה עצמה, .s16-content). עודכן
+   (2026-09-08, בקשה מפורשת): בוטלה לגמרי הגלילה/"קפיצת עמוד" שהייתה
+   כאן (שני "עמודים" נפרדים, .tbl-content/.tbl-page עם scroll-snap —
+   ראו git history לפרטים), ונמחקה טבלת עמוד-1 המקורית (הייתה כפילות
+   — אותה טבלה כבר מוצגת כאן כ-.s16-table-recap, שהפכה מ"recap" לטבלה
+   היחידה במסך). עודכן שוב (2026-09-08): הכותרת (.tbl-page-header)
+   הועברה מבלוק נפרד מעל השורה אל תוך .s16-question-col עצמו, כדי
+   שהטבלה תתחיל מאותו גובה בדיוק כמו המשפט "הניסוי החל" ולא כמו
+   "השלימו את הפסקה" (שהיה נמוך יותר, כשהכותרת ישבה מעל השורה כולה). */
+.s16-content {
   position: absolute;
-  top: 139px; left: 0; right: 0; bottom: 74px;
-  /* left/right עברו מ-position ל-padding, כדי שפס הגלילה (שמופיע בקצה
-     הקופסה עצמה, לא בקצה ה-padding) יישב צמוד לקנבס — לא במרווח 40px
-     כרגיל. תוכן פנימי נשאר באותו מרווח בדיוק, כי הפדינג מפצה על הסטה. */
-  padding-left: 40px; padding-right: 40px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scroll-snap-type: y mandatory;
-  /* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover, not the
-     default arrow/pointer — client's own wording is "the mouse should be in the shape of a hand." */
-  cursor: grab;
+  top: 139px; left: 40px; right: 40px; bottom: 90px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start; /* RTL row: question column first in DOM = physical right */
+  gap: 40px;
 }
-.tbl-content::-webkit-scrollbar { width: 8px; }
-.tbl-content::-webkit-scrollbar-track {
-  background: rgba(201, 206, 216, 0.4);
-  border-radius: 16px;
-}
-.tbl-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.56);
-  border-radius: 24px;
-}
-.tbl-page {
-  min-height: 100%;
-  box-sizing: border-box;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+.tbl-page-header {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* RTL column: flex-start = physical right */
-  gap: 24px;
-  padding: 0 0 32px 0;
-}
-/* עמוד 2 (השאלה): שורה RTL אמיתית, לא column — טור השאלה ראשון ב-DOM
-   (flex-start = ימין תחת RTL), טבלת ה-recap שנייה (שמאל), לפי התסריט
-   (שקפים 45-50) שמציג את טבלת עמוד 1 שוב לצד השאלה. */
-#s16-question-panel {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 40px;
+  gap: 16px;
+  width: 100%;
 }
 .s16-question-col {
   flex: 1;
@@ -1839,15 +1909,9 @@ img { display: block; max-width: none; }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 24px;
+  gap: 12px;
 }
 .s16-table-recap { flex-shrink: 0; }
-.tbl-page-header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-}
 
 /* טבלת תוצאות מדידה — הועתקה ממסך 5 (id="s10") של
    Methodica-science-mass-measure-02-06 (.s11-table/.s11-th/.s11-td
@@ -1855,7 +1919,7 @@ img { display: block; max-width: none; }
    label ימנית מיוחדת (הערכים כאן קצרים, לא צריך text-align:right +
    min-width כמו במקור). zebra striping שורות זוגיות זהה למקור. */
 .tbl-table {
-  width: 500px;
+  width: 400px;
   max-width: 100%;
   border-collapse: collapse;
   direction: rtl;
@@ -1882,20 +1946,14 @@ img { display: block; max-width: none; }
 }
 .tbl-table tbody tr:nth-child(even) .tbl-td { background: #D4F3FF; }
 
-/* Gesture Hint — Cursor Scroll overlay for #s16-scroll-area (SELF-QA.md §7, Figma node
-   2915:35184). Positioned as a sibling of .tbl-content using the identical box (top:139px/
-   bottom:74px) so it sits fixed over the scroll viewport instead of scrolling away with page 1's
-   content. Colors/sizes/keyframe timing copied verbatim from SELF-QA.md §7 (Science/Blue variant —
-   see the export-trap warning there before ever re-deriving these from a raw Figma pull). The hand
-   itself never animates, only the two rings (opacity+scale) — see script.js for the show-once/
-   hide-on-real-scroll logic (s16MaybeShowScrollGesture). */
-.gesture-hint-scroll-wrap {
-  position: absolute;
-  top: 139px; left: 0; right: 0; bottom: 74px;
-  pointer-events: none;
-  z-index: 20;
-}
-.gesture-hint-scroll-wrap[hidden] { display: none; }
+/* Gesture Hint — Drag variant base (SELF-QA.md §7, Figma node 2915:35185). Not touched by the
+   2026-09-08 removal of screen 17's scroll gesture-hint (below) — this is the drag-hint anchoring
+   mechanism, still used by showDragGestureHint() for s11/s16/s17's drag questions.
+   `left` is the fallback/default (dead-center on the target) — showDragGestureHint() in script.js
+   overrides it per-instance via inline style, offset past the target's actual measured right edge,
+   so the hand+rings never sit on top of (and hide) the dragged element's own label text. Measured
+   per-instance (not a single hardcoded px value here) because target width varies both across and
+   within projects — fixed 180px/260px word-bank pills in some, auto-sized min-width chips in others. */
 .gesture-hint {
   position: absolute;
   left: 50%; top: 50%;
@@ -1903,10 +1961,6 @@ img { display: block; max-width: none; }
   width: 0; height: 0;
   pointer-events: none;
 }
-/* Scroll's wrap is a large box (the whole scroll viewport) — center lower-middle rather than
-   dead-center. Drag's hint mounts directly inside a small pill/slot, where dead-center (the base
-   rule above) is already the right spot — no override needed there. */
-.gesture-hint-scroll-wrap .gesture-hint { top: 62%; }
 .gesture-hint-hand,
 .gesture-hint-ring {
   position: absolute;
@@ -1917,19 +1971,6 @@ img { display: block; max-width: none; }
 .gesture-hint-ring {
   border-radius: 50%;
   opacity: 0;
-}
-.gesture-hint-ring--small {
-  width: 12px; height: 12px;
-  border: 1.5px solid #B0DFFF;
-  z-index: 2;
-  animation: gesture-ring-small 2s infinite;
-}
-.gesture-hint-ring--big {
-  width: 64px; height: 64px;
-  background: #B0DFFF;
-  border: 2.5px solid #00BAFF;
-  z-index: 1;
-  animation: gesture-ring-big 2s infinite;
 }
 @keyframes gesture-ring-small {
   0%   { opacity: 0;    scale: 0.2 0.2; }
@@ -1984,11 +2025,15 @@ img { display: block; max-width: none; }
 .s17-content {
   position: absolute;
   top: 139px; left: 40px; right: 40px; bottom: 90px;
+  overflow-y: auto;
+  direction: ltr; /* forces the native scrollbar to the physical right edge (RTL page would otherwise put it on the left) */
+}
+.s17-content-inner {
+  direction: rtl; /* restores true RTL layout for everything inside */
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* RTL column: flex-start = physical right */
   gap: 16px;
-  overflow-y: auto;
 }
 .s17-text-group {
   display: flex;
@@ -2177,8 +2222,8 @@ img { display: block; max-width: none; }
   gap: 6px;
   direction: rtl;
 }
-.s18-bubble-name { font-size: 18px; font-weight: 700; color: var(--subject-500); }
-.s18-bubble p:not(.s18-bubble-name) { font-size: 18px; font-weight: 400; color: #303030; line-height: 1.4; }
+.s18-bubble-name { font-size: 24px; font-weight: 700; color: var(--subject-500); }
+.s18-bubble p:not(.s18-bubble-name) { font-size: 24px; font-weight: 400; color: #303030; line-height: 1.4; }
 /* זנב הבועה — משולש CSS פונה לכיוון הדמות: תג-right = הדמות פיזית
    מימין לבועה (זנב פונה ימינה); תג-left = הדמות פיזית משמאל (זנב שמאלה) */
 .s18-bubble--tail-right::after {

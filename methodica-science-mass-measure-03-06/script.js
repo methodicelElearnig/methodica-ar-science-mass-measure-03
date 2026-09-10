@@ -28,6 +28,71 @@ function scaleApp() {
 }
 window.addEventListener('resize', scaleApp);
 
+/* Fake scrollbar (2026-09-09) — replaces the native styled scrollbar on every overflow-y:auto
+   container. Root cause: current Chrome no longer honors ::-webkit-scrollbar-button{display:none}
+   (verified live: the up/down arrows render regardless, even with !important + a full reload) —
+   only hiding the native scrollbar entirely works, so we do that and draw our own track+thumb here,
+   matching the Figma spec colors (see .fake-scrollbar-track/-thumb in styles.css) with no arrow
+   buttons because nothing native is left to render them. */
+function initFakeScrollbar(el) {
+  if (!el || el.dataset.fakeScrollbarInit) return;
+  el.dataset.fakeScrollbarInit = 'true';
+  el.classList.add('native-scrollbar-hidden');
+  const parent = el.parentElement;
+  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+  const track = document.createElement('div');
+  track.className = 'fake-scrollbar-track';
+  const thumb = document.createElement('div');
+  thumb.className = 'fake-scrollbar-thumb';
+  track.appendChild(thumb);
+  parent.appendChild(track);
+
+  function scale() { return Math.min(window.innerWidth / 1280, window.innerHeight / 710); }
+
+  function layout() {
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+    const height = elRect.height / s;
+    track.style.top = ((elRect.top - parentRect.top) / s) + 'px';
+    track.style.height = height + 'px';
+    track.style.left = ((elRect.right - parentRect.left) / s - 12) + 'px';
+    const needsScroll = el.scrollHeight > el.clientHeight + 1;
+    track.style.display = needsScroll ? 'block' : 'none';
+    if (!needsScroll) return;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const scrollRatio = el.scrollTop / (el.scrollHeight - el.clientHeight);
+    thumb.style.height = thumbHeight + 'px';
+    thumb.style.top = (maxThumbTop * scrollRatio) + 'px';
+  }
+  el.addEventListener('scroll', layout);
+  window.addEventListener('resize', layout);
+
+  let dragging = false, startY = 0, startScrollTop = 0;
+  thumb.addEventListener('mousedown', function (e) {
+    dragging = true; startY = e.clientY; startScrollTop = el.scrollTop;
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    const s = scale();
+    const elRect = el.getBoundingClientRect();
+    const height = elRect.height / s;
+    const ratio = el.clientHeight / el.scrollHeight;
+    const thumbHeight = Math.max(24, height * ratio);
+    const maxThumbTop = height - thumbHeight;
+    const deltaY = (e.clientY - startY) / s;
+    const scrollableDist = el.scrollHeight - el.clientHeight;
+    el.scrollTop = startScrollTop + (deltaY / maxThumbTop) * scrollableDist;
+  });
+  document.addEventListener('mouseup', function () { dragging = false; document.body.style.userSelect = ''; });
+  layout();
+  new MutationObserver(layout).observe(el, { childList: true, subtree: true, characterData: true });
+}
+
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
   document.querySelectorAll('.screen').forEach(function (el) {
@@ -38,6 +103,9 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  requestAnimationFrame(function () {
+    target.querySelectorAll('.tbl-content').forEach(initFakeScrollbar);
+  });
 }
 
 function resetScreenState(n) {
@@ -126,13 +194,34 @@ function s0BackToPreviousSain() {
    המידעיים האחרים בפרויקט.
    ========================================================= */
 
-let s1CurrentPage = 0;
-let s1Jumping = false;
+/* SELF-QA.md §7 "Cursor shape" — the hand-shaped (grab) cursor over a scrollable container must only
+   show near the actual scrollbar strip, not across the whole content box (client feedback, 2026-09-08:
+   the grab cursor covering the entire screen was confusing). Toggles `.near-scrollbar` on `el` based
+   on how close the mouse is to its right edge (where the scrollbar physically sits, since these
+   containers force direction:ltr — see CLAUDE.md). thresholdPx is generous on purpose (wider than the
+   8px scrollbar itself) so it's easy to hit without pixel-perfect aim. */
+function initScrollbarHoverCursor(el, thresholdPx) {
+  if (!el || el.dataset.scrollbarCursorInit) return;
+  el.dataset.scrollbarCursorInit = 'true';
+  const threshold = thresholdPx || 20;
+  el.addEventListener('mousemove', function (e) {
+    const rect = el.getBoundingClientRect();
+    const distFromRight = rect.right - e.clientX;
+    el.classList.toggle('near-scrollbar', distFromRight >= 0 && distFromRight <= threshold);
+  });
+  el.addEventListener('mouseleave', function () { el.classList.remove('near-scrollbar'); });
+}
 
+let s1CurrentPage = 0;
+
+/* המרה לזרימה רגילה (2026-09-08, לפי בקשת המשתמשת — "זרימה רגילה + מעקב גלילה", כמו שתוקן
+   בסיין 4/5): אין יותר "קפיצת עמוד" שחוטפת wheel/keydown ומגלגלת מסך-מלא בכל פעם. הגלילה
+   חופשית לגמרי; s1GoToPage נשאר קיים רק בשביל כפתורי "המשך" (קפיצה יזומה לסקשן הבא), לא בשביל
+   קלט משתמש/ת רגיל. פס הפעולה המשותף (#s1-check/#s1-hint) עוקב אחרי מיקום הגלילה בפועל דרך
+   s1UpdateCurrentPageFromScroll() במקום דרך אינדקס-עמוד נפרד. */
 function s1GoToPage(index) {
   const pages = document.querySelectorAll('#s6-scroll-area .tbl-page');
-  if (index < 0 || index >= pages.length || s1Jumping || index === s1CurrentPage) return;
-  s1Jumping = true;
+  if (index < 0 || index >= pages.length) return;
   s1CurrentPage = index;
   /* .scq-fb-box ממוקם ביחס למסך כולו (position:absolute), לא ביחס
      לסקשן הגלילה — אם משוב פתוח נשאר פתוח בגלילה לסקשן אחר, הוא
@@ -142,30 +231,38 @@ function s1GoToPage(index) {
     const box = document.getElementById(id);
     if (box) box.classList.remove('visible');
   });
-  /* sync לפני הגלילה, לא אחריה: dqSectionC.reset() (בקריאה הראשונה
-     לעמוד 4) מבצע render() שבונה מחדש את קלפי הגרירה ב-DOM — מוטציה
-     כזו אחרי scrollTo() קוטעת את אנימציית הגלילה החלקה באמצע (הדפדפן
-     מבטל scroll-in-progress כשהתוכן הגלילי משתנה). */
   s1SyncBar(index);
   document.getElementById('s6-scroll-area').scrollTo({ top: pages[index].offsetTop, behavior: 'smooth' });
-  setTimeout(function () { s1Jumping = false; }, 500);
+}
+
+/* מעקב גלילה חופשית: בכל אירוע scroll, מאתרים איזה סקשן (.tbl-page) נמצא הכי קרוב למרכז
+   האזור הגלוי כרגע, ומסנכרנים אליו את פס הפעולה המשותף — כל sync-function פנימית (s6aSyncBar
+   וכו') כבר קוראת את המצב הפנימי-שלה-עצמה, כך שקריאה חוזרת/מרובה בטוחה (אידמפוטנטית), כולל
+   dqSectionC.reset() שבודק hasProgress לפני שהוא מאפס משהו (ר' makeDragQuestion). */
+function s1UpdateCurrentPageFromScroll() {
+  const scrollArea = document.getElementById('s6-scroll-area');
+  const pages = document.querySelectorAll('#s6-scroll-area .tbl-page');
+  if (!scrollArea || !pages.length) return;
+  const viewportMid = scrollArea.scrollTop + scrollArea.clientHeight / 2;
+  let closest = 0;
+  let closestDist = Infinity;
+  pages.forEach(function (page, i) {
+    const pageMid = page.offsetTop + page.offsetHeight / 2;
+    const dist = Math.abs(pageMid - viewportMid);
+    if (dist < closestDist) { closestDist = dist; closest = i; }
+  });
+  if (closest !== s1CurrentPage) {
+    s1CurrentPage = closest;
+    s1SyncBar(closest);
+  }
 }
 
 function s1InitScrollJump() {
   const scrollArea = document.getElementById('s6-scroll-area');
   if (!scrollArea || scrollArea.dataset.jumpInit) return;
   scrollArea.dataset.jumpInit = 'true';
-
-  scrollArea.addEventListener('wheel', function (e) {
-    e.preventDefault();
-    if (s1Jumping || e.deltaY === 0) return;
-    s1GoToPage(s1CurrentPage + (e.deltaY > 0 ? 1 : -1));
-  }, { passive: false });
-
-  scrollArea.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); s1GoToPage(s1CurrentPage + 1); }
-    if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); s1GoToPage(s1CurrentPage - 1); }
-  });
+  initScrollbarHoverCursor(scrollArea);
+  scrollArea.addEventListener('scroll', s1UpdateCurrentPageFromScroll);
 }
 
 /* דריסה בטוחה — אף פעם לא אמורה להיקרא בפועל: ברגע שהמשתמש/ת נוחתים
@@ -459,8 +556,32 @@ function s6bSyncBar() {
    Dismissal listens on the slot (not the card) because drag events bubble and the card gets
    replaced on re-render. */
 function showDragGestureHint(slotEl) {
-  if (!slotEl || slotEl.dataset.gestureShown) return;
-  slotEl.dataset.gestureShown = 'true';
+  /* Guards on "was this actually dismissed" (set inside dismiss() below), not "was this function
+     ever called" — reset() on this screen's section can legitimately run twice back-to-back for one
+     arrival (found 2026-09-10, on section 5's "התקן" hint never appearing in practice): s1GoToPage(n)
+     sets s1CurrentPage=n and calls s1SyncBar(n) synchronously, THEN starts a smooth scrollTo(); while
+     that scroll animates, s1UpdateCurrentPageFromScroll's own "closest page" tracking briefly sees an
+     intermediate page as current (since the target scrollTop hasn't been reached yet), overwrites
+     s1CurrentPage back down, and then calls s1SyncBar(n) a second time once the scroll actually lands
+     — so dqSectionC.reset() (and therefore render(), which rebuilds the slot's card from scratch) runs
+     twice for a single ordinary "continue" click. A slotEl.dataset.gestureShown flag set up front here
+     survived that fine on its own — the guard still returned early the second time — but render()
+     doesn't know a hint div existed and rebuilds the slot's children without it, so the SECOND
+     showDragGestureHint() call, now guarded away by the stale "already shown" flag, never puts it
+     back: the hint silently vanishes despite firing on every navigation into this section. Checking
+     for an existing .gesture-hint child (not just the flag) lets a redundant call safely re-add it
+     when render() has wiped it out from under an untouched, never-dismissed hint. */
+  if (!slotEl || slotEl.dataset.gestureDismissed || slotEl.querySelector('.gesture-hint')) return;
+  /* Found the actual text-bearing element BEFORE appending the hint below — slotEl might just be a
+     text-holding element itself or a wrapper around one (.dq-source-slot > .dq-drag-card); descending
+     into the single child that carries the same full text as its parent finds whichever one actually
+     renders the label. Must run before slotEl.appendChild(hint), since that call gives slotEl (and
+     every ancestor of the label down to it) a second child — the hint itself — which would immediately
+     break the "exactly one child" check below and leave textHost stuck one level too high. */
+  let textHost = slotEl;
+  while (textHost.children.length === 1 && textHost.children[0].textContent === textHost.textContent) {
+    textHost = textHost.children[0];
+  }
   const hint = document.createElement('div');
   hint.className = 'gesture-hint';
   hint.innerHTML =
@@ -468,7 +589,62 @@ function showDragGestureHint(slotEl) {
     '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
     '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
   slotEl.appendChild(hint);
+  /* Positioned past the target's own right edge instead of dead-center on it (2026-09-08, client
+     feedback: the hand+rings were sitting directly on top of — and hiding — the dragged element's
+     own label text).
+     Measured from the actual rendered LABEL TEXT's own right edge (via Range, not slotEl's
+     offsetWidth) — reported 2026-09-10 (ported fix from Sain 1, methodica-science-mass-measure-03-01,
+     which found the same bug on "התקן" here): offsetWidth-based math assumed the text sits centered
+     with a wide, fairly constant margin inside the pill, which doesn't hold for every label/position —
+     sizing off the container's width is only ever a proxy for "past the text", and a wrong one
+     whenever the real margin is smaller than assumed. Reading the text's own painted extent removes
+     the guesswork: the hand can only ever land past where the text actually ends.
+     Gap is RING_HALF (21px, half of .gesture-hint-ring--drag-big's 42px width) MINUS 1px, measured
+     from the anchor to the text edge — i.e. the ring's own near edge lands 1px before the text, just
+     touching it without crossing in. A pass at binding this to the smaller HAND radius instead (+16
+     total, on the reasoning "only the opaque hand can really hide a letter, the ring is a translucent
+     decoration") was tried and reverted 2026-09-10: checked against the *unpaused, running* animation
+     (not a frame frozen mid-cycle) — around 30-40% into its 2s loop the ring is both near full 42px
+     scale AND still ~0.6-0.65 opacity (see the `gesture-ring-big` keyframes), which reads as a clearly
+     visible pale-blue disc, not a faint outline — at +16 that disc sat squarely over "התקן"'s last
+     glyph for a real, visible stretch of the loop, not just a 1px graze. RING_HALF-1 keeps that disc
+     off the letters entirely while still landing the cluster closer to/on the card than the original
+     RING_HALF+4 (+25) margin did — this project's min-width:90px/padding:0 12px pills (e.g. "התקן",
+     ~22px of real margin past the text) only have so much room to spend between clearing the text and
+     staying inside the card's own right edge.
+     Falls back to the old container-edge math (still +8, safe there) if the range ever comes back empty
+     (e.g. a ghost placeholder with no text).
+     Deferred to rAF (2026-09-08, still covering text after the above fix): this function always runs
+     from inside resetScreenState*(), which goTo() calls BEFORE target.classList.add('active') — so at
+     this point the screen is still display:none and any width/rect read is 0. Reading it one frame
+     later, after the screen is actually visible, gives real values.
+     Divided by the #app scale factor (2026-09-10, reported "hand points at nothing" once tested at a
+     real window size instead of exactly 1280×710): getBoundingClientRect()/Range.getBoundingClientRect()
+     report SCREEN-space pixels — i.e. already multiplied by whatever scaleApp() set #app's CSS
+     transform:scale(...) to for the current window — while hint.style.left is a LOCAL CSS value that
+     gets scaled again by that same transform when painted. Subtracting two screen-space rects and
+     feeding the raw result straight into a local `left` therefore only came out right by coincidence
+     at scale 1 (a 1280×710 viewport, exactly what the dev harness happened to test at); at any other
+     window size the on-screen gap this produces is off by the scale factor, landing the hint away from
+     the card entirely. `appRect.width / 1280` recovers the current scale the same way it's already
+     read elsewhere in this file (see onPointerDown in makeScaleSimulation); dividing the measured
+     screen-space distance by it converts it back to the local units style.left expects. The +20 gap
+     itself is already a local value (it's derived from the ring's own local 42px width) and must not
+     be divided. */
+  requestAnimationFrame(function () {
+    const range = document.createRange();
+    range.selectNodeContents(textHost);
+    const textRect = range.getBoundingClientRect();
+    const appRect = document.getElementById('app').getBoundingClientRect();
+    const scale = appRect.width / 1280;
+    if (textRect.width > 0) {
+      hint.style.left = ((textRect.right - slotEl.getBoundingClientRect().left) / scale + 20) + 'px';
+    } else {
+      hint.style.left = 'calc(50% + ' + (slotEl.offsetWidth / 2 + 8) + 'px)';
+    }
+  });
   function dismiss() {
+    slotEl.dataset.gestureDismissed = 'true';
     hint.remove();
     slotEl.removeEventListener('dragstart', dismiss);
     slotEl.removeEventListener('click', dismiss);
@@ -781,7 +957,15 @@ function makeDragQuestion(cfg) {
     if (done) restoreFinal();
     else if (!hasProgress) resetInitial();
     else { const btn = document.getElementById(cfg.checkBtnId); if (btn) btn.hidden = false; render(); }
-    showDragGestureHint(document.getElementById('slot-' + dragIds[0]));
+    /* הרמז צריך לנחות על הקלף הראשון לפי סדר ה-DOM/חזותי במאגר המילים
+       (dragIds[0] הוא רק המפתח הראשון ב-labels, שמשקף את סדר התשובות
+       ב-correctMap ולא בהכרח את סדר ה-slots בפועל) — נאתר את מאגר
+       המילים דרך ה-slot הראשון (כל slot חי תחתיו) ונבחר משם את ה-slot
+       הראשון בפועל. */
+    const anySlot = document.getElementById('slot-' + dragIds[0]);
+    const wordBankEl = anySlot && anySlot.parentElement;
+    const firstSlot = (wordBankEl && wordBankEl.querySelector('.dq-source-slot')) || anySlot;
+    showDragGestureHint(firstSlot);
   }
 
   window[cfg.prefix + 'DragOver'] = dragOver;

@@ -20,8 +20,7 @@
       <div class="transition-title-block">
         <p class="transition-sub">אין כמו תרגול לחיזוק הלמידה</p>
         <h2 class="transition-title">3 שאלות</h2>
-        <p class="transition-sub"><b>וכבר בהתחלה יש רמז! ענו נכון על 2 שאלות ומעלה כדי להתקדם
-          .</b></p>
+        <p class="transition-sub"><b>וכבר בהתחלה יש רמז! ענו נכון על 2 שאלות ומעלה כדי להתקדם.</b></p>
       </div>
       <div class="transition-avatar-wrap">
         <video class="transition-avatar" id="s0-avatar-img" autoplay loop muted playsinline></video>
@@ -248,7 +247,7 @@
             <p class="scq-qbody">ויכוח התגלע במשפחת גראם, בני הזוג היו בסדנת שקילה ושקלו טבעת זהב:<br>
               גברת מילי (גראם): "מסת הטבעת היא 5.20 גרם"<br>
               מר קילו (גראם): "את טועה, הטבעת כבדה"<br><br/>
-              איזו טענה מספקת ראיה מדעית טובה יותר?</p>
+              <b>איזו טענה מספקת ראיה מדעית טובה יותר?</b></p>
           </div>
         </div>
         <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
@@ -508,32 +507,48 @@
     </div>
 
     <div class="s7-content">
-      <div class="scq-qtext">
-        <div class="scq-qtext-body">
-          <p class="scq-qtitle">סעיף ב</p>
-          <p class="scq-qbody">הטכנאי מדד את מסתו של אותו הכדור 3 פעמים:</p>
+      <div class="s7-content-inner">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">סעיף ב</p>
+            <p class="scq-qbody">הטכנאי מדד את מסתו של אותו הכדור 3 פעמים:</p>
+          </div>
+        </div>
+
+        <div class="s7-cards">
+          <div class="s7-card">
+            <div class="s7-card-frame"><img src="assets/images/screen08-footbal-03.png" alt="שקילת הכדור, מדידה 1"></div>
+            <p class="s7-card-weight">428 גרם</p>
+          </div>
+          <div class="s7-card">
+            <div class="s7-card-frame"><img src="assets/images/screen08-footbal-01.png" alt="שקילת הכדור, מדידה 2"></div>
+            <p class="s7-card-weight">430 גרם</p>
+          </div>
+          <div class="s7-card">
+            <div class="s7-card-frame"><img src="assets/images/screen08-footbal-02.png" alt="שקילת הכדור, מדידה 3"></div>
+            <p class="s7-card-weight">429 גרם</p>
+          </div>
+        </div>
+
+        <div class="dq-sentence">
+          <span class="dq-snt-pre">השלימו: המסה הממוצעת היא</span>
+          <input id="s7-input" class="viq-input" type="number" step="any" inputmode="decimal" dir="ltr" aria-label="המסה הממוצעת, בגרם" oninput="s7OnInput()">
+          <span class="dq-snt-post">גרם.</span>
         </div>
       </div>
+    </div>
 
-      <div class="s7-cards">
-        <div class="s7-card">
-          <div class="s7-card-frame"><img src="assets/images/screen08-footbal-03.png" alt="שקילת הכדור, מדידה 1"></div>
-          <p class="s7-card-weight">428 גרם</p>
-        </div>
-        <div class="s7-card">
-          <div class="s7-card-frame"><img src="assets/images/screen08-footbal-01.png" alt="שקילת הכדור, מדידה 2"></div>
-          <p class="s7-card-weight">430 גרם</p>
-        </div>
-        <div class="s7-card">
-          <div class="s7-card-frame"><img src="assets/images/screen08-footbal-02.png" alt="שקילת הכדור, מדידה 3"></div>
-          <p class="s7-card-weight">429 גרם</p>
-        </div>
-      </div>
-
-      <div class="dq-sentence">
-        <span class="dq-snt-pre">השלימו: המסה הממוצעת היא</span>
-        <input id="s7-input" class="viq-input" type="number" step="any" inputmode="decimal" dir="ltr" aria-label="המסה הממוצעת, בגרם" oninput="s7OnInput()">
-        <span class="dq-snt-post">גרם.</span>
+    <!-- Gesture Hint — Cursor Scroll overlay for .s7-content, ported from
+         methodica-science-mass-measure-03-04 (s2MaybeShowScrollGesture pattern). Sibling of
+         .s7-content (not a child), so it stays fixed on screen instead of scrolling away with the
+         content; nested inside #s7 itself (not appended to #app), so goTo()'s normal screen cleanup
+         removes it automatically. Shown once per screen visit, hidden the instant a real scroll is
+         attempted — see s7MaybeShowScrollGesture() in script.js. -->
+    <div class="gesture-hint-scroll-wrap" id="s7-scroll-gesture" hidden>
+      <div class="gesture-hint">
+        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
+        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
+        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
       </div>
     </div>
 
@@ -595,7 +610,11 @@
         <div class="scq-qtext">
           <div class="scq-qtext-body">
             <p class="scq-qtitle">סעיף ג</p>
-            <p class="scq-qbody">בהתבסס על הממוצע שחישבתם, איזו מהטענות נכונה?</p>
+            <p class="scq-qbody">
+            בהתבסס על הממוצע שחישבתם, איזו מהטענות נכונה? 
+            <br/>
+            *זכרו שלפי התקן, מסת כדור תקני צריכה להיות בין 410 ל-450 גרם.
+            </p>
           </div>
         </div>
         <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
