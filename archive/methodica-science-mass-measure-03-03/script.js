@@ -113,8 +113,31 @@ const S1_CHAR_ASSETS = {
   boy: 'assets/videos/boy-avatar-come-on.mp4'
 };
 
+/* Gesture Hint — Cursor Scroll (SELF-QA.md §7, Figma node 2915:35184). Ported from the sibling
+   project methodica-science-mass-measure-03-05 (s1MaybeShowScrollGesture/s4MaybeShowScrollGesture)
+   — this screen's .s2-content is scrollable but had no scroll hint at all. Shown once per screen
+   visit, hidden the instant a real scroll is attempted (wheel/keydown). Dismissal listens on the
+   scroll container itself (.s2-content), same pattern as showDragGestureHint below. */
+let s1ScrollGestureShown = false;
+function s1MaybeShowScrollGesture() {
+  if (s1ScrollGestureShown) return;
+  s1ScrollGestureShown = true;
+  const gesture = document.getElementById('s1-scroll-gesture');
+  const scrollArea = document.querySelector('#s1 .s2-content');
+  if (!gesture || !scrollArea) return;
+  gesture.hidden = false;
+  function dismiss() {
+    gesture.hidden = true;
+    scrollArea.removeEventListener('wheel', dismiss);
+    scrollArea.removeEventListener('keydown', dismiss);
+  }
+  scrollArea.addEventListener('wheel', dismiss);
+  scrollArea.addEventListener('keydown', dismiss);
+}
+
 function resetScreenState1() {
   resolveCharBubbleVideo('s1-char-img', S1_CHAR_ASSETS);
+  s1MaybeShowScrollGesture();
 }
 
 function s1Continue() { goTo(2); }
@@ -146,6 +169,11 @@ function showDragGestureHint(slotEl) {
     '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
     '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
   slotEl.appendChild(hint);
+  /* Positioned past the target's own right edge instead of dead-center on it (2026-09-08, client
+     feedback: the hand+rings were sitting directly on top of — and hiding — the dragged element's
+     own label text). Measured from the actual slot width (not a hardcoded px value) since chip
+     width can vary between drag questions. +10px gap clears the edge instead of touching it. */
+  hint.style.left = 'calc(50% + ' + (slotEl.offsetWidth / 2 + 10) + 'px)';
   function dismiss() {
     hint.remove();
     slotEl.removeEventListener('dragstart', dismiss);
@@ -515,9 +543,31 @@ const dq2 = makeDragQuestion({
   texts: TEXTS_S2_DQ
 });
 
+/* Gesture Hint — Cursor Scroll (SELF-QA.md §7, Figma node 2915:35184). Ported from the sibling
+   project methodica-science-mass-measure-03-05 — this screen's .dq-question-panel is scrollable
+   but had no scroll hint at all (only the drag hint above existed). Shown once per screen visit,
+   hidden the instant a real scroll is attempted (wheel/keydown). */
+let s2ScrollGestureShown = false;
+function s2MaybeShowScrollGesture() {
+  if (s2ScrollGestureShown) return;
+  s2ScrollGestureShown = true;
+  const gesture = document.getElementById('s2-scroll-gesture');
+  const scrollArea = document.getElementById('s2-question-panel');
+  if (!gesture || !scrollArea) return;
+  gesture.hidden = false;
+  function dismiss() {
+    gesture.hidden = true;
+    scrollArea.removeEventListener('wheel', dismiss);
+    scrollArea.removeEventListener('keydown', dismiss);
+  }
+  scrollArea.addEventListener('wheel', dismiss);
+  scrollArea.addEventListener('keydown', dismiss);
+}
+
 function resetScreenState2() {
   dq2.reset();
   showDragGestureHint(document.getElementById('slot-s2-drag-maznaim'));
+  s2MaybeShowScrollGesture();
 }
 
 /* ---------- Dev postMessage bridge (index_dev.html free nav) ---------- */

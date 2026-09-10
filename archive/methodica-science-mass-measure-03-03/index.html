@@ -66,29 +66,42 @@
        אפשר להמשיך" תואם גם למקור וגם לטקסט הכפתור בשקף עצמו. -->
   <section class="screen" data-screen="1" id="s1">
     <div class="s2-content">
-      <h1 class="s2-title">משימת כיתה</h1>
-      <div class="s2-body">
-        <div class="s2-group">
-          <p class="s2-section-bold">ציוד נדרש:</p>
-          <p class="s2-section-body">חפץ לבחירתכם: תפוח, מחק, טלפון, בקבוק מים, ספר. מאזניים.</p>
+      <div class="s2-content-inner">
+        <h1 class="s2-title">משימת כיתה</h1>
+        <div class="s2-body">
+          <div class="s2-group">
+            <p class="s2-section-bold">ציוד נדרש:</p>
+            <p class="s2-section-body">חפץ לבחירתכם: תפוח, מחק, טלפון, בקבוק מים, ספר. מאזניים.</p>
+          </div>
+          <div class="s2-group">
+            <p class="s2-section-bold">בצעו ותעדו במחברת:</p>
+            <ol class="s2-steps">
+              <li>שקלו את החפץ 3 פעמים.</li>
+              <li>חשבו את הממוצע.</li>
+              <li>חשבו את ההפרש בין המדידה הגבוהה ביותר לנמוכה ביותר.</li>
+            </ol>
+          </div>
+          <div class="s2-group">
+            <p class="s2-section-bold">ענו במחברת על השאלות הבאות:</p>
+            <ol class="s2-steps">
+              <li>האם כל המדידות היו זהות?</li>
+              <li>אם לא, מה לדעתכם גרם להבדלים?</li>
+              <li>האם לדעתכם מדידה אחת הייתה מספיקה?</li>
+              <li>דמיינו שהחפץ שבדקתם הוא: שקית תפוחי אדמה / טבעת זהב או תרופה. חישבו: באיזה מהמקרים הייתם מסתפקים ב-3 מדידות ובאיזה הייתם שוקלים לבצע יותר חזרות? מדוע?</li>
+            </ol>
+          </div>
         </div>
-        <div class="s2-group">
-          <p class="s2-section-bold">בצעו ותעדו במחברת:</p>
-          <ol class="s2-steps">
-            <li>שקלו את החפץ 3 פעמים.</li>
-            <li>חשבו את הממוצע.</li>
-            <li>חשבו את ההפרש בין המדידה הגבוהה ביותר לנמוכה ביותר.</li>
-          </ol>
-        </div>
-        <div class="s2-group">
-          <p class="s2-section-bold">ענו במחברת על השאלות הבאות:</p>
-          <ol class="s2-steps">
-            <li>האם כל המדידות היו זהות?</li>
-            <li>אם לא, מה לדעתכם גרם להבדלים?</li>
-            <li>האם לדעתכם מדידה אחת הייתה מספיקה?</li>
-            <li>דמיינו שהחפץ שבדקתם הוא: שקית תפוחי אדמה / טבעת זהב או תרופה. חישבו: באיזה מהמקרים הייתם מסתפקים ב-3 מדידות ובאיזה הייתם שוקלים לבצע יותר חזרות? מדוע?</li>
-          </ol>
-        </div>
+      </div>
+    </div>
+
+    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7). Sibling of .s2-content (not a child), nested
+         inside #s1 itself. Shown once, hidden on real scroll — see s1MaybeShowScrollGesture() in
+         script.js. -->
+    <div class="gesture-hint-scroll-wrap" id="s1-scroll-gesture" hidden>
+      <div class="gesture-hint">
+        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
+        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
+        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
       </div>
     </div>
 
@@ -127,25 +140,38 @@
        110-112. -->
   <section class="screen" data-screen="2" id="s2">
     <div class="dq-question-panel" id="s2-question-panel">
-      <p class="dq-instruction">השלימו את המסקנה בעזרת המילים הנכונות:</p>
-      <div class="dq-fill-sentences">
-        <div class="dq-sentence" style="white-space:normal">
-          <span class="dq-snt-pre" style="white-space:normal">ככל שהערך של החומר הנמדד גבוה יותר, או שההשלכות של טעות במדידה גדולות יותר,</span>
+      <div class="dq-question-panel-inner">
+        <p class="dq-instruction">השלימו את המסקנה בעזרת המילים הנכונות:</p>
+        <div class="dq-fill-sentences">
+          <div class="dq-sentence" style="white-space:normal">
+            <span class="dq-snt-pre" style="white-space:normal">ככל שהערך של החומר הנמדד גבוה יותר, או שההשלכות של טעות במדידה גדולות יותר,</span>
+          </div>
+          <div class="dq-sentence">
+            <span class="dq-snt-pre">כך נדרש</span>
+            <div class="dq-snt-drop" id="s2-target-1" ondragover="s2DragOver(event,'s2-target-1')" ondragenter="s2DragEnter(event,'s2-target-1')" ondragleave="s2DragLeave(event,'s2-target-1')" ondrop="s2Drop(event,'s2-target-1')"></div>
+            <span class="dq-snt-post">גבוה יותר ולעיתים גם יותר</span>
+            <div class="dq-snt-drop" id="s2-target-2" ondragover="s2DragOver(event,'s2-target-2')" ondragenter="s2DragEnter(event,'s2-target-2')" ondragleave="s2DragLeave(event,'s2-target-2')" ondrop="s2Drop(event,'s2-target-2')"></div>
+            <span class="dq-snt-post">של המדידה.</span>
+          </div>
         </div>
-        <div class="dq-sentence">
-          <span class="dq-snt-pre">כך נדרש</span>
-          <div class="dq-snt-drop" id="s2-target-1" ondragover="s2DragOver(event,'s2-target-1')" ondragenter="s2DragEnter(event,'s2-target-1')" ondragleave="s2DragLeave(event,'s2-target-1')" ondrop="s2Drop(event,'s2-target-1')"></div>
-          <span class="dq-snt-post">גבוה יותר ולעיתים גם יותר</span>
-          <div class="dq-snt-drop" id="s2-target-2" ondragover="s2DragOver(event,'s2-target-2')" ondragenter="s2DragEnter(event,'s2-target-2')" ondragleave="s2DragLeave(event,'s2-target-2')" ondrop="s2Drop(event,'s2-target-2')"></div>
-          <span class="dq-snt-post">של המדידה.</span>
+
+        <div class="dq-word-bank" id="s2-word-bank" ondragover="event.preventDefault()" ondrop="s2DropToBank(event)">
+          <div class="dq-source-slot" id="slot-s2-drag-maznaim"></div>
+          <div class="dq-source-slot" id="slot-s2-drag-diyuk"></div>
+          <div class="dq-source-slot" id="slot-s2-drag-hazarot"></div>
+          <div class="dq-source-slot" id="slot-s2-drag-taut"></div>
         </div>
       </div>
+    </div>
 
-      <div class="dq-word-bank" id="s2-word-bank" ondragover="event.preventDefault()" ondrop="s2DropToBank(event)">
-        <div class="dq-source-slot" id="slot-s2-drag-maznaim"></div>
-        <div class="dq-source-slot" id="slot-s2-drag-diyuk"></div>
-        <div class="dq-source-slot" id="slot-s2-drag-hazarot"></div>
-        <div class="dq-source-slot" id="slot-s2-drag-taut"></div>
+    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7). Sibling of .dq-question-panel (not a child),
+         nested inside #s2 itself. Shown once, hidden on real scroll — see
+         s2MaybeShowScrollGesture() in script.js. -->
+    <div class="gesture-hint-scroll-wrap" id="s2-scroll-gesture" hidden>
+      <div class="gesture-hint">
+        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
+        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
+        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
       </div>
     </div>
 

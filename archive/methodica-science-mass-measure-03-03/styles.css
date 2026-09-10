@@ -359,11 +359,18 @@ img { display: block; max-width: none; }
 .s2-content {
   position: absolute;
   top: 64px; right: 40px; bottom: 76px; left: 340px;
+  overflow-y: auto;
+  /* direction:ltr (not rtl) pushes the native scrollbar to the physical right edge — html/body
+     is direction:rtl, which would otherwise put the scrollbar on the LEFT. True RTL layout for
+     the actual content is restored one level down, on .s2-content-inner. */
+  direction: ltr;
+}
+.s2-content-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  overflow-y: auto;
+  direction: rtl;
 }
 .s2-title {
   font-size: 40px;
@@ -507,12 +514,18 @@ img { display: block; max-width: none; }
 .dq-question-panel {
   position: absolute;
   left: 0; top: 139px; right: 0; bottom: 74px;
+  padding: 0 40px 16px 40px;
+  overflow-y: auto;
+  /* direction:ltr (not rtl) pushes the native scrollbar to the physical right edge — html/body
+     is direction:rtl, which would otherwise put the scrollbar on the LEFT. True RTL layout for
+     the actual content is restored one level down, on .dq-question-panel-inner. */
+  direction: ltr;
+}
+.dq-question-panel-inner {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0 40px 16px 40px;
   gap: 16px;
-  overflow-y: auto;
   direction: rtl;
 }
 .dq-instruction-bold {
@@ -639,6 +652,43 @@ img { display: block; max-width: none; }
   animation-name: gesture-ring-small;
   animation-duration: 2s;
   animation-iteration-count: infinite;
+}
+
+/* Gesture Hint — Cursor Scroll (SELF-QA.md §7, Figma node 2915:35184). Ported from the sibling
+   project methodica-science-mass-measure-03-05 (its s1MaybeShowScrollGesture/s4MaybeShowScrollGesture
+   pattern) — this project has 2 scrollable panels (.s2-content on #s1, .dq-question-panel on #s2)
+   but had no scroll hint at all. Each wrap's box coordinates mirror its own scroll container's
+   own top/left/right/bottom exactly (not a single shared box), per #s1-scroll-gesture/
+   #s2-scroll-gesture below. Reuses the existing .gesture-hint/.gesture-hint-hand/.gesture-hint-ring
+   base rules and gesture-ring-small/gesture-ring-big keyframes above (drag variant) — only the
+   plain (non-drag) --small/--big ring variants are new here. */
+.gesture-hint-scroll-wrap {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+}
+.gesture-hint-scroll-wrap[hidden] { display: none; }
+#s1-scroll-gesture { top: 64px; right: 40px; bottom: 76px; left: 340px; }
+#s2-scroll-gesture { left: 0; top: 139px; right: 0; bottom: 74px; }
+
+/* 2026-09-08: horizontal anchor moved from center (left:50%, the base .gesture-hint rule) to the
+   scroll container's right edge, where the native scrollbar physically sits (these containers force
+   direction:ltr — see CLAUDE.md). Client feedback: the hand must sit ON the scrollbar itself, not
+   floating in the middle of the content. */
+.gesture-hint-scroll-wrap .gesture-hint { top: 62%; left: auto; right: 10px; }
+
+.gesture-hint-ring--small {
+  width: 12px; height: 12px;
+  border: 1.5px solid #B0DFFF;
+  z-index: 2;
+  animation: gesture-ring-small 2s infinite;
+}
+.gesture-hint-ring--big {
+  width: 64px; height: 64px;
+  background: #B0DFFF;
+  border: 2.5px solid #00BAFF;
+  z-index: 1;
+  animation: gesture-ring-big 2s infinite;
 }
 
 .scq-fb-box.dq-feedbox-pos { left: 341px; bottom: 87px; width: 400px; }
