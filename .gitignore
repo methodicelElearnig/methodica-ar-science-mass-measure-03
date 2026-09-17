@@ -1,0 +1,7 @@
+# Internal working docs / source material — not part of the delivered lomda code
+archive/
+*.md
+*.pptx
+*.ppt
+*.docx
+*.doc
