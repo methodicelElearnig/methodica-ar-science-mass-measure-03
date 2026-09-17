@@ -1,0 +1,53 @@
+screen_id,screen_title,screen_type,source_project,source_file,manual_review
+03-01-00,Choose companion character,TwoOptionSelection,methodica-science-mass-measure-03-01,index.html,
+03-01-01,Video intro 1,VideoWatchAndContinue,methodica-science-mass-measure-03-01,index.html,
+03-01-02,SCQ: Noam & Daniela debate (no check/feedback),SingleChoiceQuestion,methodica-science-mass-measure-03-01,index.html,
+03-01-03,Video intro 2,VideoWatchAndContinue,methodica-science-mass-measure-03-01,index.html,
+03-01-04,Choose path: medicine / gold,TwoOptionSelection,methodica-science-mass-measure-03-01,index.html,
+03-01-05,Gold simulation + numeric input,ValueInputQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-06,Medicine simulation + numeric input,ValueInputQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-07,Video: paths converge,VideoWatchAndContinue,methodica-science-mass-measure-03-01,index.html,
+03-01-08,SCQ: reduce random measurement error,SingleChoiceQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-09,Transition: warm-up intro,TransitionScreen,methodica-science-mass-measure-03-01,index.html,
+03-01-10,SCQ: Mrs. Pickle's journal,SingleChoiceQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-11,Drag question: repeat/average sentence fill,DragAndDropQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-12,Transition: 6 questions,TransitionScreen,methodica-science-mass-measure-03-01,index.html,yes
+03-01-13,Explanation: 3 scale types (rice study),other,methodica-science-mass-measure-03-01,index.html,
+03-01-14,Q1 section A: what info to look for,SingleChoiceQuestion,methodica-science-mass-measure-03-01,index.html / script.js,yes
+03-01-15,Q1 section B: pick the right scale,SingleChoiceQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-16,Q2: outlier detection,DragAndDropQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-17,Q3: drag product name onto scale,DragAndDropQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-18,Intro to Q4: Yoram vs Adir argue,other,methodica-science-mass-measure-03-01,index.html,
+03-01-19,Q4: who needs the more precise scale,SingleChoiceQuestion,methodica-science-mass-measure-03-01,index.html / script.js,
+03-01-20,Intro to Q5: Dan's gold chain and menorah,other,methodica-science-mass-measure-03-01,index.html,
+03-01-21,Q5: which item's error is more critical,SingleChoiceQuestion,methodica-science-mass-measure-03-01,index.html / script.js,yes
+03-01-99,Part-wide chrome,other,methodica-science-mass-measure-03-01,index.html,yes
+03-02-00,Transition: pre-practice kickoff,TransitionScreen,methodica-science-mass-measure-03-02,index.html,
+03-02-01,Q1/3: multi-select — where is higher precision needed,MultipleChoiceQuestion,methodica-science-mass-measure-03-02,index.html / script.js,
+03-02-02,Q2/3: single-choice — why weigh sample 3 times,SingleChoiceQuestion,methodica-science-mass-measure-03-02,index.html / script.js,
+03-02-03,Q3/3: single-choice — measurement vs. feeling,SingleChoiceQuestion,methodica-science-mass-measure-03-02,index.html / script.js,
+03-02-04,"Transition: great work, 2 more exercises",TransitionScreen,methodica-science-mass-measure-03-02,index.html,
+03-02-05,Intro: choosing the right scale,other,methodica-science-mass-measure-03-02,index.html,
+03-02-06,Section a: which scale type fits,SingleChoiceQuestion,methodica-science-mass-measure-03-02,index.html / script.js,
+03-02-07,Section b: average of 3 weighings,ValueInputQuestion,methodica-science-mass-measure-03-02,index.html / script.js,
+03-02-08,Section c: does the ball meet FIFA standard (true/false),TrueFalseQuestion,methodica-science-mass-measure-03-02,index.html / script.js,
+03-02-09,Section d: why average 3 measurements,SingleChoiceQuestion,methodica-science-mass-measure-03-02,index.html / script.js,
+03-02-99,Part-wide chrome,other,methodica-science-mass-measure-03-02,index.html,
+03-04-00,Transition intro: 3 advanced questions,TransitionScreen,methodica-science-mass-measure-03-04,index.html,
+03-04-01,"Question 1/3, SCQ with image",SingleChoiceQuestion,methodica-science-mass-measure-03-04,index.html / script.js,yes
+03-04-02,"Question 2/3, scroll screen: table + SCQ",other,methodica-science-mass-measure-03-04,index.html / script.js,
+03-04-03,"Question 3/3, TrueFalseQuestion",TrueFalseQuestion,methodica-science-mass-measure-03-04,index.html / script.js,yes
+03-04-99,Part-wide chrome,other,methodica-science-mass-measure-03-04,index.html,
+03-05-00,Transition: intro to capstone task,TransitionScreen,methodica-science-mass-measure-03-05,index.html,
+03-05-01,Weighing simulation + measurement table,other,methodica-science-mass-measure-03-05,index.html,yes
+03-05-02,Section A: SCQ with reference table,SingleChoiceQuestion,methodica-science-mass-measure-03-05,index.html / script.js,yes
+03-05-03,Section B: SCQ with image + speech bubble,SingleChoiceQuestion,methodica-science-mass-measure-03-05,index.html / script.js,
+03-05-04,Section C: image + bubble + fill-in-the-blank drag question,DragAndDropQuestion,methodica-science-mass-measure-03-05,index.html / script.js,yes
+03-05-05,Unit-complete transition screen,TransitionScreen,methodica-science-mass-measure-03-05,index.html,
+03-05-99,Part-wide chrome,other,methodica-science-mass-measure-03-05,index.html,
+03-06-00,Transition: intro to capstone question (Moed B),TransitionScreen,methodica-science-mass-measure-03-06,index.html,
+03-06-01,Did you know? Newton and the Royal Mint,other,methodica-science-mass-measure-03-06,index.html,
+03-06-02,Section A: single-choice with compact comparison table,SingleChoiceQuestion,methodica-science-mass-measure-03-06,index.html / script.js,yes
+03-06-03,Section B: single-choice with compact comparison table,SingleChoiceQuestion,methodica-science-mass-measure-03-06,index.html / script.js,yes
+03-06-04,Section C: fill-in-the-blank sentence drag question,DragAndDropQuestion,methodica-science-mass-measure-03-06,index.html / script.js,yes
+03-06-99,Part-wide chrome,other,methodica-science-mass-measure-03-06,index.html,
