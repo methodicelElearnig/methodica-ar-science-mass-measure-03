@@ -10,31 +10,20 @@
 <div id="app">
 
   <!-- ============ מסך 1 — מעבר: הקדמה למשימת השיא (מועד ב) ============
-       שוכפל ממסך 1 בסיין 5 (בלי כפתור חזרה). תוכן: שקף 151.
-       תיקון: המסך שוכפל מסיין 5 לפני שהתיקון שם (h2.transition-title
-       מודגש למשפט "עכשיו מגיעה שאלת השיא"/מקביליו) בוצע, ולכן שוכפל בלי
-       h2 — כל השורות היו `.transition-sub` רגילה. המקור (Methodica-
-       science-mass-measure-02-06, מסך "s6", אותה מסגרת "משימת שיא")
-       מפצל: "משימת שיא 2" הופך ל-h2.transition-title מודגש, וההמשך
-       נשאר sub. תוקן לפי המקור.
-       ⚠️ אי-התאמה בתסריט (מוצגת כפי שכתוב, לא תוקנה): שקף 151 אומר
-       "4 סעיפים, להצליח לפחות ב-3", אך בפועל יש כאן רק 3 סעיפים גרורים
-       (א/ב/ג) — שקפים 169-170 (מסכי הסיום) מאשרים "מינימום 3 סעיפים
-       נכונים" שזה בפועל "כל 3 הסעיפים", תואם למבנה שנבנה כאן. ראו
-       ARCHITECTURE.md.
-       דמות: וידאו (MP4, לא GIF — בקשת הלקוח) בלופ, בלי קול ובלי סרגל
-       שליטה (autoplay/loop/muted/playsinline, בלי controls) — "תנועה
-       של 2 עם האצבעות" לפי הערת המפיק בשקף (v-fingers.mp4; קבצי
-       "ריקוד" ששימשו כאן זמנית בטעות הוחלפו בקבצים הנכונים). נבחר
-       דינמית לפי window.lomdaState.selectedCharacter (Companion
-       character system) — ראו resolveCharBubbleVideo()/
-       S0_AVATAR_ASSETS ב-script.js. -->
+       עודכן (2026-09-17, בקשה מפורשת): זהה 1:1 למסך 1 בסיין 5 (id="s0")
+       — טקסט, מבנה ווידאו הדמות זהים במדויק, לא רק מוסכמה טיפוגרפית
+       דומה. שקף 151 (התסריט של הסיין הזה) מזכיר תוכן שונה ("משימת שיא
+       2"/"4 סעיפים") — לא בשימוש כאן, לפי בקשה מפורשת להשתמש באותו
+       טקסט בדיוק כמו סיין 5. וידאו: pink/boy-avatar-muscle.mp4 (זהה
+       לקבצים בסיין 5), הועתקו פיזית לכאן — לא קישור cross-folder,
+       אותה מוסכמה של עצמאות מלאה לכל סין. -->
   <section class="screen active" data-screen="0" id="s0">
     <div class="transition-content">
       <div class="transition-title-block">
-        <h2 class="transition-title">משימת שיא 2</h2>
-        <p class="transition-sub">פחות הצלחנו בפעם הראשונה, בואו ננסה שוב.</p>
-        <p class="transition-sub">הפעם יש 4 סעיפים. עליכם להצליח לפחות ב-3.</p>
+        <p class="transition-sub">כל הכבוד!</p>
+        <p class="transition-sub">אם לא הצלחת לענות נכון על חלק מהשאלות, חשוב להבין מה עדיין לא ברור ולפנות לצ'אט או למורה להסבר נוסף.</p>
+        <h2 class="transition-title">עכשיו מגיעה שאלת השיא</h2>
+        <p class="transition-sub"><b>יש בה 3 סעיפים. עליכם להצליח בכולם.</b></p>
       </div>
       <div class="transition-avatar-wrap">
         <video class="transition-avatar" id="s0-avatar-video" autoplay loop muted playsinline disablepictureinpicture preload="auto" aria-label="דמות מלווה"></video>
@@ -53,44 +42,79 @@
     </div>
   </section>
 
-  <!-- ============ מסך 2 — מסך גלילה, 5 סקשנים ============
-       שוכפל מ-5 מסכים נפרדים ב-Methodica-science-mass-measure-02-06,
-       אוחדו כאן לעמודי גלילה (.tbl-page) בתוך מסך אחד, לפי בקשה מפורשת.
-       **בלי qnav** — משימת שיא. אפקט "קפיצת עמוד" (s1GoToPage/
-       s1InitScrollJump) זהה למוסכמה הקבועה בפרויקט.
-       ⚠️ הבדל התנהגות מכוון מהמקור: מסך 2 המקורי (id="s7") השהה את
-       כפתור ה"המשך" ב-5 שניות לפני שנחשף (לאלץ זמן קריאה מינימלי) —
-       השהיה הזו לא הועתקה לכאן, כי בארכיטקטורת עמוד-גלילה אין באמת
-       "כפתור המשך" חוסם בין סקשן 1 ל-2 (המעבר הוא גלילה חופשית, לא
-       ניווט מסך), כך שהשהיה לא רלוונטית מבנית. ראו ARCHITECTURE.md. -->
+  <!-- ============ מסך 2 — סקשן 1: טקסט + תמונה ("הידעת?") ============
+       שוכפל ממסך 2, "הידעת?". תוכן: שקף 152.
+       עודכן (2026-09-17, בקשה מפורשת): פוצל ממסך-הגלילה המקורי (5
+       סקשנים באחד מסך) למסך עצמאי בלי גלילה — רק הסקשן הזה. שאר
+       הסקשנים (טבלה+כותרת/סעיף א/סעיף ב/סעיף ג) עברו למסכים עצמאיים
+       משלהם (מסכים 3-5 למטה). -->
   <section class="screen" data-screen="1" id="s1">
-    <div class="tbl-content s6-scroll-area" id="s6-scroll-area" tabindex="0">
-      <div class="tbl-content-inner">
-
-      <!-- ===== סקשן 1 — טקסט + תמונה (שוכפל ממסך 2, "הידעת?") =====
-           תוכן: שקף 152. תמונה: טרם סופקה ע"י המשתמשת (placeholder). -->
-      <section class="tbl-page">
-        <div class="s6-textimg-row">
-          <div class="s6-textimg-content">
-            <h2 class="s6-textimg-title">מי יזכה במכרז המלכותי?</h2>
-            <div class="s6-textimg-body">
-              <p>בשנת 1699, אייזק ניוטון מונה למנהל בית המטבע המלכותי באנגליה.</p>
-              <p>אחד מתפקידיו היה לוודא שמטבעות הזהב והכסף עומדים בתקן המסה שנקבע בחוק: מטבע קל מדי גורם לציבור לקבל פחות זהב או כסף, ומטבע כבד מדי עולה לממלכה כסף רב.</p>
-              <p>כדי לבחור את החברה שתמדוד את מסת המטבעות, פרסם בית המטבע המלכותי מכרז. ניוטון מסר מטבע זהב תקני לשלוש חברות. החברה שתמדוד את המסה בצורה המדויקת ביותר תזכה בחוזה יוקרתי.</p>
-            </div>
-          </div>
-          <img class="s6-textimg-img" src="assets/images/screen02-Aizak-neoton.png" alt="אייזק ניוטון">
+    <div class="s6-textimg-row s1-content">
+      <div class="s6-textimg-content">
+        <h2 class="s6-textimg-title">מי יזכה במכרז המלכותי?</h2>
+        <div class="s6-textimg-body">
+          <p>בשנת 1699, אייזק ניוטון מונה למנהל בית המטבע המלכותי באנגליה.</p>
+          <p>אחד מתפקידיו היה לוודא שמטבעות הזהב והכסף עומדים בתקן המסה שנקבע בחוק: מטבע קל מדי גורם לציבור לקבל פחות זהב או כסף, ומטבע כבד מדי עולה לממלכה כסף רב.</p>
+          <p>כדי לבחור את החברה שתמדוד את מסת המטבעות, פרסם בית המטבע המלכותי מכרז. ניוטון מסר מטבע זהב תקני לשלוש חברות. החברה שתמדוד את המסה בצורה המדויקת ביותר תזכה בחוזה יוקרתי.</p>
         </div>
-      </section>
+      </div>
+      <img class="s6-textimg-img" src="assets/images/screen02-Aizak-neoton.png" alt="אייזק ניוטון">
+    </div>
 
-      <!-- ===== סקשן 2 — טבלה (שוכפל ממסך 5, "האם פלסטיק...") =====
-           תוכן: שקף 153. -->
-      <section class="tbl-page">
-        <div class="tbl-page-header">
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s1-back" onclick="goTo(0)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-continue" id="s1-continue" onclick="goTo(2)">המשך</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 3 — סעיף א: חד-ברירה + טבלה ליד המסיחים ============
+       תוכן: שקפים 153-158. עודכן (2026-09-17, בקשה מפורשת): הכותרת
+       הכחולה + 2 המשפטים משקף 153 (בלי הטבלה הגדולה של אותו שקף)
+       משמשים כאן כהקדמה לשאלה — הטבלה עצמה מיוצגת פעם אחת בלבד,
+       בגרסה הקומפקטית ליד אפשרויות התשובה (זהה לזו שהייתה כאן ממילא).
+       correctId='b' ("המדייקים"). -->
+  <section class="screen" data-screen="2" id="s2">
+    <div class="s2-page">
+      <div class="s2-text-col">
+        <div class="s2-intro">
           <h2 class="s6-table-title">מי יזכה במכרז המלכותי?</h2>
           <p class="scq-qbody">מסתו של מטבע זהב תקני היא בין 4.990 גרם ל-5.010 גרם!<br>שלוש החברות בדקו מטבע לדוגמה:</p>
         </div>
-        <table class="tbl-table" id="s6-companies-table" dir="rtl">
+        <div class="scq-content">
+          <div class="scq-qtext">
+            <div class="scq-qtext-body">
+              <p class="scq-qtitle">סעיף א</p>
+              <p class="scq-qbody">איזו חברה צפויה לזכות במכרז?</p>
+            </div>
+          </div>
+          <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+            <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s6aSelect('a')">
+              <span class="scq-opt-text">שקילה פלוס</span>
+              <span class="scq-radio"></span>
+            </div>
+            <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s6aSelect('b')">
+              <span class="scq-opt-text">המדייקים</span>
+              <span class="scq-radio"></span>
+            </div>
+            <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s6aSelect('c')">
+              <span class="scq-opt-text">מאזניי המרכז</span>
+              <span class="scq-radio"></span>
+            </div>
+            <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s6aSelect('d')">
+              <span class="scq-opt-text">אין מספיק מידע</span>
+              <span class="scq-radio"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="scq-table-wrap">
+        <table class="tbl-table tbl-table--compact" dir="rtl">
           <thead>
             <tr>
               <th class="tbl-th">חברה</th>
@@ -106,230 +130,14 @@
             <tr><td class="tbl-td">"מאזניי המרכז"</td><td class="tbl-td">מאזניים אנליטיים (0.001 גרם)</td><td class="tbl-td">4.975</td><td class="tbl-td">5.026</td><td class="tbl-td">5.001</td></tr>
           </tbody>
         </table>
-      </section>
-
-      <!-- ===== סקשן 3 — סעיף א: חד-ברירה + טבלה ליד המסיחים =====
-           תוכן: שקפים 154-158. correctId='b' ("המדייקים"). הטבלה
-           (זהה לטבלת סקשן 2) ממוקמת ליד אפשרויות התשובה, לא מעל
-           השאלה כמו בשקף — לפי בקשה מפורשת. -->
-      <section class="tbl-page">
-        <div class="s6-scq-row">
-          <div class="scq-content">
-            <div class="scq-qtext">
-              <div class="scq-qtext-body">
-                <p class="scq-qtitle">סעיף א</p>
-                <p class="scq-qbody">איזו חברה צפויה לזכות במכרז?</p>
-              </div>
-            </div>
-            <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s6aSelect('a')">
-                <span class="scq-opt-text">שקילה פלוס</span>
-                <span class="scq-radio"></span>
-              </div>
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s6aSelect('b')">
-                <span class="scq-opt-text">המדייקים</span>
-                <span class="scq-radio"></span>
-              </div>
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s6aSelect('c')">
-                <span class="scq-opt-text">מאזניי המרכז</span>
-                <span class="scq-radio"></span>
-              </div>
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s6aSelect('d')">
-                <span class="scq-opt-text">אין מספיק מידע</span>
-                <span class="scq-radio"></span>
-              </div>
-            </div>
-          </div>
-          <div class="scq-table-wrap">
-            <table class="tbl-table tbl-table--compact" dir="rtl">
-              <thead>
-                <tr>
-                  <th class="tbl-th">חברה</th>
-                  <th class="tbl-th">סוג המאזניים</th>
-                  <th class="tbl-th">מדידה 1</th>
-                  <th class="tbl-th">מדידה 2</th>
-                  <th class="tbl-th">מדידה 3</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td class="tbl-td">"שקילה פלוס"</td><td class="tbl-td">מאזני מטבח (1 גרם)</td><td class="tbl-td">5</td><td class="tbl-td">5</td><td class="tbl-td">5</td></tr>
-                <tr><td class="tbl-td">"המדייקים"</td><td class="tbl-td">מאזני מעבדה (0.01 גרם)</td><td class="tbl-td">4.99</td><td class="tbl-td">5.00</td><td class="tbl-td">5.01</td></tr>
-                <tr><td class="tbl-td">"מאזניי המרכז"</td><td class="tbl-td">מאזניים אנליטיים (0.001 גרם)</td><td class="tbl-td">4.975</td><td class="tbl-td">5.026</td><td class="tbl-td">5.001</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== סקשן 4 — סעיף ב: חד-ברירה + טבלה ליד המסיחים =====
-           תוכן: שקפים 159-163. correctId='c' ("כלי מתאים + תוצאות
-           עקביות"). -->
-      <section class="tbl-page">
-        <div class="s6-scq-row">
-          <div class="scq-content">
-            <div class="scq-qtext">
-              <div class="scq-qtext-body">
-                <p class="scq-qtitle">סעיף ב</p>
-                <p class="scq-qbody">מהו הנימוק הטוב ביותר לזכייתם?</p>
-              </div>
-            </div>
-            <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s6bSelect('a')">
-                <span class="scq-opt-text">החברה קיבלה את המדידה הקרובה ביותר ל-5 גרם.</span>
-                <span class="scq-radio"></span>
-              </div>
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s6bSelect('b')">
-                <span class="scq-opt-text">החברה השתמשה במאזניים המדויקים ביותר.</span>
-                <span class="scq-radio"></span>
-              </div>
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s6bSelect('c')">
-                <span class="scq-opt-text">החברה השתמשה בכלי מתאים וקיבלה תוצאות עקביות.</span>
-                <span class="scq-radio"></span>
-              </div>
-              <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s6bSelect('d')">
-                <span class="scq-opt-text">החברה ביצעה שלוש מדידות נפרדות.</span>
-                <span class="scq-radio"></span>
-              </div>
-            </div>
-          </div>
-          <div class="scq-table-wrap">
-            <table class="tbl-table tbl-table--compact" dir="rtl">
-              <thead>
-                <tr>
-                  <th class="tbl-th">חברה</th>
-                  <th class="tbl-th">סוג המאזניים</th>
-                  <th class="tbl-th">מדידה 1</th>
-                  <th class="tbl-th">מדידה 2</th>
-                  <th class="tbl-th">מדידה 3</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td class="tbl-td">"שקילה פלוס"</td><td class="tbl-td">מאזני מטבח (1 גרם)</td><td class="tbl-td">5</td><td class="tbl-td">5</td><td class="tbl-td">5</td></tr>
-                <tr><td class="tbl-td">"המדייקים"</td><td class="tbl-td">מאזני מעבדה (0.01 גרם)</td><td class="tbl-td">4.99</td><td class="tbl-td">5.00</td><td class="tbl-td">5.01</td></tr>
-                <tr><td class="tbl-td">"מאזניי המרכז"</td><td class="tbl-td">מאזניים אנליטיים (0.001 גרם)</td><td class="tbl-td">4.975</td><td class="tbl-td">5.026</td><td class="tbl-td">5.001</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ===== סקשן 5 — סעיף ג: שאלת גרירה =====
-           שוכפל ממסך 4 של Methodica-science-mass-measure-02-06
-           (makeDragQuestion factory). תוכן: שקפים 164-168. 6 מקומות,
-           6 קלפים (בלי מסיחים הפעם — כל הקלפים בשקפים הם התשובות
-           הנכונות). זהו הסעיף האחרון של מועד ב' — בסיומו מתבצעת בדיקת
-           moedBFullyPassed() והניתוב. כותרת "סעיף ג" נוספה (scq-qtitle,
-           זהה לכותרות "סעיף א"/"סעיף ב" בסקשנים 3-4) — הושמטה בטעות
-           בהעתקה הראשונית. -->
-      <section class="tbl-page">
-        <p class="scq-qtitle">סעיף ג</p>
-        <p class="dq-instruction-bold">השלימו את המלצתו של אייזיק ניוטון לבחירה בחברה המתאימה לביצוע שקילת המטבעות המלכותיים:</p>
-
-        <p class="dq-sentence-text">
-          לאחר בחינת הנתונים, אני ממליץ לבחור ב-
-          <span class="dq-snt-drop" id="s6c-target-1" ondragover="s6cDragOver(event,'s6c-target-1')" ondragenter="s6cDragEnter(event,'s6c-target-1')" ondragleave="s6cDragLeave(event,'s6c-target-1')" ondrop="s6cDrop(event,'s6c-target-1')"></span>.<br>
-          החברה השתמשה בכלי מדידה המתאים לדרישות ה-<span class="dq-snt-drop" id="s6c-target-2" ondragover="s6cDragOver(event,'s6c-target-2')" ondragenter="s6cDragEnter(event,'s6c-target-2')" ondragleave="s6cDragLeave(event,'s6c-target-2')" ondrop="s6cDrop(event,'s6c-target-2')"></span>
-          וקיבלה תוצאות עקביות.<br>
-          ביצוע
-          <span class="dq-snt-drop" id="s6c-target-3" ondragover="s6cDragOver(event,'s6c-target-3')" ondragenter="s6cDragEnter(event,'s6c-target-3')" ondragleave="s6cDragLeave(event,'s6c-target-3')" ondrop="s6cDrop(event,'s6c-target-3')"></span>
-          וחישוב
-          <span class="dq-snt-drop" id="s6c-target-4" ondragover="s6cDragOver(event,'s6c-target-4')" ondragenter="s6cDragEnter(event,'s6c-target-4')" ondragleave="s6cDragLeave(event,'s6c-target-4')" ondrop="s6cDrop(event,'s6c-target-4')"></span>
-          איפשרו לצמצם את השפעת ה-<span class="dq-snt-drop" id="s6c-target-5" ondragover="s6cDragOver(event,'s6c-target-5')" ondragenter="s6cDragEnter(event,'s6c-target-5')" ondragleave="s6cDragLeave(event,'s6c-target-5')" ondrop="s6cDrop(event,'s6c-target-5')"></span>
-          ולהגדיל את הביטחון בתוצאות.<br>
-          לכן, הראיות שהציגה החברה מספקות את רמת ה-<span class="dq-snt-drop" id="s6c-target-6" ondragover="s6cDragOver(event,'s6c-target-6')" ondragenter="s6cDragEnter(event,'s6c-target-6')" ondragleave="s6cDragLeave(event,'s6c-target-6')" ondrop="s6cDrop(event,'s6c-target-6')"></span>
-          הנדרשת לשקילת המטבעות המלכותיים.
-        </p>
-
-        <div class="dq-word-bank" id="s6c-word-bank" ondragover="event.preventDefault()" ondrop="s6cDropToBank(event)">
-          <div class="dq-source-slot" id="slot-s6c-drag-teken"></div>
-          <div class="dq-source-slot" id="slot-s6c-drag-memutza"></div>
-          <div class="dq-source-slot" id="slot-s6c-drag-diyuk"></div>
-          <div class="dq-source-slot" id="slot-s6c-drag-medayekim"></div>
-          <div class="dq-source-slot" id="slot-s6c-drag-hazarot"></div>
-          <div class="dq-source-slot" id="slot-s6c-drag-vadaut"></div>
-        </div>
-
-      </section>
-
       </div>
     </div>
 
-    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1 — missed here in the
-         first pass. Sibling of .tbl-content/#s6-scroll-area (not a child), nested inside #s1
-         itself. Shown once, hidden on real scroll — see s1MaybeShowScrollGesture() in script.js. -->
-    <div class="gesture-hint-scroll-wrap" id="s1-scroll-gesture" hidden>
-      <div class="gesture-hint">
-        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
-        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
-        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
-      </div>
-    </div>
-
-    <!-- שלוש תיבות המשוב הועברו לכאן — מחוץ ל-#s6-scroll-area, כילדים
-         ישירים של #s1 — כדי ש-position:absolute שלהן יתייחס למסך כולו
-         (containing block = .screen) ולא לתוכן הגלילי. כשהיו מקוננות
-         בתוך .tbl-page (בתוך #s6-scroll-area), הן "גללו" עם התוכן
-         וקיבלו rect.top שלילי (מחוץ למסך) בכל סקשן מלבד הראשון —
-         זו הסיבה שהמשוב לא נראה כלל בפועל בסעיפים א/ב/ג. -->
-    <div id="s6a-feedbox" class="scq-fb-box">
+    <div id="s2-feedbox" class="scq-fb-box">
       <div class="scq-fb-title">
         <span class="scq-fb-title-text"></span>
       </div>
       <p class="scq-fb-body"></p>
-    </div>
-
-    <div id="s6b-feedbox" class="scq-fb-box">
-      <div class="scq-fb-title">
-        <span class="scq-fb-title-text"></span>
-      </div>
-      <p class="scq-fb-body"></p>
-    </div>
-
-    <div id="s6c-feedbox" class="scq-fb-box">
-      <div class="scq-fb-title">
-        <span class="scq-fb-title-text"></span>
-      </div>
-      <p class="scq-fb-body"></p>
-      <button class="scq-fb-reveal-btn" id="s6c-reveal-btn" type="button" hidden onclick="s6cToggleReveal()">התשובה הנכונה</button>
-    </div>
-
-    <div class="bottom-bar">
-      <div class="bottom-bar-inner">
-        <div class="bar-back">
-          <button class="btn-back" id="s1-back" onclick="goTo(0)">חזרה</button>
-        </div>
-        <div class="bar-actions">
-          <button class="btn-hint" id="s1-hint" type="button" hidden onclick="s1OpenHintDispatch()">
-            <img class="scq-hint-icon" id="s1-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
-            אפשר רמז?
-          </button>
-          <button class="btn-continue" id="s1-check" disabled onclick="s1CheckDispatch()">צדקתי?</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ מסך 3 — סיכום כשלון (לא הצליח במועד ב') ============
-       שוכפל ממסך 8 (data-screen="7", id="s12") של Methodica-science
-       -mass-measure-02-06 — מסך מעבר בלי בועית דיבור. תוכן: שקף 169.
-       מוצג רק אם moedBFullyPassed() מחזירה false בסיום סעיף ג'.
-       דמות: וידאו (MP4, לא GIF — בקשת הלקוח) בלופ, בלי קול ובלי סרגל
-       שליטה (autoplay/loop/muted/playsinline, בלי controls) — "ידיים
-       בצורת תודה 🙏" לפי הערת המפיק בשקף. נבחר דינמית לפי
-       window.lomdaState.selectedCharacter (Companion character system)
-       — ראו resolveCharBubbleVideo()/S2_AVATAR_ASSETS ב-script.js. -->
-  <section class="screen" data-screen="2" id="s2">
-    <div class="transition-content">
-      <div class="transition-title-block">
-        <h2 class="transition-title">הפעם לא פגעת בול, אבל חשוב <br>
-        מאוד שחשבת, ניסית ולמדת.
-      <br>
-    כל הכבוד!</h2>
-      </div>
-      <div class="transition-avatar-wrap">
-        <video class="transition-avatar" id="s2-avatar-video" autoplay loop muted playsinline disablepictureinpicture preload="auto" aria-label="דמות מלווה"></video>
-      </div>
     </div>
 
     <div class="bottom-bar">
@@ -338,48 +146,153 @@
           <button class="btn-back" id="s2-back" onclick="goTo(1)">חזרה</button>
         </div>
         <div class="bar-actions">
-          <button class="btn-continue" id="s2-finish" onclick="s2Finish()">סיימתי</button>
+          <button class="btn-hint" id="s2-hint" type="button" hidden onclick="s6aOpenHint()">
+            <img class="scq-hint-icon" id="s2-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s2-check" disabled onclick="s6aCheck()">צדקתי?</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============ מסך 4 — סיכום הצלחה (משותף למועד א' ומועד ב') ============
-       שוכפל ממסך 9 (data-screen="8", id="s13") של Methodica-science
-       -mass-measure-02-06. תוכן: שקף 170. זהו אותו עיצוב/תוכן שגם שימש
-       לעדכן את מסך הסיום של סיין 5 (methodica-science-mass-measure
-       -03-05, מסך 6, id="s5") — ראו שם ARCHITECTURE.md. מוצג רק אם
-       moedBFullyPassed() מחזירה true.
-       דמות: וידאו (MP4, לא GIF — בקשת הלקוח) בלופ, בלי קול ובלי סרגל
-       שליטה (autoplay/loop/muted/playsinline, בלי controls) — "ריקוד
-       + קונפטי" לפי הערת המפיק בשקף (אותם קבצים ששימשו במסך הסיום
-       המקביל בסיין 5). נבחר דינמית לפי window.lomdaState.selectedCharacter
-       (Companion character system) — ראו resolveCharBubbleVideo()/
-       S3_AVATAR_ASSETS ב-script.js. -->
+  <!-- ============ מסך 4 — סעיף ב: חד-ברירה + טבלה ליד המסיחים ============
+       תוכן: שקפים 159-163. correctId='c' ("כלי מתאים + תוצאות עקביות"). -->
   <section class="screen" data-screen="3" id="s3">
-    <div class="transition-content">
-      <div class="transition-title-block">
-        <h2 class="transition-title">כל הכבוד!<br>השלמת את היחידה בהצלחה!</h2>
+    <div class="s6-scq-row s3-content">
+      <div class="scq-content">
+        <div class="scq-qtext">
+          <div class="scq-qtext-body">
+            <p class="scq-qtitle">סעיף ב</p>
+            <p class="scq-qbody">מהו הנימוק הטוב ביותר לזכייתם?</p>
+          </div>
+        </div>
+        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s6bSelect('a')">
+            <span class="scq-opt-text">החברה קיבלה את המדידה הקרובה ביותר ל-5 גרם.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s6bSelect('b')">
+            <span class="scq-opt-text">החברה השתמשה במאזניים המדויקים ביותר.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s6bSelect('c')">
+            <span class="scq-opt-text">החברה השתמשה בכלי מתאים וקיבלה תוצאות עקביות.</span>
+            <span class="scq-radio"></span>
+          </div>
+          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s6bSelect('d')">
+            <span class="scq-opt-text">החברה ביצעה שלוש מדידות נפרדות.</span>
+            <span class="scq-radio"></span>
+          </div>
+        </div>
       </div>
-      <div class="transition-avatar-wrap">
-        <video class="transition-avatar" id="s3-avatar-video" autoplay loop muted playsinline disablepictureinpicture preload="auto" aria-label="דמות מלווה"></video>
+      <div class="scq-table-wrap">
+        <table class="tbl-table tbl-table--compact" dir="rtl">
+          <thead>
+            <tr>
+              <th class="tbl-th">חברה</th>
+              <th class="tbl-th">סוג המאזניים</th>
+              <th class="tbl-th">מדידה 1</th>
+              <th class="tbl-th">מדידה 2</th>
+              <th class="tbl-th">מדידה 3</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="tbl-td">"שקילה פלוס"</td><td class="tbl-td">מאזני מטבח (1 גרם)</td><td class="tbl-td">5</td><td class="tbl-td">5</td><td class="tbl-td">5</td></tr>
+            <tr><td class="tbl-td">"המדייקים"</td><td class="tbl-td">מאזני מעבדה (0.01 גרם)</td><td class="tbl-td">4.99</td><td class="tbl-td">5.00</td><td class="tbl-td">5.01</td></tr>
+            <tr><td class="tbl-td">"מאזניי המרכז"</td><td class="tbl-td">מאזניים אנליטיים (0.001 גרם)</td><td class="tbl-td">4.975</td><td class="tbl-td">5.026</td><td class="tbl-td">5.001</td></tr>
+          </tbody>
+        </table>
       </div>
+    </div>
+
+    <div id="s3-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
     </div>
 
     <div class="bottom-bar">
       <div class="bottom-bar-inner">
         <div class="bar-back">
-          <button class="btn-back" id="s3-back" onclick="goTo(1)">חזרה</button>
+          <button class="btn-back" id="s3-back" onclick="goTo(2)">חזרה</button>
         </div>
         <div class="bar-actions">
-          <button class="btn-continue" id="s3-finish" onclick="s3Finish()">סיימתי</button>
+          <button class="btn-hint" id="s3-hint" type="button" hidden onclick="s6bOpenHint()">
+            <img class="scq-hint-icon" id="s3-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s3-check" disabled onclick="s6bCheck()">צדקתי?</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ מסך 5 — סעיף ג: שאלת גרירה ============
+       שוכפל ממסך 4 של Methodica-science-mass-measure-02-06
+       (makeDragQuestion factory). תוכן: שקפים 164-168. 6 מקומות,
+       6 קלפים (בלי מסיחים הפעם — כל הקלפים בשקפים הם התשובות הנכונות).
+       זהו הסעיף האחרון של מועד ב'. עודכן (2026-09-17, בקשה מפורשת):
+       אין יותר מסך-סיכום/ניתוב אחריו — הסעיף הזה הוא פשוט סוף הלומדה
+       (בוטלו מסכי "לא הצליח"/"הצליח" ו-moedBFullyPassed()/הניתוב
+       שהיו תלויים בהם). -->
+  <section class="screen" data-screen="4" id="s4">
+    <div class="s4-content">
+      <p class="scq-qtitle">סעיף ג</p>
+      <p class="dq-instruction-bold">השלימו את המלצתו של אייזיק ניוטון לבחירה בחברה המתאימה לביצוע שקילת המטבעות המלכותיים:</p>
+
+      <p class="dq-sentence-text">
+        לאחר בחינת הנתונים, אני ממליץ לבחור ב-
+        <span class="dq-snt-drop" id="s6c-target-1" ondragover="s6cDragOver(event,'s6c-target-1')" ondragenter="s6cDragEnter(event,'s6c-target-1')" ondragleave="s6cDragLeave(event,'s6c-target-1')" ondrop="s6cDrop(event,'s6c-target-1')"></span>.<br>
+        החברה השתמשה בכלי מדידה המתאים לדרישות ה-<span class="dq-snt-drop" id="s6c-target-2" ondragover="s6cDragOver(event,'s6c-target-2')" ondragenter="s6cDragEnter(event,'s6c-target-2')" ondragleave="s6cDragLeave(event,'s6c-target-2')" ondrop="s6cDrop(event,'s6c-target-2')"></span>
+        וקיבלה תוצאות עקביות.<br>
+        ביצוע
+        <span class="dq-snt-drop" id="s6c-target-3" ondragover="s6cDragOver(event,'s6c-target-3')" ondragenter="s6cDragEnter(event,'s6c-target-3')" ondragleave="s6cDragLeave(event,'s6c-target-3')" ondrop="s6cDrop(event,'s6c-target-3')"></span>
+        וחישוב
+        <span class="dq-snt-drop" id="s6c-target-4" ondragover="s6cDragOver(event,'s6c-target-4')" ondragenter="s6cDragEnter(event,'s6c-target-4')" ondragleave="s6cDragLeave(event,'s6c-target-4')" ondrop="s6cDrop(event,'s6c-target-4')"></span>
+        איפשרו לצמצם את השפעת ה-<span class="dq-snt-drop" id="s6c-target-5" ondragover="s6cDragOver(event,'s6c-target-5')" ondragenter="s6cDragEnter(event,'s6c-target-5')" ondragleave="s6cDragLeave(event,'s6c-target-5')" ondrop="s6cDrop(event,'s6c-target-5')"></span>
+        ולהגדיל את הביטחון בתוצאות.<br>
+        לכן, הראיות שהציגה החברה מספקות את רמת ה-<span class="dq-snt-drop" id="s6c-target-6" ondragover="s6cDragOver(event,'s6c-target-6')" ondragenter="s6cDragEnter(event,'s6c-target-6')" ondragleave="s6cDragLeave(event,'s6c-target-6')" ondrop="s6cDrop(event,'s6c-target-6')"></span>
+        הנדרשת לשקילת המטבעות המלכותיים.
+      </p>
+
+      <div class="dq-word-bank" id="s6c-word-bank" ondragover="event.preventDefault()" ondrop="s6cDropToBank(event)">
+        <div class="dq-source-slot" id="slot-s6c-drag-teken"></div>
+        <div class="dq-source-slot" id="slot-s6c-drag-memutza"></div>
+        <div class="dq-source-slot" id="slot-s6c-drag-diyuk"></div>
+        <div class="dq-source-slot" id="slot-s6c-drag-medayekim"></div>
+        <div class="dq-source-slot" id="slot-s6c-drag-hazarot"></div>
+        <div class="dq-source-slot" id="slot-s6c-drag-vadaut"></div>
+      </div>
+    </div>
+
+    <div id="s4-feedbox" class="scq-fb-box">
+      <div class="scq-fb-title">
+        <span class="scq-fb-title-text"></span>
+      </div>
+      <p class="scq-fb-body"></p>
+      <button class="scq-fb-reveal-btn" id="s4-reveal-btn" type="button" hidden onclick="s6cToggleReveal()">התשובה הנכונה</button>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bottom-bar-inner">
+        <div class="bar-back">
+          <button class="btn-back" id="s4-back" onclick="goTo(3)">חזרה</button>
+        </div>
+        <div class="bar-actions">
+          <button class="btn-hint" id="s4-hint" type="button" hidden onclick="s6cOpenHint()">
+            <img class="scq-hint-icon" id="s4-hint-icon" src="assets/images/icon-hint-blue.svg" alt="">
+            אפשר רמז?
+          </button>
+          <button class="btn-continue" id="s4-check" disabled onclick="s6cCheck()">צדקתי?</button>
         </div>
       </div>
     </div>
   </section>
 
   <!-- פופ-אפי רמז — מחוץ ל-.screen, ישירות ב-#app -->
-  <div id="s6a-hint-overlay" class="scq-hint-overlay" hidden>
+  <div id="s2-hint-overlay" class="scq-hint-overlay" hidden>
     <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
       <div class="scq-hint-title-row">
         <p class="scq-hint-title">רמז</p>
@@ -390,7 +303,7 @@
     </div>
   </div>
 
-  <div id="s6b-hint-overlay" class="scq-hint-overlay" hidden>
+  <div id="s3-hint-overlay" class="scq-hint-overlay" hidden>
     <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
       <div class="scq-hint-title-row">
         <p class="scq-hint-title">רמז</p>
@@ -401,7 +314,7 @@
     </div>
   </div>
 
-  <div id="s6c-hint-overlay" class="scq-hint-overlay" hidden>
+  <div id="s4-hint-overlay" class="scq-hint-overlay" hidden>
     <div class="scq-hint-popup" role="dialog" aria-modal="true" aria-label="רמז">
       <div class="scq-hint-title-row">
         <p class="scq-hint-title">רמז</p>

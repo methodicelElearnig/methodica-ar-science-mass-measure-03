@@ -672,14 +672,6 @@ img { display: block; max-width: none; }
   width: 604px;
   max-width: 100%;
 }
-/* מסך 9 (s8) — המסיחים כאן ארוכים במיוחד ("לא נכון – הכדור אינו עומד
-   בתקן FIFA, משום שיש לחשב את החציון ולא את הממוצע.") ונגלשים לשתי
-   שורות ברוחב הכללי (604px). מורחב ל-800px — כמעט כל השטח הזמין בפועל
-   (.scq-question: 1200px שורה - 380px תמונה - 16px רווח = 804px זמינים
-   ל-.scq-content, שלא נוגע בו כלל), בלי לצמצם את התמונה או השוליים.
-   scoped ל-#s8 בלבד, לא שינוי גלובלי ל-.scq-answers — מסכי SCQ אחרים
-   בפרויקט (עם/בלי תמונה) ממשיכים ב-604px הסטנדרטי. */
-#s8 .scq-answers { width: 800px; }
 .scq-opt {
   width: 100%;
   display: flex;
@@ -773,6 +765,28 @@ img { display: block; max-width: none; }
   background-size: 10px 10px;
 }
 .scq-opt.disabled { cursor: default; }
+
+/* ════════════════════════════════════════════════════════
+   מסך 9 (s8) — TrueFalseQuestion, טענה יחידה (`.tf-row` בודד).
+   רפרנס: סיין 4 מסך 4 (id="s3"), אותם class names/ערכים בדיוק —
+   כאן חי בתוך .scq-content הקיים (לא .tf-question עצמאי), כדי
+   שהתמונה/.scq-img של המסך תישאר בדיוק כפי שהיא.
+   ════════════════════════════════════════════════════════ */
+.tf-rows { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+.tf-row { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 20px; }
+.tf-row.row-locked { pointer-events: none; }
+.tf-stmt { display: flex; flex-direction: row; align-items: center; gap: 8px; flex: 1; }
+.tf-text { font-size: 24px; color: #303030; line-height: 1.4; }
+.tf-btns { display: flex; flex-direction: row; gap: 16px; flex-shrink: 0; }
+.tf-btn {
+  font-family: 'Assistant', sans-serif; font-size: 22px; font-weight: 400; color: #222;
+  background: #fff; border: 2px solid var(--subject-500); border-radius: 1000px;
+  padding: 5px 24px; min-width: 104px; cursor: pointer; white-space: nowrap;
+}
+.tf-btn.selected { background: #eaf6ff; border: 3px solid var(--subject-500); }
+.tf-btn.btn-correct { background: #edf8ed; border: 1.5px solid #609e12; }
+.tf-btn.btn-wrong { background: #fff0f4; border: 1.5px solid #b20010; }
+.tf-btn:disabled { cursor: default; }
 
 /* ════════════════════════════════════════════════════════
    מסך 6 — שאלה 1 מתוך 2: הקדמה + טבלה + תמונה. טבלה

@@ -97,12 +97,12 @@ RTL מלא, ללא תלות ברשת. ראו `ARCHITECTURE.md` של הסיין �
 שלב בנייה פעיל. `TOTAL_SCREENS = 4`, מסכים 1-4 בנויים עם תוכן מלא, נבדקו
 ב-Playwright, ללא שגיאות JS.
 
-✅ **עודכן (2026-08-11) — Gesture Hint "Cursor Scroll" (SELF-QA.md §7):** הוטמע במסך 3
-(`#s2-scroll-area`, מסך הגלילה היחיד בפרויקט) — פוספס בסבב הראשון שהתמקד רק בסיין 1, למרות
-ש-`SELF-QA.md` חל על כל המשפחה. נוסף `cursor:grab` ל-`.tbl-content`, `s2MaybeShowScrollGesture()`
-ל-`script.js`, ו-CSS/נכס `gesture-hand-cursor.svg` תואמים (הועתקו מסיין 1). אין שאלת גרירה בפרויקט
-הזה כלל — Cursor Drag לא רלוונטי כאן. אומת ב-Playwright: המחווה מוצגת בכניסה, `cursor:grab` בפועל,
-נעלמת אחרי `wheel` אמיתי.
+⚠️ **עודכן (2026-09-17) — Gesture Hint "Cursor Scroll" הוסר:** בעקבות תיקונים ידניים של המשתמשת
+במסך 3 (`#s2-scroll-area`) שצמצמו את הרווחים/padding, התוכן כבר לא דורש גלילה או סקרולבר במסך הזה —
+המחווה (`s2-scroll-gesture` ב-HTML, `s2MaybeShowScrollGesture()`/`s2ScrollGestureShown` ב-`script.js`,
+כל כללי ה-CSS של `.gesture-hint*`) הוסרה לגמרי. `initScrollbarHoverCursor()` על `#s2-scroll-area`
+נשאר (לא ביקשה להסיר) — לא מזיק אם בפועל אין עוד גלילה. הערך הקודם (עודכן 2026-08-11, שתיעד את
+ההטמעה המקורית) בוטל.
 
 **ממתין מהמשתמשת:**
 - גיף אנימציה למסך 1 (טרם סופק, שקף 114 ציין "הגיף שנבחר בעמוד הראשון

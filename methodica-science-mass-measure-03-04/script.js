@@ -511,30 +511,9 @@ document.getElementById('s2-hint-overlay').addEventListener('click', function (e
   if (e.target === this) s2CloseHint();
 });
 
-/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1 (methodica-science-mass-measure-
-   03-01, which this family's SELF-QA.md governs) — missed here in the first pass. Shown once per
-   screen visit, hidden the instant a real scroll is attempted (wheel/keydown). */
-let s2ScrollGestureShown = false;
-function s2MaybeShowScrollGesture() {
-  if (s2ScrollGestureShown) return;
-  s2ScrollGestureShown = true;
-  const gesture = document.getElementById('s2-scroll-gesture');
-  const scrollArea = document.getElementById('s2-scroll-area');
-  if (!gesture || !scrollArea) return;
-  gesture.hidden = false;
-  function dismiss() {
-    gesture.hidden = true;
-    scrollArea.removeEventListener('wheel', dismiss);
-    scrollArea.removeEventListener('keydown', dismiss);
-  }
-  scrollArea.addEventListener('wheel', dismiss);
-  scrollArea.addEventListener('keydown', dismiss);
-}
-
 function resetScreenState2() {
   updateQuestionNav('s2');
   initScrollbarHoverCursor(document.getElementById('s2-scroll-area'));
-  s2MaybeShowScrollGesture();
   if (s2Done || s2Attempts > 0 || s2Selected) return; // resume-state guard
   const scrollArea = document.getElementById('s2-scroll-area');
   if (scrollArea) scrollArea.scrollTop = 0;

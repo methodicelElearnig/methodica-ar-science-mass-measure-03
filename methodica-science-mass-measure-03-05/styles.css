@@ -244,13 +244,18 @@ img { display: block; max-width: none; }
    הסופי (בלי אנימציית "החלקה"). זו החלטה מכוונת — עם אנימציה, צילום
    מסך שנלקח מיד אחרי השחרור (לפני שה-300ms הסתיימו) מראה את השרשרת
    "תקועה" באמצע הדרך, נראה כמו מיקום שגוי אף שהמצב הסופי תקין. */
+/* עודכן (2026-09-17, בקשה מפורשת): עטיפת <div> סביב ה-<img> (בדיוק כמו
+   .dq-sim-block בסיין 1) — כדי שאפקט-היד (showNecklaceGestureHint
+   ב-script.js) יוכל לצרף .gesture-hint כילד DOM אמיתי; אלמנט <img>
+   הוא replaced element ולא מרנדר ילדי-DOM שמצורפים אליו. */
 .dq-sim-necklace {
   position: absolute; left: 0; top: 0; width: 170px; height: 113px;
-  object-fit: contain; cursor: grab; touch-action: none; user-select: none; -webkit-user-drag: none;
+  cursor: grab; touch-action: none; user-select: none;
   z-index: 6;
   filter: drop-shadow(0 6px 10px rgba(0,0,0,.25));
 }
 .dq-sim-necklace.dragging { cursor: grabbing; }
+.dq-sim-necklace > img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
 .tbl-content {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 74px;
@@ -325,7 +330,21 @@ img { display: block; max-width: none; }
   gap: 20px;
   padding: 24px 40px 32px 24px;
 }
-.tbl-page-header { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+/* עודכן (2026-09-17, בקשה מפורשת): מסך 2/#s1-scroll-area עבר לזרימה רגילה — מבטל את
+   ה-scroll-snap/min-height:100% של .tbl-page הבסיסי. גם מצמצם את הרווח הכפול בין שני
+   העמודים (32px padding-bottom של עמוד 1 + 24px padding-top של עמוד 2 = 56px) ל-24px
+   משותפים, כדי ש"שקלו כעת." והנחיות השאלה (עמוד 2) יהיו גלויים כבר בכניסה למסך, בלי
+   גלילה מיותרת. (מסך 5/#s4-scroll-area היה דוגמה דומה בפרויקט הזה, אך הוסר לגמרי
+   באותו יום — ראו הערה למעלה ליד .s4-dq-content — כך ש-#s1-scroll-area נשאר מסך
+   הגלילה היחיד כאן.) */
+#s1-scroll-area .tbl-page {
+  min-height: auto;
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
+}
+#s1-scroll-area .tbl-page:first-child { padding-bottom: 12px; }
+#s1-scroll-area .tbl-page:last-child { padding-top: 12px; }
+.tbl-page-header { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 .tbl-table { width: 100%; max-width: 700px; border-collapse: collapse; direction: rtl; text-align: center; flex-shrink: 0; }
 .tbl-th { background: #D4F3FF; border: 1px solid #D4D4D4; font-size: 22px; font-weight: 700; color: #303030; padding: 6px 12px; white-space: nowrap; }
 .tbl-td { border: 1px solid #D4D4D4; font-size: 22px; font-weight: 400; color: #303030; padding: 6px 12px; white-space: nowrap; background: #fff; }
@@ -374,7 +393,7 @@ img { display: block; max-width: none; }
   position: absolute; top: 139px; left: 40px; right: 40px;
   display: flex; flex-direction: row; direction: ltr; align-items: flex-start; gap: 16px;
 }
-.scq-content { direction: rtl; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; flex: 1; }
+.scq-content { direction: rtl; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; flex: 1; }
 .scq-qtext { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 792px; max-width: 100%; }
 .scq-qtitle { font-weight: 700; font-size: 24px; color: var(--subject-500); text-align: right; width: 100%; }
 .scq-qtext-body { display: flex; flex-direction: column; width: 100%; }
@@ -475,75 +494,32 @@ img { display: block; max-width: none; }
 }
 
 /* ════════════════════════════════════════════════════════
-   מסך 5 — סעיף ג. עודכן (2026-09-08, בקשה מפורשת): נבנה מחדש עם אותם
-   class-ים בדיוק כמו מסך 3 בסיין 4 (.tbl-content/.tbl-content-inner/
-   .tbl-page — הרפרנס המאומת שעבד נכון) במקום מחלקות ייעודיות
-   (.s4-content וכו') — אותה שיטה בדיוק, לא המצאה חדשה. שני חלקים
-   (תמונה+בועה, שאלת גרירה) זורמים בזרימה רגילה בתוך .tbl-page-ים,
-   בלי scroll-snap/עמודים-בגובה-מסך-מלא (בוטל, ראו override למטה —
-   .tbl-page הבסיסי עדיין scroll-snap עבור מסך 2/#s1-scroll-area באותו
-   פרויקט, לא נגעתי בו; ה-override כאן ממוקד רק ל-#s4-scroll-area).
-   פס הגלילה עצמו (.tbl-content, המשותף לשני המסכים) לא נגע בו כלל. */
-.tbl-content.s4-scroll-area {
-  left: 0; right: 0;
-  /* top:139px — בדיוק כמו .tbl-content במסך 3 בסיין 4 (שם זה מוגדר
-     ישירות על הקונטיינר, לא כ-padding פנימי) — המוסכמה הסטנדרטית
-     לתחילת-תוכן בכל מסכי הפרויקט (.scq-question וכו', top:139px). */
-  top: 139px;
-}
-#s4-scroll-area .tbl-page {
-  /* מבטל את ה-scroll-snap/min-height:100% של .tbl-page הבסיסי (עדיין
-     בתוקף במסך 2/#s1-scroll-area) — כאן שני העמודים זורמים בזרימה
-     רגילה, בדיוק כמו במסך 3 בסיין 4. */
-  min-height: auto;
-  scroll-snap-align: none;
-  scroll-snap-stop: normal;
-}
-.s4-title { margin: 0 0 16px; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; }
-.s4-body { margin: 0; font-family: 'Assistant', sans-serif; font-size: 24px; font-weight: 400; color: #303030; text-align: right; }
+   מסך 5 — סעיף ג. עודכן (2026-09-17, בקשה מפורשת): הוחלף מפריסת
+   מסך-גלילה (.tbl-content/.tbl-page) לאותה פריסת "שאלה עם תמונה
+   מלווה" בדיוק כמו מסך 4/סעיף ב (.scq-question/.scq-img-bubble-wrap/
+   .s3-bubble/.scq-img/.scq-content, ראו שם) — לא המצאה חדשה. בלי
+   גלילה כלל: .scq-question הוא position:absolute רגיל, לא container
+   גולל. min-width:0 על .scq-content כאן (scoped ל-#s4 בלבד) מאפשר
+   ל-.s4-dq-content (למטה) להתכווץ לרוחב הזמין בפועל בעמודה הימנית
+   (~804px, אחרי הסרת עמודת התמונה הקבועה 380px+16px gap) במקום להישאר
+   נעוץ ברוחב-המינימום שהיה לו כשהיה עמוד נפרד ברוחב מלא — אותו באג
+   בדיוק שתוקן בעבר במסכים אחרים במשפחה כשתמונה/עמודה שכנה נוספה
+   ל-flex row בלי min-width:0 מלווה. */
+#s4 .scq-content { min-width: 0; }
+/* עודכן (2026-09-17, בקשה מפורשת): הכותרת+טקסט השתמשו קודם ב-.tbl-page-header
+   (gap:10px) עוטף .s4-title/.s4-body — אבל .s4-title כבר נשא margin-bottom:16px
+   משלו (מהזמן שהיה לבד בעמוד-גלילה נפרד), כך שהמרווח בפועל בין הכותרת לטקסט
+   היה 10+16=26px — פער כפול, בולט לעין כ"שורה ריקה", ובניגוד לסעיפים א'/ב'
+   ששם הכותרת+טקסט חיים ב-.scq-qtext-body (בלי gap/margin משלו, כמעט צמודים).
+   הוחלף ל-.scq-qtext-body/.scq-qtitle/.scq-qbody הגלובליים — אותו class בדיוק
+   כמו סעיפים א'/ב' — כדי שהמרווח יהיה זהה. .s4-title/.s4-body הוסרו (לא
+   נדרשים יותר, לא היו בשימוש במקום אחר בפרויקט). */
 
-/* קבוצת בועה+תמונה — שורה פנימית, לא מתכווצת (רוחב קבוע מהפיגמה).
-   image ראשון ב-DOM (=פיזית ימין תחת RTL), בועה שנייה (=פיזית שמאל,
-   זנב פונה ימינה לעבר התמונה) — תואם למיקום היחסי המקורי בפיגמה
-   (בועה שמאלה מהתמונה). */
-.s4-visual-group {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: row;
-  direction: rtl;
-  align-items: flex-start;
-  gap: 11px;
-}
-.s4-bubble {
-  position: relative; /* עוגן ל-::after (הזנב) */
-  flex-shrink: 0;
-  width: 326px; height: 131px;
-  background: #fff; border: 2px solid var(--subject-500); border-radius: 20px;
-  box-sizing: border-box; padding: 16px 20px;
-  display: flex; align-items: center; justify-content: center;
-}
-.s4-bubble p { margin: 0; font-family: 'Assistant', sans-serif; font-size: 18px; font-weight: 400; color: #303030; text-align: center; line-height: 1.4; direction: rtl; }
-/* זנב הבועה — משולש CSS פונה ימינה, לעבר התמונה (אותה טכניקה בדיוק
-   כמו .s18-bubble--tail-right בסיין 1) */
-.s4-bubble--tail-right::after {
-  content: '';
-  position: absolute;
-  top: 50px;
-  right: -14px;
-  border: 10px solid transparent;
-  border-right: none;
-  border-left: 14px solid var(--subject-500);
-}
-
-/* תמונה — הפיגמה עצמה מציגה placeholder אפור (בלי תמונה אמיתית),
-   ממומש כפי שהוא, ראו ARCHITECTURE.md */
-.s4-img-placeholder { flex-shrink: 0; width: 330px; height: 274px; border-radius: 16px; object-fit: cover; }
-
-/* חלק 2 — שאלה עצמאית (DragAndDropQuestion, fill-in-blank), בלי כותרת
-   משלה (הוסרה, הייתה כפולה לזו שבחלק 1). יושב בתוך .tbl-page רגיל
-   (אותו class כמו חלק 1) — ה-padding/gap/align-items שלו כבר מגיעים
-   מהמחלקה המשותפת, לא צריך wrapper ייעודי נוסף. */
-.s4-dq-content { display: flex; flex-direction: column; gap: 20px; width: 939px; max-width: calc(100% - 80px); }
+/* שאלת הגרירה (DragAndDropQuestion, fill-in-blank) — יושבת בתוך
+   .scq-content, אחרי .scq-qtext-body (כותרת+טקסט). width:100% כדי
+   להתכווץ נכון לרוחב העמודה הימנית הזמין בפועל (ראו min-width:0
+   למעלה) — לא עוד 939px קבוע מהזמן שהייתה עמוד-גלילה נפרד ברוחב מלא. */
+.s4-dq-content { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 100%; }
 
 /* ════════════════════════════════════════════════════════
    מסך 5 עמוד 2 — שאלת גרירה (DragAndDropQuestion), makeDragQuestion
@@ -611,8 +587,8 @@ img { display: block; max-width: none; }
 
 /* Gesture Hint — Cursor Scroll + Cursor Drag (SELF-QA.md §7, Figma nodes 2915:35184/2915:35185).
    Ported from Sain 1 (methodica-science-mass-measure-03-01, which this family's SELF-QA.md
-   governs) — missed here in the first pass. #s4-scroll-gesture coordinates mirror
-   .tbl-content.s4-scroll-area's own box exactly (top:139/left:0/right:0/bottom:74). */
+   governs) — missed here in the first pass. עודכן (2026-09-17): #s4-scroll-gesture הוסר —
+   מסך 5 כבר לא גולל (ראו הערה למעלה ליד .s4-dq-content). */
 .gesture-hint-scroll-wrap {
   position: absolute;
   pointer-events: none;
@@ -620,7 +596,6 @@ img { display: block; max-width: none; }
 }
 .gesture-hint-scroll-wrap[hidden] { display: none; }
 #s1-scroll-gesture { top: 40px; left: 427px; right: 0; bottom: 74px; }
-#s4-scroll-gesture { top: 139px; left: 0; right: 0; bottom: 74px; }
 
 .gesture-hint {
   position: absolute;

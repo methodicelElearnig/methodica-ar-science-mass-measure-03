@@ -244,7 +244,7 @@
         <div class="scq-qtext">
           <div class="scq-qtext-body">
             <p class="scq-qtitle">מדידה או תחושה?</p>
-            <p class="scq-qbody">ויכוח התגלע במשפחת גראם, בני הזוג היו בסדנת שקילה ושקלו טבעת זהב:<br>
+            <p class="scq-qbody">ויכוח התרחש במשפחת גראם, בני הזוג היו בסדנת שקילה ושקלו טבעת זהב:<br>
               גברת מילי (גראם): "מסת הטבעת היא 5.20 גרם"<br>
               מר קילו (גראם): "את טועה, הטבעת כבדה"<br><br/>
               <b>איזו טענה מספקת ראיה מדעית טובה יותר?</b></p>
@@ -306,7 +306,9 @@
     <div class="transition-content">
       <div class="transition-title-block">
         <p class="transition-sub">יופי של עבודה!</p>
-        <h2 class="transition-title">הנה עוד 2 תרגילים ברמת קושי גבוהה יותר.
+        <h2 class="transition-title">
+        הנה עוד שאלה ברמת קושי גבוהה יותר.  <br/>
+ענו נכון על 3 מתוך 4 סעיפים כדי להתקדם.
 </h2>
       
       </div>
@@ -412,18 +414,6 @@
        קורא q1SectionDone('a', ...) — לא קובע ישירות success/fail לשאלה
        1 (זו מכריעה רק אחרי שכל 4 הסעיפים א/ב/ג/ד נגמרים). -->
   <section class="screen" data-screen="6" id="s6">
-    <div class="qnav" id="s6-qnav">
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-current" id="s6-qnav-icon-1"></div>
-        <span class="qnav-label qnav-label-active" id="s6-qnav-label-1">שאלה 1</span>
-      </div>
-      <div class="qnav-line" id="s6-qnav-line-1"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s6-qnav-icon-2"></div>
-        <span class="qnav-label" id="s6-qnav-label-2">שאלה 2</span>
-      </div>
-    </div>
-
     <div class="scq-question">
       <div class="scq-img"><div class="scq-img-inner">
         <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
@@ -494,18 +484,6 @@
        הרכיב הרלוונטי (לא כל המסך, לא הסימולציה/badge). תוכן: תסריט
        הפקה, שקפים 92-96. correctId=429 (ממוצע 428/430/429). -->
   <section class="screen" data-screen="7" id="s7">
-    <div class="qnav" id="s7-qnav">
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-current" id="s7-qnav-icon-1"></div>
-        <span class="qnav-label qnav-label-active" id="s7-qnav-label-1">שאלה 1</span>
-      </div>
-      <div class="qnav-line" id="s7-qnav-line-1"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s7-qnav-icon-2"></div>
-        <span class="qnav-label" id="s7-qnav-label-2">שאלה 2</span>
-      </div>
-    </div>
-
     <div class="s7-content">
       <div class="s7-content-inner">
         <div class="scq-qtext">
@@ -578,23 +556,15 @@
 
   <!-- ============ מסך 9 — שאלה 1 מתוך 2, סעיף ג: נכון/לא נכון ============
        שוכפל ממסך 5 (data-screen="4", id="s4") של Methodica-science-mass
-       -measure-02-02 — במקור TrueFalseQuestion (נכון/לא נכון), הוחלף
-       ל-SCQ עם 4 טענות לפי בקשה מפורשת (אותו מבנה .scq-question/.scq-answers
-       כמו מסך 10, id="s9"). תוכן: תסריט הפקה, שקפים 97-101. correctId='a'
-       (הכדור בטווח 410-450, ולכן הממוצע בטווח התקן — "נכון"). -->
+       -measure-02-02 — TrueFalseQuestion (נכון/לא נכון), טענה יחידה
+       (`.tf-row` בודד, רפרנס: סיין 4 מסך 4, id="s3" — כאן בלי לוגיקת
+       all-selected על פני כמה שורות). תוכן: תסריט הפקה, שקפים 97-101.
+       correctVal='true' (הממוצע בטווח 410-450, ולכן הכדור עומד בתקן
+       FIFA — "נכון"). עודכן (2026-09-17, בקשה מפורשת): הוחזר
+       ל-TrueFalseQuestion אחרי שהוחלף בעבר ל-SCQ עם 4 טענות; התמונה
+       (כדורגלן.png) לא הייתה חלק מהתסריט המקורי אך נשמרת כפי שהיא
+       לפי בקשה מפורשת — .scq-question/.scq-img לא נגעו כלל. -->
   <section class="screen" data-screen="8" id="s8">
-    <div class="qnav" id="s8-qnav">
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-current" id="s8-qnav-icon-1"></div>
-        <span class="qnav-label qnav-label-active" id="s8-qnav-label-1">שאלה 1</span>
-      </div>
-      <div class="qnav-line" id="s8-qnav-line-1"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s8-qnav-icon-2"></div>
-        <span class="qnav-label" id="s8-qnav-label-2">שאלה 2</span>
-      </div>
-    </div>
-
     <div class="scq-question">
       <div class="scq-img"><div class="scq-img-inner">
         <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
@@ -610,29 +580,18 @@
         <div class="scq-qtext">
           <div class="scq-qtext-body">
             <p class="scq-qtitle">סעיף ג</p>
-            <p class="scq-qbody">
-            בהתבסס על הממוצע שחישבתם, איזו מהטענות נכונה? 
-            <br/>
-            *זכרו שלפי התקן, מסת כדור תקני צריכה להיות בין 410 ל-450 גרם.
-            </p>
+            <p class="scq-qbody">קבעו האם המשפט הבא נכון או לא.</p>
           </div>
         </div>
-        <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
-          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="a" onclick="s8Select('a')">
-            <span class="scq-opt-text">נכון – הכדור עומד בתקן FIFA, משום שהממוצע נמצא בטווח המסות הנדרש.</span>
-            <span class="scq-radio"></span>
-          </div>
-          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="b" onclick="s8Select('b')">
-            <span class="scq-opt-text">נכון – הכדור עומד בתקן FIFA, משום שלפחות אחת מהמדידות נמצאת בטווח התקן.</span>
-            <span class="scq-radio"></span>
-          </div>
-          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="c" onclick="s8Select('c')">
-            <span class="scq-opt-text">לא נכון – הכדור אינו עומד בתקן FIFA, משום שאחת המדידות חורגת מטווח התקן.</span>
-            <span class="scq-radio"></span>
-          </div>
-          <div class="scq-opt" role="radio" aria-checked="false" tabindex="0" data-id="d" onclick="s8Select('d')">
-            <span class="scq-opt-text">לא נכון – הכדור אינו עומד בתקן FIFA, משום שיש לחשב את החציון ולא את הממוצע.</span>
-            <span class="scq-radio"></span>
+        <div class="tf-rows" id="s8-rows">
+          <div class="tf-row" id="s8-row-1">
+            <div class="tf-stmt">
+              <span class="tf-text"><b>בהתבסס על הממוצע שחישבתם, הכדור עומד בתקן FIFA.</b></span>
+            </div>
+            <div class="tf-btns">
+              <button class="tf-btn" id="s8-r1-true" onclick="s8Select('true')">נכון</button>
+              <button class="tf-btn" id="s8-r1-false" onclick="s8Select('false')">לא נכון</button>
+            </div>
           </div>
         </div>
       </div>
@@ -672,18 +631,6 @@
        **סיום סעיף ד קורא q1SectionDone('d', ...) וגם מפעיל את חישוב
        הציון המשולב של שאלה 1** (כל 4 הסעיפים נגמרו כאן). -->
   <section class="screen" data-screen="9" id="s9">
-    <div class="qnav" id="s9-qnav">
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-current" id="s9-qnav-icon-1"></div>
-        <span class="qnav-label qnav-label-active" id="s9-qnav-label-1">שאלה 1</span>
-      </div>
-      <div class="qnav-line" id="s9-qnav-line-1"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s9-qnav-icon-2"></div>
-        <span class="qnav-label" id="s9-qnav-label-2">שאלה 2</span>
-      </div>
-    </div>
-
     <div class="scq-question">
       <div class="scq-img"><div class="scq-img-inner">
         <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"

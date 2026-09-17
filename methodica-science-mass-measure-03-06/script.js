@@ -4,7 +4,7 @@
    מנוע גלובלי — canvas scaling, ניווט מסכים, סטייט גלובלי
    ========================================================= */
 
-const TOTAL_SCREENS = 4;
+const TOTAL_SCREENS = 5;
 let currentScreen = 0;
 
 let savedCharacter = null;
@@ -28,71 +28,6 @@ function scaleApp() {
 }
 window.addEventListener('resize', scaleApp);
 
-/* Fake scrollbar (2026-09-09) — replaces the native styled scrollbar on every overflow-y:auto
-   container. Root cause: current Chrome no longer honors ::-webkit-scrollbar-button{display:none}
-   (verified live: the up/down arrows render regardless, even with !important + a full reload) —
-   only hiding the native scrollbar entirely works, so we do that and draw our own track+thumb here,
-   matching the Figma spec colors (see .fake-scrollbar-track/-thumb in styles.css) with no arrow
-   buttons because nothing native is left to render them. */
-function initFakeScrollbar(el) {
-  if (!el || el.dataset.fakeScrollbarInit) return;
-  el.dataset.fakeScrollbarInit = 'true';
-  el.classList.add('native-scrollbar-hidden');
-  const parent = el.parentElement;
-  if (getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
-  const track = document.createElement('div');
-  track.className = 'fake-scrollbar-track';
-  const thumb = document.createElement('div');
-  thumb.className = 'fake-scrollbar-thumb';
-  track.appendChild(thumb);
-  parent.appendChild(track);
-
-  function scale() { return Math.min(window.innerWidth / 1280, window.innerHeight / 710); }
-
-  function layout() {
-    const s = scale();
-    const elRect = el.getBoundingClientRect();
-    const parentRect = parent.getBoundingClientRect();
-    const height = elRect.height / s;
-    track.style.top = ((elRect.top - parentRect.top) / s) + 'px';
-    track.style.height = height + 'px';
-    track.style.left = ((elRect.right - parentRect.left) / s - 12) + 'px';
-    const needsScroll = el.scrollHeight > el.clientHeight + 1;
-    track.style.display = needsScroll ? 'block' : 'none';
-    if (!needsScroll) return;
-    const ratio = el.clientHeight / el.scrollHeight;
-    const thumbHeight = Math.max(24, height * ratio);
-    const maxThumbTop = height - thumbHeight;
-    const scrollRatio = el.scrollTop / (el.scrollHeight - el.clientHeight);
-    thumb.style.height = thumbHeight + 'px';
-    thumb.style.top = (maxThumbTop * scrollRatio) + 'px';
-  }
-  el.addEventListener('scroll', layout);
-  window.addEventListener('resize', layout);
-
-  let dragging = false, startY = 0, startScrollTop = 0;
-  thumb.addEventListener('mousedown', function (e) {
-    dragging = true; startY = e.clientY; startScrollTop = el.scrollTop;
-    document.body.style.userSelect = 'none';
-    e.preventDefault();
-  });
-  document.addEventListener('mousemove', function (e) {
-    if (!dragging) return;
-    const s = scale();
-    const elRect = el.getBoundingClientRect();
-    const height = elRect.height / s;
-    const ratio = el.clientHeight / el.scrollHeight;
-    const thumbHeight = Math.max(24, height * ratio);
-    const maxThumbTop = height - thumbHeight;
-    const deltaY = (e.clientY - startY) / s;
-    const scrollableDist = el.scrollHeight - el.clientHeight;
-    el.scrollTop = startScrollTop + (deltaY / maxThumbTop) * scrollableDist;
-  });
-  document.addEventListener('mouseup', function () { dragging = false; document.body.style.userSelect = ''; });
-  layout();
-  new MutationObserver(layout).observe(el, { childList: true, subtree: true, characterData: true });
-}
-
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
   document.querySelectorAll('.screen').forEach(function (el) {
@@ -103,16 +38,13 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
-  requestAnimationFrame(function () {
-    target.querySelectorAll('.tbl-content').forEach(initFakeScrollbar);
-  });
 }
 
 function resetScreenState(n) {
   if (n === 0) resetScreenState0();
-  if (n === 1) resetScreenState1();
   if (n === 2) resetScreenState2();
   if (n === 3) resetScreenState3();
+  if (n === 4) resetScreenState4();
 }
 
 function resolveCharBubbleImg(imgId, assetMap) {
@@ -138,36 +70,24 @@ function resolveCharBubbleVideo(videoId, assetMap) {
 
 /* =========================================================
    מועד ב — מעקב 3 סעיפים (localStorage), אותה מוסכמה כמו מועד א
-   (סיין 5). part1=סעיף א, part2=סעיף ב, part3=סעיף ג. הסעיפים
-   המקדימים (סקשן 1+2, טקסט+תמונה/טבלה) הם מידע בלבד, לא נבדקים.
-   שקפים 169-170 מאשרים: "מינימום 3 סעיפים נכונים" להצלחה — בפועל
-   שלושת הסעיפים היחידים שיש (א/ב/ג), כלומר כולם. ⚠️ שקף 151 (מסך
-   ההזנקה) מזכיר "4 סעיפים, לפחות 3" — אי-התאמה בתסריט (מוצג כפי
-   שכתוב, לא תוקן, ראו ARCHITECTURE.md), אך הבדיקה בפועל מסתמכת על
-   שקפים 169-170 שמתארים את הלוגיקה נכון.
-   ========================================================= */
+   (סיין 5). part1=סעיף א (מסך 3), part2=סעיף ב (מסך 4), part3=סעיף ג
+   (מסך 5). עודכן (2026-09-17, בקשה מפורשת): מסכי הסיכום (הצלחה/כשלון)
+   ומעקב moedBFullyPassed() שניתב אליהם הוסרו — סעיף ג הוא פשוט סוף
+   הלומדה. saveMoedBResult נשאר (מעקב תוצאה לכל סעיף, ללא ניתוב). */
 
 function saveMoedBResult(part, passed) {
   try { localStorage.setItem('lomda_moedB_part' + part + '_result', passed ? 'pass' : 'fail'); } catch (e) {}
 }
 
-function moedBFullyPassed() {
-  let p1 = null, p2 = null, p3 = null;
-  try {
-    p1 = localStorage.getItem('lomda_moedB_part1_result');
-    p2 = localStorage.getItem('lomda_moedB_part2_result');
-    p3 = localStorage.getItem('lomda_moedB_part3_result');
-  } catch (e) {}
-  return p1 === 'pass' && p2 === 'pass' && p3 === 'pass';
-}
-
 /* =========================================================
-   מסך 1 — מעבר: הקדמה למשימת השיא (מועד ב)
+   מסך 1 — מעבר: הקדמה למשימת השיא (מועד ב). עודכן (2026-09-17, בקשה
+   מפורשת): זהה 1:1 למסך 1 בסיין 5 — אותו וידאו בדיוק (muscle, לא
+   v-fingers), אותם קבצים הועתקו פיזית ל-assets/gifs/ של הסיין הזה.
    ========================================================= */
 
 const S0_AVATAR_ASSETS = {
-  pink: 'assets/gifs/pink-avatar-v-fingers.mp4',
-  boy: 'assets/gifs/boy-avatar-v-fingers.mp4'
+  pink: 'assets/gifs/pink-avatar-muscle.mp4',
+  boy: 'assets/gifs/boy-avatar-muscle.mp4'
 };
 
 function resetScreenState0() {
@@ -186,140 +106,12 @@ function s0BackToPreviousSain() {
 }
 
 /* =========================================================
-   מסך 2 — מסך גלילה, 5 סקשנים. פס הפעולה התחתון משותף לכל הסקשנים
-   (#s1-check/#s1-hint) — מתעדכן (label/disabled/onclick/hidden) בכל
-   מעבר עמוד ע"י s1SyncBar(n), לפי אותו עיקרון שכל סקשן "משתלט" על
-   הכפתור המשותף כשהוא בתצוגה. סקשנים 1+2 (מידע בלבד) בלי כפתור כלל —
-   ההתקדמות ביניהם היא גלילה חופשית בלבד, כמו בכל מסכי הגלילה
-   המידעיים האחרים בפרויקט.
-   ========================================================= */
-
-/* SELF-QA.md §7 "Cursor shape" — the hand-shaped (grab) cursor over a scrollable container must only
-   show near the actual scrollbar strip, not across the whole content box (client feedback, 2026-09-08:
-   the grab cursor covering the entire screen was confusing). Toggles `.near-scrollbar` on `el` based
-   on how close the mouse is to its right edge (where the scrollbar physically sits, since these
-   containers force direction:ltr — see CLAUDE.md). thresholdPx is generous on purpose (wider than the
-   8px scrollbar itself) so it's easy to hit without pixel-perfect aim. */
-function initScrollbarHoverCursor(el, thresholdPx) {
-  if (!el || el.dataset.scrollbarCursorInit) return;
-  el.dataset.scrollbarCursorInit = 'true';
-  const threshold = thresholdPx || 20;
-  el.addEventListener('mousemove', function (e) {
-    const rect = el.getBoundingClientRect();
-    const distFromRight = rect.right - e.clientX;
-    el.classList.toggle('near-scrollbar', distFromRight >= 0 && distFromRight <= threshold);
-  });
-  el.addEventListener('mouseleave', function () { el.classList.remove('near-scrollbar'); });
-}
-
-let s1CurrentPage = 0;
-
-/* המרה לזרימה רגילה (2026-09-08, לפי בקשת המשתמשת — "זרימה רגילה + מעקב גלילה", כמו שתוקן
-   בסיין 4/5): אין יותר "קפיצת עמוד" שחוטפת wheel/keydown ומגלגלת מסך-מלא בכל פעם. הגלילה
-   חופשית לגמרי; s1GoToPage נשאר קיים רק בשביל כפתורי "המשך" (קפיצה יזומה לסקשן הבא), לא בשביל
-   קלט משתמש/ת רגיל. פס הפעולה המשותף (#s1-check/#s1-hint) עוקב אחרי מיקום הגלילה בפועל דרך
-   s1UpdateCurrentPageFromScroll() במקום דרך אינדקס-עמוד נפרד. */
-function s1GoToPage(index) {
-  const pages = document.querySelectorAll('#s6-scroll-area .tbl-page');
-  if (index < 0 || index >= pages.length) return;
-  s1CurrentPage = index;
-  /* .scq-fb-box ממוקם ביחס למסך כולו (position:absolute), לא ביחס
-     לסקשן הגלילה — אם משוב פתוח נשאר פתוח בגלילה לסקשן אחר, הוא
-     "נתקע" בפינה השמאלית-תחתונה מעל התוכן החדש. סוגרים את כל תיבות
-     המשוב של המסך הזה בכל מעבר סקשן, לפי בקשה מפורשת. */
-  ['s6a-feedbox', 's6b-feedbox', 's6c-feedbox'].forEach(function (id) {
-    const box = document.getElementById(id);
-    if (box) box.classList.remove('visible');
-  });
-  s1SyncBar(index);
-  document.getElementById('s6-scroll-area').scrollTo({ top: pages[index].offsetTop, behavior: 'smooth' });
-}
-
-/* מעקב גלילה חופשית: בכל אירוע scroll, מאתרים איזה סקשן (.tbl-page) נמצא הכי קרוב למרכז
-   האזור הגלוי כרגע, ומסנכרנים אליו את פס הפעולה המשותף — כל sync-function פנימית (s6aSyncBar
-   וכו') כבר קוראת את המצב הפנימי-שלה-עצמה, כך שקריאה חוזרת/מרובה בטוחה (אידמפוטנטית), כולל
-   dqSectionC.reset() שבודק hasProgress לפני שהוא מאפס משהו (ר' makeDragQuestion). */
-function s1UpdateCurrentPageFromScroll() {
-  const scrollArea = document.getElementById('s6-scroll-area');
-  const pages = document.querySelectorAll('#s6-scroll-area .tbl-page');
-  if (!scrollArea || !pages.length) return;
-  const viewportMid = scrollArea.scrollTop + scrollArea.clientHeight / 2;
-  let closest = 0;
-  let closestDist = Infinity;
-  pages.forEach(function (page, i) {
-    const pageMid = page.offsetTop + page.offsetHeight / 2;
-    const dist = Math.abs(pageMid - viewportMid);
-    if (dist < closestDist) { closestDist = dist; closest = i; }
-  });
-  if (closest !== s1CurrentPage) {
-    s1CurrentPage = closest;
-    s1SyncBar(closest);
-  }
-}
-
-function s1InitScrollJump() {
-  const scrollArea = document.getElementById('s6-scroll-area');
-  if (!scrollArea || scrollArea.dataset.jumpInit) return;
-  scrollArea.dataset.jumpInit = 'true';
-  initScrollbarHoverCursor(scrollArea);
-  scrollArea.addEventListener('scroll', s1UpdateCurrentPageFromScroll);
-}
-
-/* דריסה בטוחה — אף פעם לא אמורה להיקרא בפועל: ברגע שהמשתמש/ת נוחתים
-   על עמוד, s1SyncBar כבר קבעה .onclick אמיתי על הכפתור המשותף (זה
-   דורס את התכונה הזו). נשמרת רק כדי שלא תיזרק שגיאה אם עדיין לא בוצע
-   sync (למשל טעינה ראשונית לפני resetScreenState1). */
-function s1CheckDispatch() {}
-function s1OpenHintDispatch() {}
-
-/* מתאם את פס הפעולה המשותף (#s1-check/#s1-hint) לסקשן הנוכחי */
-function s1SyncBar(n) {
-  const checkBtn = document.getElementById('s1-check');
-  const hintBtn = document.getElementById('s1-hint');
-  if (n === 0 || n === 1) {
-    checkBtn.hidden = true;
-    hintBtn.hidden = true;
-  } else if (n === 2) {
-    s6aSyncBar();
-  } else if (n === 3) {
-    s6bSyncBar();
-  } else if (n === 4) {
-    dqSectionC.reset();
-  }
-}
-
-/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Ported from Sain 1, missed here in the first pass.
-   Shown once per screen visit, hidden the instant a real scroll is attempted (wheel/keydown). */
-let s1ScrollGestureShown = false;
-function s1MaybeShowScrollGesture() {
-  if (s1ScrollGestureShown) return;
-  s1ScrollGestureShown = true;
-  const gesture = document.getElementById('s1-scroll-gesture');
-  const scrollArea = document.getElementById('s6-scroll-area');
-  if (!gesture || !scrollArea) return;
-  gesture.hidden = false;
-  function dismiss() {
-    gesture.hidden = true;
-    scrollArea.removeEventListener('wheel', dismiss);
-    scrollArea.removeEventListener('keydown', dismiss);
-  }
-  scrollArea.addEventListener('wheel', dismiss);
-  scrollArea.addEventListener('keydown', dismiss);
-}
-
-function resetScreenState1() {
-  const scrollArea = document.getElementById('s6-scroll-area');
-  if (scrollArea) scrollArea.scrollTop = 0;
-  s1CurrentPage = 0;
-  s1InitScrollJump();
-  s1MaybeShowScrollGesture();
-  s1SyncBar(0);
-}
-
-/* =========================================================
-   סקשן 3 — סעיף א: חד-ברירה + טבלה ליד המסיחים. correctId='b'.
-   בהצלחה/כשלון סופי: saveMoedBResult(1,...), ואז "המשך" מקדם
-   ל-s1GoToPage(3) (סעיף ב).
+   מסך 3 — סעיף א: חד-ברירה + טבלה ליד המסיחים. correctId='b'.
+   עודכן (2026-09-17, בקשה מפורשת): פוצל למסך עצמאי משלו (לא עוד
+   סקשן בתוך מסך-גלילה משותף) — לכפתורי הבר התחתון ids ייחודיים
+   למסך הזה (s2-check/s2-hint/s2-back), אין יותר "בר משותף" בין
+   סעיפים. בהצלחה/כשלון סופי: saveMoedBResult(1,...), ואז "המשך"
+   מקדם ל-goTo(3) (סעיף ב).
    ========================================================= */
 
 const S6A = {
@@ -336,12 +128,12 @@ let s6aSelected = null;
 let s6aAttempts = 0;
 let s6aDone = false;
 
-function s6aOptEl(id) { return document.querySelector('#s1 .tbl-page:nth-of-type(3) .scq-opt[data-id="' + id + '"]'); }
+function s6aOptEl(id) { return document.querySelector('#s2 .scq-opt[data-id="' + id + '"]'); }
 
 function s6aSelect(id) {
   if (s6aDone) return;
   const wasWrong = (s6aAttempts > 0 && !s6aDone);
-  document.querySelectorAll('#s1 .tbl-page:nth-of-type(3) .scq-opt').forEach(function (el) {
+  document.querySelectorAll('#s2 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong');
     el.setAttribute('aria-checked', 'false');
   });
@@ -349,12 +141,12 @@ function s6aSelect(id) {
   el.classList.add('selected');
   el.setAttribute('aria-checked', 'true');
   s6aSelected = id;
-  if (wasWrong) document.getElementById('s6a-feedbox').classList.remove('visible');
+  if (wasWrong) document.getElementById('s2-feedbox').classList.remove('visible');
   s6aSyncBar();
 }
 
 function s6aShowFeedback(kind, isCorrect) {
-  const box = document.getElementById('s6a-feedbox');
+  const box = document.getElementById('s2-feedbox');
   const data = S6A.feedback[kind];
   box.querySelector('.scq-fb-title-text').textContent = data.title;
   box.querySelector('.scq-fb-body').innerHTML = data.body.replace(/\n/g, '<br>');
@@ -365,7 +157,7 @@ function s6aShowFeedback(kind, isCorrect) {
 }
 
 function s6aLockOptions() {
-  document.querySelectorAll('#s1 .tbl-page:nth-of-type(3) .scq-opt').forEach(function (el) {
+  document.querySelectorAll('#s2 .scq-opt').forEach(function (el) {
     el.classList.add('disabled');
     el.onclick = null;
   });
@@ -401,25 +193,23 @@ function s6aCheck() {
 
 function s6aOpenHint() {
   if (s6aDone) return;
-  document.getElementById('s6a-hint-overlay').hidden = false;
+  document.getElementById('s2-hint-overlay').hidden = false;
 }
-function s6aCloseHint() { document.getElementById('s6a-hint-overlay').hidden = true; }
-document.getElementById('s6a-hint-overlay').addEventListener('click', function (e) {
+function s6aCloseHint() { document.getElementById('s2-hint-overlay').hidden = true; }
+document.getElementById('s2-hint-overlay').addEventListener('click', function (e) {
   if (e.target === this) s6aCloseHint();
 });
 
-/* קובעת label/disabled/onclick/hidden על הכפתור המשותף לפי המצב
-   הפנימי הנוכחי של סעיף א — נקראת גם בכניסה ראשונה לעמוד וגם
-   בכל שינוי מצב (בחירה/בדיקה), כדי שהכפתור המשותף תמיד ישקף נכון
-   את הסעיף שבתצוגה. */
+/* קובעת label/disabled/onclick/hidden על הבר התחתון של המסך לפי
+   המצב הפנימי הנוכחי של סעיף א — נקראת גם בכניסה ראשונה למסך וגם
+   בכל שינוי מצב (בחירה/בדיקה). */
 function s6aSyncBar() {
-  const checkBtn = document.getElementById('s1-check');
-  const hintBtn = document.getElementById('s1-hint');
-  checkBtn.hidden = false;
+  const checkBtn = document.getElementById('s2-check');
+  const hintBtn = document.getElementById('s2-hint');
   if (s6aDone) {
     checkBtn.textContent = 'המשך';
     checkBtn.disabled = false;
-    checkBtn.onclick = function () { s1GoToPage(3); };
+    checkBtn.onclick = function () { goTo(3); };
     hintBtn.hidden = true;
   } else {
     checkBtn.textContent = 'צדקתי?';
@@ -431,10 +221,22 @@ function s6aSyncBar() {
   }
 }
 
+function resetScreenState2() {
+  if (s6aDone) { s6aSyncBar(); return; } // resume-state guard — הושלם כבר, לא מאפסים
+  s6aSelected = null;
+  s6aAttempts = 0;
+  document.querySelectorAll('#s2 .scq-opt').forEach(function (el) {
+    el.classList.remove('selected', 'wrong', 'correct');
+    el.setAttribute('aria-checked', 'false');
+  });
+  document.getElementById('s2-feedbox').classList.remove('visible');
+  s6aSyncBar();
+}
+
 /* =========================================================
-   סקשן 4 — סעיף ב: חד-ברירה + טבלה ליד המסיחים. correctId='c'.
+   מסך 4 — סעיף ב: חד-ברירה + טבלה ליד המסיחים. correctId='c'.
    בהצלחה/כשלון סופי: saveMoedBResult(2,...), ואז "המשך" מקדם
-   ל-s1GoToPage(4) (סעיף ג).
+   ל-goTo(4) (סעיף ג).
    ========================================================= */
 
 const S6B = {
@@ -451,12 +253,12 @@ let s6bSelected = null;
 let s6bAttempts = 0;
 let s6bDone = false;
 
-function s6bOptEl(id) { return document.querySelector('#s1 .tbl-page:nth-of-type(4) .scq-opt[data-id="' + id + '"]'); }
+function s6bOptEl(id) { return document.querySelector('#s3 .scq-opt[data-id="' + id + '"]'); }
 
 function s6bSelect(id) {
   if (s6bDone) return;
   const wasWrong = (s6bAttempts > 0 && !s6bDone);
-  document.querySelectorAll('#s1 .tbl-page:nth-of-type(4) .scq-opt').forEach(function (el) {
+  document.querySelectorAll('#s3 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong');
     el.setAttribute('aria-checked', 'false');
   });
@@ -464,12 +266,12 @@ function s6bSelect(id) {
   el.classList.add('selected');
   el.setAttribute('aria-checked', 'true');
   s6bSelected = id;
-  if (wasWrong) document.getElementById('s6b-feedbox').classList.remove('visible');
+  if (wasWrong) document.getElementById('s3-feedbox').classList.remove('visible');
   s6bSyncBar();
 }
 
 function s6bShowFeedback(kind, isCorrect) {
-  const box = document.getElementById('s6b-feedbox');
+  const box = document.getElementById('s3-feedbox');
   const data = S6B.feedback[kind];
   box.querySelector('.scq-fb-title-text').textContent = data.title;
   box.querySelector('.scq-fb-body').innerHTML = data.body.replace(/\n/g, '<br>');
@@ -480,7 +282,7 @@ function s6bShowFeedback(kind, isCorrect) {
 }
 
 function s6bLockOptions() {
-  document.querySelectorAll('#s1 .tbl-page:nth-of-type(4) .scq-opt').forEach(function (el) {
+  document.querySelectorAll('#s3 .scq-opt').forEach(function (el) {
     el.classList.add('disabled');
     el.onclick = null;
   });
@@ -516,21 +318,20 @@ function s6bCheck() {
 
 function s6bOpenHint() {
   if (s6bDone) return;
-  document.getElementById('s6b-hint-overlay').hidden = false;
+  document.getElementById('s3-hint-overlay').hidden = false;
 }
-function s6bCloseHint() { document.getElementById('s6b-hint-overlay').hidden = true; }
-document.getElementById('s6b-hint-overlay').addEventListener('click', function (e) {
+function s6bCloseHint() { document.getElementById('s3-hint-overlay').hidden = true; }
+document.getElementById('s3-hint-overlay').addEventListener('click', function (e) {
   if (e.target === this) s6bCloseHint();
 });
 
 function s6bSyncBar() {
-  const checkBtn = document.getElementById('s1-check');
-  const hintBtn = document.getElementById('s1-hint');
-  checkBtn.hidden = false;
+  const checkBtn = document.getElementById('s3-check');
+  const hintBtn = document.getElementById('s3-hint');
   if (s6bDone) {
     checkBtn.textContent = 'המשך';
     checkBtn.disabled = false;
-    checkBtn.onclick = function () { s1GoToPage(4); };
+    checkBtn.onclick = function () { goTo(4); };
     hintBtn.hidden = true;
   } else {
     checkBtn.textContent = 'צדקתי?';
@@ -542,10 +343,23 @@ function s6bSyncBar() {
   }
 }
 
+function resetScreenState3() {
+  if (s6bDone) { s6bSyncBar(); return; } // resume-state guard — הושלם כבר, לא מאפסים
+  s6bSelected = null;
+  s6bAttempts = 0;
+  document.querySelectorAll('#s3 .scq-opt').forEach(function (el) {
+    el.classList.remove('selected', 'wrong', 'correct');
+    el.setAttribute('aria-checked', 'false');
+  });
+  document.getElementById('s3-feedbox').classList.remove('visible');
+  s6bSyncBar();
+}
+
 /* =========================================================
-   סקשן 5 — סעיף ג: שאלת גרירה (makeDragQuestion factory, זהה לזו
-   שכבר קיימת בסינים 3+5). הסעיף האחרון של מועד ב' — בסיומו נבדקת
-   moedBFullyPassed() והניתוב בהתאם.
+   מסך 5 — סעיף ג: שאלת גרירה (makeDragQuestion factory, זהה לזו
+   שכבר קיימת בסינים 3+5). הסעיף האחרון של מועד ב'. עודכן
+   (2026-09-17, בקשה מפורשת): פשוט סוף הלומדה — אין יותר מסך-סיכום
+   או ניתוב אחריו.
    ========================================================= */
 
 /* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
@@ -557,20 +371,10 @@ function s6bSyncBar() {
    replaced on re-render. */
 function showDragGestureHint(slotEl) {
   /* Guards on "was this actually dismissed" (set inside dismiss() below), not "was this function
-     ever called" — reset() on this screen's section can legitimately run twice back-to-back for one
-     arrival (found 2026-09-10, on section 5's "התקן" hint never appearing in practice): s1GoToPage(n)
-     sets s1CurrentPage=n and calls s1SyncBar(n) synchronously, THEN starts a smooth scrollTo(); while
-     that scroll animates, s1UpdateCurrentPageFromScroll's own "closest page" tracking briefly sees an
-     intermediate page as current (since the target scrollTop hasn't been reached yet), overwrites
-     s1CurrentPage back down, and then calls s1SyncBar(n) a second time once the scroll actually lands
-     — so dqSectionC.reset() (and therefore render(), which rebuilds the slot's card from scratch) runs
-     twice for a single ordinary "continue" click. A slotEl.dataset.gestureShown flag set up front here
-     survived that fine on its own — the guard still returned early the second time — but render()
-     doesn't know a hint div existed and rebuilds the slot's children without it, so the SECOND
-     showDragGestureHint() call, now guarded away by the stale "already shown" flag, never puts it
-     back: the hint silently vanishes despite firing on every navigation into this section. Checking
-     for an existing .gesture-hint child (not just the flag) lets a redundant call safely re-add it
-     when render() has wiped it out from under an untouched, never-dismissed hint. */
+     ever called" — a redundant reset() call (e.g. a screen revisit) can re-render the word bank and
+     wipe a hint that was never actually seen/dismissed. Checking for an existing .gesture-hint child
+     (not just a one-shot flag) lets a redundant call safely re-add it instead of leaving the slot
+     hint-less. */
   if (!slotEl || slotEl.dataset.gestureDismissed || slotEl.querySelector('.gesture-hint')) return;
   /* Found the actual text-bearing element BEFORE appending the hint below — slotEl might just be a
      text-holding element itself or a wrapper around one (.dq-source-slot > .dq-drag-card); descending
@@ -875,7 +679,7 @@ function makeDragQuestion(cfg) {
       done = true;
       saveResult(true);
       showFeedback('correct');
-      if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+      if (btn) { if (cfg.onContinue) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else if (attempts >= maxAttempts) {
       done = true;
       saveResult(false);
@@ -889,7 +693,7 @@ function makeDragQuestion(cfg) {
         revealCorrect();
         showFeedback('wrongFinal');
       }
-      if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+      if (btn) { if (cfg.onContinue) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else {
       showFeedback('wrong1');
       checked = false;
@@ -933,14 +737,15 @@ function makeDragQuestion(cfg) {
     }
     const btn = document.getElementById(cfg.checkBtnId);
     if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
-    const panel = document.getElementById(cfg.panelId);
-    if (panel) panel.scrollTop = panel.scrollTop; /* לא מאפסים גלילה — עמוד זה מנוהל ע"י s1GoToPage */
     render();
   }
 
   function restoreFinal() {
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.hidden = false; btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+    if (btn) {
+      if (cfg.onContinue) { btn.hidden = false; btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+      else { btn.hidden = true; }
+    }
     if (cfg.hintBtnId) {
       const hintBtn = document.getElementById(cfg.hintBtnId);
       if (hintBtn) hintBtn.hidden = true;
@@ -981,14 +786,6 @@ function makeDragQuestion(cfg) {
   return { reset: reset };
 }
 
-function s1SectionCDecision() {
-  if (moedBFullyPassed()) {
-    goTo(3); // מסך 4 — סיכום הצלחה (משותף עם סיין 5)
-  } else {
-    goTo(2); // מסך 3 — סיכום כשלון
-  }
-}
-
 const TEXTS_S6C_DQ = {
   correct: {
     title: 'התשובה נכונה. כל הכבוד!',
@@ -1010,15 +807,13 @@ const TEXTS_S6C_DQ = {
 
 const dqSectionC = makeDragQuestion({
   prefix: 's6c',
-  screenSelector: '#s1',
-  panelId: 's6-scroll-area',
-  checkBtnId: 's1-check',
-  hintBtnId: 's1-hint',
-  hintOverlayId: 's6c-hint-overlay',
-  feedboxId: 's6c-feedbox',
-  revealBtnId: 's6c-reveal-btn',
+  screenSelector: '#s4',
+  checkBtnId: 's4-check',
+  hintBtnId: 's4-hint',
+  hintOverlayId: 's4-hint-overlay',
+  feedboxId: 's4-feedbox',
+  revealBtnId: 's4-reveal-btn',
   resultKey: 'lomda_moedB_part3_result',
-  onContinue: s1SectionCDecision,
   labels: {
     's6c-drag-medayekim': 'המדייקים',
     's6c-drag-teken': 'התקן',
@@ -1038,42 +833,8 @@ const dqSectionC = makeDragQuestion({
   texts: TEXTS_S6C_DQ
 });
 
-/* =========================================================
-   מסך 3 — סיכום כשלון (לא הצליח במועד ב')
-   ========================================================= */
-
-const S2_AVATAR_ASSETS = {
-  pink: 'assets/gifs/pink-avatar-thanks.mp4',
-  boy: 'assets/gifs/boy-avatar-thanks.mp4'
-};
-
-function resetScreenState2() {
-  resolveCharBubbleVideo('s2-avatar-video', S2_AVATAR_ASSETS);
-}
-
-function s2Finish() {
-  /* TODO: לחבר לפעולת סיום הלומדה/היחידה כשתיבנה (LMS) — זהה למוסכמה
-     בפרויקט הקודם (s13Finish ב-Methodica-02-06). */
-  console.log('TODO: כפתור "סיימתי" (סיכום כשלון) — לחבר לפעולת סיום הלומדה כשתיבנה.');
-}
-
-/* =========================================================
-   מסך 4 — סיכום הצלחה (משותף עם מסך הסיום של סיין 5)
-   ========================================================= */
-
-const S3_AVATAR_ASSETS = {
-  pink: 'assets/gifs/pink-avatar-dancing.mp4',
-  boy: 'assets/gifs/boy-avatar-dancing.mp4'
-};
-
-function resetScreenState3() {
-  resolveCharBubbleVideo('s3-avatar-video', S3_AVATAR_ASSETS);
-}
-
-function s3Finish() {
-  /* TODO: לחבר לפעולת סיום הלומדה/היחידה כשתיבנה (LMS) — זהה למוסכמה
-     בפרויקט הקודם (s14Finish ב-Methodica-02-06). */
-  console.log('TODO: כפתור "סיימתי" (סיכום הצלחה) — לחבר לפעולת סיום הלומדה כשתיבנה.');
+function resetScreenState4() {
+  dqSectionC.reset();
 }
 
 /* ---------- Dev postMessage bridge (index_dev.html free nav) ---------- */
@@ -1191,15 +952,15 @@ document.addEventListener('keydown', function (e) {
 
 /* אתחול */
 scaleApp();
-scqFbMakeDraggable('s6a-feedbox');
-scqFbMakeDraggable('s6b-feedbox');
-scqFbMakeDraggable('s6c-feedbox');
-document.querySelectorAll('#s1 .tbl-page:nth-of-type(3) .scq-opt').forEach(function (opt) {
+scqFbMakeDraggable('s2-feedbox');
+scqFbMakeDraggable('s3-feedbox');
+scqFbMakeDraggable('s4-feedbox');
+document.querySelectorAll('#s2 .scq-opt').forEach(function (opt) {
   opt.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s6aSelect(opt.dataset.id); }
   });
 });
-document.querySelectorAll('#s1 .tbl-page:nth-of-type(4) .scq-opt').forEach(function (opt) {
+document.querySelectorAll('#s3 .scq-opt').forEach(function (opt) {
   opt.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s6bSelect(opt.dataset.id); }
   });

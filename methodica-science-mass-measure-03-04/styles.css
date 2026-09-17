@@ -201,12 +201,12 @@ img { display: block; max-width: none; }
   position: absolute; top: 139px; left: 40px; right: 40px;
   display: flex; flex-direction: row; direction: ltr; align-items: flex-start; gap: 16px;
 }
-.scq-content { direction: rtl; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; flex: 1; }
+.scq-content { direction: rtl; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; flex: 1; }
 .scq-qtext { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 792px; max-width: 100%; }
 .scq-qtitle { font-weight: 700; font-size: 24px; color: var(--subject-500); text-align: right; width: 100%; }
 .scq-qtext-body { display: flex; flex-direction: column; width: 100%; }
 .scq-qbody { font-weight: 400; font-size: 24px; color: #303030; text-align: right; }
-.scq-answers { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 604px; max-width: 100%; }
+.scq-answers { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 604px; max-width: 100%; }
 .scq-opt {
   width: 100%; display: flex; flex-direction: row; align-items: center; gap: 10px;
   padding: 12px 20px; border: 2px solid var(--subject-500); border-radius: 999px;
@@ -321,81 +321,14 @@ img { display: block; max-width: none; }
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* RTL column: flex-start = physical right */
-  gap: 24px;
-  padding: 0 0 32px 0;
+  gap: 7px;
+  padding: 0 0 5px 0;
 }
-.tbl-page-header { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.tbl-page-header { display: flex; flex-direction: column; gap: 7px; width: 100%; }
 .tbl-table { width: 100%; max-width: 900px; border-collapse: collapse; direction: rtl; text-align: center; flex-shrink: 0; }
 .tbl-th { background: #D4F3FF; border: 1px solid #D4D4D4; font-size: 22px; font-weight: 700; color: #303030; padding: 6px 12px; white-space: nowrap; }
 .tbl-td { border: 1px solid #D4D4D4; font-size: 22px; font-weight: 400; color: #303030; padding: 6px 12px; white-space: nowrap; background: #fff; }
 .tbl-table tbody tr:nth-child(even) .tbl-td { background: #D4F3FF; }
-
-/* Gesture Hint — Cursor Scroll overlay for #s2-scroll-area (SELF-QA.md §7, Figma node 2915:35184).
-   Ported from Sain 1 (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs)
-   — missed here in the first pass. Positioned as a sibling of .tbl-content using the identical box
-   (top:139px/bottom:74px) so it sits fixed over the scroll viewport instead of scrolling away with
-   page 1's content. See script.js for the show-once/hide-on-real-scroll logic
-   (s2MaybeShowScrollGesture). */
-.gesture-hint-scroll-wrap {
-  position: absolute;
-  top: 139px; left: 0; right: 0; bottom: 74px;
-  pointer-events: none;
-  z-index: 20;
-}
-.gesture-hint-scroll-wrap[hidden] { display: none; }
-.gesture-hint {
-  position: absolute;
-  left: 50%; top: 50%;
-  translate: -50% -50%;
-  width: 0; height: 0;
-  pointer-events: none;
-}
-/* 2026-09-08: horizontal anchor moved from center (left:50%, the base .gesture-hint rule) to the
-   scroll container's right edge, where the native scrollbar physically sits (these containers force
-   direction:ltr — see CLAUDE.md). Client feedback: the hand must sit ON the scrollbar itself, not
-   floating in the middle of the content. */
-.gesture-hint-scroll-wrap .gesture-hint { top: 62%; left: auto; right: 10px; }
-.gesture-hint-hand,
-.gesture-hint-ring {
-  position: absolute;
-  left: 0; top: 0;
-  translate: -50% -50%;
-}
-.gesture-hint-hand { width: 28px; height: 33px; z-index: 3; }
-.gesture-hint-ring {
-  border-radius: 50%;
-  opacity: 0;
-}
-.gesture-hint-ring--small {
-  width: 12px; height: 12px;
-  border: 1.5px solid #B0DFFF;
-  z-index: 2;
-  animation: gesture-ring-small 2s infinite;
-}
-.gesture-hint-ring--big {
-  width: 64px; height: 64px;
-  background: #B0DFFF;
-  border: 2.5px solid #00BAFF;
-  z-index: 1;
-  animation: gesture-ring-big 2s infinite;
-}
-@keyframes gesture-ring-small {
-  0%   { opacity: 0;    scale: 0.2 0.2; }
-  3%   { opacity: 0.75; scale: 1   1; }
-  10%  { opacity: 0;    scale: 1.1 1.1; }
-  100% { opacity: 0;    scale: 1.1 1.1; }
-}
-@keyframes gesture-ring-big {
-  0%    { opacity: 0;    scale: 0.05 0.05; }
-  5%    { opacity: 0.85; }
-  7.5%  {                scale: 0.22 0.22; }
-  22.5% {                scale: 0.6  0.6; }
-  35%   { opacity: 0.65; }
-  37.5% {                scale: 0.85 0.85; }
-  45%   { opacity: 0.35; }
-  50%   { opacity: 0;    scale: 1 1; }
-  100%  { opacity: 0;    scale: 1 1; }
-}
 
 /* ════════════════════════════════════════════════════════
    מסך 4 — TrueFalseQuestion (4 טענות), הועתק ממסך 5 של

@@ -1154,14 +1154,15 @@ function resetScreenState7() {
 }
 
 /* =========================================================
-   מסך 9 — שאלה 1/2, סעיף ג: SCQ עם 4 טענות (הוחלף מ-TrueFalseQuestion
-   לפי בקשה מפורשת — במקור הותאם ממסך 5, id="s4", של
-   Methodica-science-mass-measure-02-02). אותו מבנה בדיוק כמו מסך 10
-   (S9 למטה).
+   מסך 9 — שאלה 1/2, סעיף ג: TrueFalseQuestion, טענה יחידה (`.tf-row`
+   בודד, רפרנס: סיין 4 מסך 4, id="s3" — כאן בלי לוגיקת all-selected
+   על פני כמה שורות, ובלי עמוד עצמאי (.tf-question) כי החי בתוך
+   .scq-content הקיים לצד התמונה). עודכן (2026-09-17, בקשה מפורשת):
+   הוחזר מ-SCQ עם 4 טענות (כפי שהיה בעבר) ל-TrueFalseQuestion.
    ========================================================= */
 
 const S8 = {
-  correctId: 'a',
+  correctVal: 'true',
   maxAttempts: 2,
   feedback: {
     correct: { title: 'נכון.', body: 'הכדור נמצא בטווח 410-450 ולכן עומד בתקן FIFA.' },
@@ -1175,19 +1176,18 @@ let s8Attempts = 0;
 let s8Done = false;
 let s8Phase = 'before';
 
-function s8OptEl(id) { return document.querySelector('#s8 .scq-opt[data-id="' + id + '"]'); }
+function s8BtnEl(val) { return document.getElementById('s8-r1-' + val); }
 
-function s8Select(id) {
+function s8Select(val) {
   if (s8Done) return;
   const wasWrong1 = (s8Phase === 'wrong1');
-  document.querySelectorAll('#s8 .scq-opt').forEach(function (el) {
-    el.classList.remove('selected', 'wrong');
-    el.setAttribute('aria-checked', 'false');
+  ['true', 'false'].forEach(function (v) {
+    const btn = s8BtnEl(v);
+    if (btn) btn.classList.remove('selected', 'btn-correct', 'btn-wrong');
   });
-  const selectedEl = s8OptEl(id);
-  selectedEl.classList.add('selected');
-  selectedEl.setAttribute('aria-checked', 'true');
-  s8Selected = id;
+  const selectedBtn = s8BtnEl(val);
+  selectedBtn.classList.add('selected');
+  s8Selected = val;
   s8Phase = 'selected';
   if (wasWrong1) document.getElementById('s8-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s8-check');
@@ -1218,14 +1218,14 @@ function s8SetBarDone(label, handler) {
 function s8Check() {
   if (!s8Selected || s8Done) return;
   s8Attempts++;
-  const optEl = s8OptEl(s8Selected);
+  const selectedBtn = s8BtnEl(s8Selected);
 
-  if (s8Selected === S8.correctId) {
-    optEl.classList.add('correct');
-    optEl.classList.remove('selected');
+  if (s8Selected === S8.correctVal) {
+    selectedBtn.classList.add('btn-correct');
+    selectedBtn.classList.remove('selected');
     s8Phase = 'correct';
     s8Done = true;
-    s8LockOptions();
+    s8LockButtons();
     s8ShowFeedback('correct', true);
     q1SectionDone('c', 'success');
     updateQuestionNav2('s8');
@@ -1233,8 +1233,8 @@ function s8Check() {
     return;
   }
 
-  optEl.classList.add('wrong');
-  optEl.classList.remove('selected');
+  selectedBtn.classList.add('btn-wrong');
+  selectedBtn.classList.remove('selected');
 
   if (s8Attempts < S8.maxAttempts) {
     s8Phase = 'wrong1';
@@ -1247,10 +1247,10 @@ function s8Check() {
     hintBtn.hidden = false;
     hintBtn.disabled = false;
   } else {
-    s8OptEl(S8.correctId).classList.add('correct');
+    s8BtnEl(S8.correctVal).classList.add('btn-correct');
     s8Phase = 'wrong-final';
     s8Done = true;
-    s8LockOptions();
+    s8LockButtons();
     s8ShowFeedback('wrong2', false);
     q1SectionDone('c', 'fail');
     updateQuestionNav2('s8');
@@ -1258,16 +1258,16 @@ function s8Check() {
   }
 }
 
-function s8LockOptions() {
-  document.querySelectorAll('#s8 .scq-opt').forEach(function (el) {
-    el.classList.add('disabled');
-    el.onclick = null;
+function s8LockButtons() {
+  ['true', 'false'].forEach(function (v) {
+    const btn = s8BtnEl(v);
+    if (btn) btn.disabled = true;
   });
 }
-function s8UnlockOptions() {
-  document.querySelectorAll('#s8 .scq-opt').forEach(function (el) {
-    el.classList.remove('disabled');
-    el.onclick = function () { s8Select(el.dataset.id); };
+function s8UnlockButtons() {
+  ['true', 'false'].forEach(function (v) {
+    const btn = s8BtnEl(v);
+    if (btn) btn.disabled = false;
   });
 }
 
@@ -1286,10 +1286,10 @@ function resetScreenState8() {
   s8Selected = null;
   s8Attempts = 0;
   s8Phase = 'before';
-  s8UnlockOptions();
-  document.querySelectorAll('#s8 .scq-opt').forEach(function (el) {
-    el.classList.remove('selected', 'wrong', 'correct');
-    el.setAttribute('aria-checked', 'false');
+  s8UnlockButtons();
+  ['true', 'false'].forEach(function (v) {
+    const btn = s8BtnEl(v);
+    if (btn) btn.classList.remove('selected', 'btn-correct', 'btn-wrong');
   });
   document.getElementById('s8-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s8-check');
@@ -1301,15 +1301,6 @@ function resetScreenState8() {
   hintBtn.disabled = false;
   document.getElementById('s8-hint-overlay').hidden = true;
 }
-
-document.querySelectorAll('#s8 .scq-opt').forEach(function (opt) {
-  opt.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      s8Select(opt.dataset.id);
-    }
-  });
-});
 
 /* =========================================================
    מסך 10 — שאלה 1/2, סעיף ד (האחרון): SCQ בלי תמונה. שוכפל ממסך 20

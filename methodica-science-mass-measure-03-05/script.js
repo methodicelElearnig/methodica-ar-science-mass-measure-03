@@ -294,9 +294,10 @@ function resetScreenState1() {
   document.getElementById('s1-finish-weighing').disabled = false;
   document.getElementById('s1-continue').disabled = true;
   const scrollArea = document.getElementById('s1-scroll-area');
-  if (scrollArea) scrollArea.scrollTop = 0;
-  s1InitScrollJump();
-  s1CurrentPage = 0;
+  if (scrollArea) {
+    scrollArea.scrollTop = 0;
+    initScrollbarHoverCursor(scrollArea);
+  }
   s1Sim.reset();
 }
 
@@ -305,8 +306,8 @@ function resetScreenState1() {
    the grab cursor covering the entire screen was confusing). Toggles `.near-scrollbar` on `el` based
    on how close the mouse is to its right edge (where the scrollbar physically sits, since these
    containers force direction:ltr — see CLAUDE.md). thresholdPx is generous on purpose (wider than the
-   8px scrollbar itself) so it's easy to hit without pixel-perfect aim. Shared by both #s1-scroll-area
-   and #s4-scroll-area. */
+   8px scrollbar itself) so it's easy to hit without pixel-perfect aim. #s1-scroll-area is the only
+   scroll container left in this project (2026-09-17: #s4-scroll-area was removed — see resetScreenState4). */
 function initScrollbarHoverCursor(el, thresholdPx) {
   if (!el || el.dataset.scrollbarCursorInit) return;
   el.dataset.scrollbarCursorInit = 'true';
@@ -317,37 +318,6 @@ function initScrollbarHoverCursor(el, thresholdPx) {
     el.classList.toggle('near-scrollbar', distFromRight >= 0 && distFromRight <= threshold);
   });
   el.addEventListener('mouseleave', function () { el.classList.remove('near-scrollbar'); });
-}
-
-/* אפקט "קפיצת עמוד" — הועתק מאותו מקור ששימש בכל מסכי הגלילה בפרויקט */
-let s1CurrentPage = 0;
-let s1Jumping = false;
-
-function s1GoToPage(index) {
-  const pages = document.querySelectorAll('#s1-scroll-area .tbl-page');
-  if (index < 0 || index >= pages.length || s1Jumping || index === s1CurrentPage) return;
-  s1Jumping = true;
-  s1CurrentPage = index;
-  document.getElementById('s1-scroll-area').scrollTo({ top: pages[index].offsetTop, behavior: 'smooth' });
-  setTimeout(function () { s1Jumping = false; }, 500);
-}
-
-function s1InitScrollJump() {
-  const scrollArea = document.getElementById('s1-scroll-area');
-  if (!scrollArea || scrollArea.dataset.jumpInit) return;
-  scrollArea.dataset.jumpInit = 'true';
-  initScrollbarHoverCursor(scrollArea);
-
-  scrollArea.addEventListener('wheel', function (e) {
-    e.preventDefault();
-    if (s1Jumping || e.deltaY === 0) return;
-    s1GoToPage(s1CurrentPage + (e.deltaY > 0 ? 1 : -1));
-  }, { passive: false });
-
-  scrollArea.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); s1GoToPage(s1CurrentPage + 1); }
-    if (e.key === 'ArrowUp' || e.key === 'PageUp') { e.preventDefault(); s1GoToPage(s1CurrentPage - 1); }
-  });
 }
 
 /* =========================================================
@@ -457,12 +427,35 @@ function makeSingleScaleSimulation(cfg) {
 
   necklaceEl.addEventListener('pointerdown', onPointerDown);
 
+  /* Gesture hint (2026-09-17, client request): same hand+rings effect already used for the
+     draggable block in Sain 1 (.dq-sim-block, makeScaleSimulation's showBlockGestureHint()) —
+     not the generic showDragGestureHint() elsewhere in this file, which offsets past a text
+     LABEL's edge; the necklace is a plain image with no label, so it stays dead-center via the
+     shared CSS's own left:50%/top:50% default, exactly like Sain 1's block. */
+  function showNecklaceGestureHint() {
+    if (necklaceEl.dataset.gestureShown) return;
+    necklaceEl.dataset.gestureShown = 'true';
+    const hint = document.createElement('div');
+    hint.className = 'gesture-hint';
+    hint.innerHTML =
+      '<div class="gesture-hint-ring gesture-hint-ring--drag-big"></div>' +
+      '<div class="gesture-hint-ring gesture-hint-ring--drag-small"></div>' +
+      '<img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">';
+    necklaceEl.appendChild(hint);
+    function dismiss() {
+      hint.remove();
+      necklaceEl.removeEventListener('pointerdown', dismiss);
+    }
+    necklaceEl.addEventListener('pointerdown', dismiss);
+  }
+
   function reset() {
     cancelAnim();
     state.x = S1_SIM_NECKLACE_IDLE.x; state.y = S1_SIM_NECKLACE_IDLE.y;
     state.placed = false; state.dragging = false; state.measureIndex = 0;
     renderNecklace();
     renderLcd(0);
+    showNecklaceGestureHint();
   }
 
   reset();
@@ -781,16 +774,12 @@ document.querySelectorAll('#s3 .scq-opt').forEach(function (opt) {
 });
 
 /* =========================================================
-   מסך 5 — סעיף ג. חלק 1 = תמונה+בועה (לפי פיגמה, ראו
-   index.html/styles.css/ARCHITECTURE.md). חלק 2 = שאלת גרירה
+   מסך 5 — סעיף ג. תמונה+בועה בעמודה השמאלית, כותרת+טקסט+שאלת גרירה
    (makeDragQuestion factory, זהה לזה שכבר קיים בסיין 3, הועתק לכאן
-   כי כל סיין עצמאי בפני עצמו — אין script.js משותף בין הסינים).
-   עודכן (2026-09-08, בקשה מפורשת): בוטלה הגלילה/מנגנון ה"עמודים"
-   שהיה כאן — מסך סטטי אחד עכשיו, בלי s4GoToPage/s4InitScrollJump.
-   הגלילה הטבעית הוחזרה בהמשך אותו יום (התוכן המשולב גבוה מהמסך),
-   ואיתה גם רמז-היד לגלילה (s4MaybeShowScrollGesture, ראו למטה) — לפי
-   אותה מוסכמה כמו s1MaybeShowScrollGesture למעלה: כל מסך גלילה חייב
-   רמז-יד.
+   כי כל סיין עצמאי בפני עצמו — אין script.js משותף בין הסינים)
+   בעמודה הימנית. עודכן (2026-09-17, בקשה מפורשת): הוחלף לגמרי
+   ל-.scq-question/.scq-content הרגילים (ראו index.html/styles.css) —
+   בלי גלילה כלל יותר, לא נדרשת בפריסת שתי-העמודות הזו.
    סעיף ג הוא הסעיף האחרון של מועד א — בסיומו מתבצעת בדיקת
    moedAFullyPassed() (4 חלקים) והניתוב בהתאם.
    ========================================================= */
@@ -1265,7 +1254,6 @@ const TEXTS_S4_DQ = {
 const dqSectionG = makeDragQuestion({
   prefix: 's4',
   screenSelector: '#s4',
-  panelId: 's4-scroll-area',
   checkBtnId: 's4-check',
   hintBtnId: 's4-hint',
   hintOverlayId: 's4-hint-overlay',
@@ -1296,30 +1284,8 @@ const dqSectionG = makeDragQuestion({
   texts: TEXTS_S4_DQ
 });
 
-/* Gesture Hint — Cursor Scroll (SELF-QA.md §7). Same pattern as s1MaybeShowScrollGesture above —
-   every scroll screen in this family must show this once. Added back 2026-09-08 alongside the
-   scroll capability itself (had been dropped by mistake when the old scroll-snap "pages" mechanism
-   was removed). */
-let s4ScrollGestureShown = false;
-function s4MaybeShowScrollGesture() {
-  if (s4ScrollGestureShown) return;
-  s4ScrollGestureShown = true;
-  const gesture = document.getElementById('s4-scroll-gesture');
-  const scrollArea = document.getElementById('s4-scroll-area');
-  if (!gesture || !scrollArea) return;
-  gesture.hidden = false;
-  function dismiss() {
-    gesture.hidden = true;
-    scrollArea.removeEventListener('wheel', dismiss);
-    scrollArea.removeEventListener('keydown', dismiss);
-  }
-  scrollArea.addEventListener('wheel', dismiss);
-  scrollArea.addEventListener('keydown', dismiss);
-}
-
 function resetScreenState4() {
   dqSectionG.reset();
-  s4MaybeShowScrollGesture();
 }
 
 document.getElementById('s4-hint-overlay').addEventListener('click', function (e) {

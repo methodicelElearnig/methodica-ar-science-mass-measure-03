@@ -188,114 +188,29 @@ img { display: block; max-width: none; }
 }
 .transition-title-block { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 810px; direction: rtl; }
 .transition-title { font-family: 'Assistant', sans-serif; font-size: 40px; font-weight: 700; color: #303030; text-align: center; line-height: 1.3; }
-.transition-sub { font-family: 'Assistant', sans-serif; font-size: 26px; font-weight: 400; color: #303030; text-align: center; line-height: 1.5; }
+.transition-sub { font-family: 'Assistant', sans-serif; font-size: 28px; font-weight: 400; color: #303030; text-align: center; line-height: 1.5; }
 .transition-avatar-wrap { position: relative; width: 304px; flex-shrink: 0; }
 .transition-avatar { width: 304px; aspect-ratio: 304 / 293; object-fit: cover; display: block; border-radius: 16px; }
 
 /* ════════════════════════════════════════════════════════
-   מסך 2 — מסך גלילה, 5 סקשנים. .tbl-content/.tbl-page/.tbl-table
-   הועתקו מסיין 5 (אותו אפקט "קפיצת עמוד").
+   מסכים 2-5 — עודכן (2026-09-17, בקשה מפורשת): פוצלו ממסך-גלילה יחיד
+   בעל 5 סקשנים (.tbl-content/.tbl-page, אפקט "קפיצת עמוד") למסכים
+   עצמאיים, בלי גלילה כלל. כל מנגנון הגלילה/הסקרולבר-המדומה/רמז-היד
+   שהיה כאן הוסר (היה קיים רק בשביל המסך-רב-הסקשנים שכבר לא קיים).
+   139px הוא המרווח הסטנדרטי מתחת לכפתור "מצאתם בעיה?" (.flag-btn),
+   40px המרווח הסטנדרטי מהקנבס — אותה מוסכמה כמו כל מסך רגיל בפרויקט.
    ════════════════════════════════════════════════════════ */
-.tbl-content {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 74px;
-  /* top overridden to 139px below (.tbl-content.s6-scroll-area) — see that rule's comment for why
-     the clearance moved here instead of living on every .tbl-page. */
-  /* left/right עברו מ-position ל-padding, כדי שפס הגלילה יישב צמוד
-     לקנבס (לא במרווח 40px) — תוקן בכל מסכי הגלילה בפרויקט (1/4/5/6)
-     לפי בקשת המשתמשת. תוכן פנימי נשאר באותו מרווח, כי הפדינג מפצה
-     על ההסטה. */
-  padding-left: 40px; padding-right: 40px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* scroll-snap-type/scroll-snap-align/scroll-snap-stop removed (2026-09-08, client feedback:
-     "הסקרול באר ארוך בצורה לא תקינה", same root cause as Sain 5 screen 5 before its fix) —
-     .tbl-page's forced min-height:100% inflated the real scrollHeight far past the actual (much
-     shorter) content of each of the 5 sections, making the scrollbar thumb tiny relative to an
-     oversized track. Converted to normal continuous flow like the rest of the family; the shared
-     bottom action bar now tracks which section is in view via scroll position instead of a
-     discrete page index (see s1UpdateCurrentPageFromScroll() in script.js). */
-  /* dir="rtl" (inherited from <html>) makes the browser render the native vertical scrollbar
-     on the LEFT. Force ltr here so the scrollbar sits on the right (product requirement), and
-     restore true rtl for all actual content via .tbl-content-inner below. */
-  direction: ltr;
-}
-/* SELF-QA.md §7 "Cursor shape": scrollable containers show a hand-shaped cursor on hover —
-   ported from Sain 1. Updated 2026-09-08: scoped to just the scrollbar strip instead of the whole
-   content box (client feedback — the hand cursor covering the entire screen, far from the actual
-   scrollbar, was confusing). `.near-scrollbar` is toggled by JS (initScrollbarHoverCursor in
-   script.js) based on mouse distance from the container's right edge, where the scrollbar sits. */
-.tbl-content.near-scrollbar { cursor: grab; }
-/* Figma source of truth: node 1723:43076 ("scrolling"), file eSbp4bKHgBky0rakDb8l9N — width 12px,
-   track rgba(201,206,216,0.4) + 0.5px solid #f3f4f5 border, thumb rgba(0,0,0,0.56).
-   REWRITTEN 2026-09-09: the "cover every -button sub-selector" approach above was STILL not enough —
-   verified live (real headless Chrome, pixel-sampled) that the up/down arrows render regardless,
-   even with !important and a full reload. Current Chrome does not let you keep a styled native
-   scrollbar without its arrow buttons at all anymore; only hiding the ENTIRE native scrollbar works.
-   So the container hides its native scrollbar completely and gets a JS-driven fake scrollbar instead
-   (initFakeScrollbar() in script.js) — a real div-based track+thumb, draggable, synced to scroll
-   position, with no arrow buttons because there's nothing native left to render them. */
-.native-scrollbar-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
-.native-scrollbar-hidden { scrollbar-width: none; }
-.fake-scrollbar-track {
-  position: absolute;
-  width: 12px;
-  background: rgba(201, 206, 216, 0.4);
-  border: 0.5px solid #f3f4f5;
-  border-radius: 16px;
-  z-index: 5;
-}
-.fake-scrollbar-thumb {
-  position: absolute;
-  left: 0;
-  width: 12px;
-  background: rgba(0, 0, 0, 0.56);
-  border-radius: 24px;
-  cursor: grab;
-}
-.fake-scrollbar-thumb:active { cursor: grabbing; }
-/* עוטף את כל התוכן האמיתי של .tbl-content ומחזיר rtl אמיתי (ה-ltr
-   למעלה משמש רק כדי להזיז את פס הגלילה הטבעי לימין). height:100%
-   כי .tbl-page (הילד היחיד כאן) נשען על min-height:100% מול תיבת
-   ההורה שלו. */
-.tbl-content-inner { direction: rtl; height: 100%; }
-/* #s6-scroll-area הוא ה-.tbl-content היחיד בפרויקט הזה, ו-.tbl-page
-   כבר מספק לבד את המרווח מהקנבס (padding-right:40/left:24 למטה) —
-   בלי האיפוס הזה נוצר padding כפול (40 מכאן + 40 מ-.tbl-page = 80),
-   שדחף את כל התוכן ל-right:1200 במקום ה-right:1240 הסטנדרטי (זהה
-   לבאג שתוקן בסיין 5, .s4-scroll-area). */
-#s6-scroll-area { padding-left: 0; padding-right: 0; }
-/* מרווח 139px (המוסכמה הסטנדרטית של "כפתור מצאתם בעיה?"/.flag-btn) הועבר
-   מ-padding-top על כל .tbl-page (כפי שהיה קודם) אל הקונטיינר עצמו — בדיוק
-   כמו .tbl-content.s4-scroll-area בסיין 5 (מסך 5, אחרי התיקון שם). כשה-139px
-   חי על כל סקשן בנפרד, המרווח הזה נספר שוב ושוב בכל מעבר בין סקשנים בזרימה
-   רגילה (32px padding-bottom של סקשן קודם + 139px padding-top של הסקשן הבא
-   = כ-171px "מת" — בדיוק המרווח הכתום שהמשתמשת סימנה כבעיה, 2026-09-10),
-   למרות שהוא נחוץ בפועל רק פעם אחת: לוודא שתוכן שקופץ לראש חלון-הגלילה
-   (s1GoToPage) לא נתקע מתחת לכפתור הדגל, ללא קשר לאיזה סקשן זה. הזזת ההסט
-   לקונטיינר פותרת את זה מבנית פעם אחת לכל הסקשנים גם יחד — לא משנה את
-   scrollTop/offsetTop הפנימיים (אלה יחסיים לתיבת-התוכן של הקונטיינר עצמו,
-   לא למיקומו המוחלט על המסך), רק את מיקום כל תיבת-הגלילה על המסך. */
-.tbl-content.s6-scroll-area { top: 139px; }
-.tbl-page {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* RTL column: flex-start = physical right */
-  gap: 20px;
-  padding: 24px 40px 32px 24px;
-}
-.tbl-page-header { display: flex; flex-direction: column; gap: 16px; width: 100%; }
 .tbl-table { width: 100%; max-width: 900px; border-collapse: collapse; direction: rtl; text-align: center; flex-shrink: 0; }
 .tbl-th { background: #D4F3FF; border: 1px solid #D4D4D4; font-size: 22px; font-weight: 700; color: #303030; padding: 6px 12px; white-space: nowrap; }
 .tbl-td { border: 1px solid #D4D4D4; font-size: 22px; font-weight: 400; color: #303030; padding: 6px 12px; white-space: nowrap; background: #fff; }
 .tbl-table tbody tr:nth-child(even) .tbl-td { background: #D4F3FF; }
 
-/* --- סקשן 1 — טקסט + תמונה (שוכפל ממסך 2, "הידעת?") ---
+/* --- מסך 2 — סקשן 1: טקסט + תמונה (שוכפל ממסך 2, "הידעת?") ---
    שורת flex אמיתית ב-RTL (בלי טריק direction:ltr — לא בין 2 החריגים
    המאושרים): תוכן ראשון ב-DOM = ימין פיזי, תמונה שנייה = שמאל פיזי,
    תואם למקור (שם image ראשון תחת direction:ltr = שמאל פיזי). */
 .s6-textimg-row { display: flex; flex-direction: row; align-items: flex-start; gap: 16px; width: 100%; }
+.s1-content { position: absolute; top: 139px; left: 40px; right: 40px; }
 .s6-textimg-content { direction: rtl; display: flex; flex-direction: column; gap: 24px; flex: 1; }
 .s6-textimg-title { font-size: 24px; font-weight: 700; color: #303030; text-align: right; margin: 0; }
 .s6-textimg-body { display: flex; flex-direction: column; gap: 24px; }
@@ -305,13 +220,26 @@ img { display: block; max-width: none; }
   border-radius: 16px; object-fit: cover;
 }
 
-/* --- סקשן 2 — טבלה (שוכפל ממסך 5, "מי יזכה במכרז?") --- */
+/* --- מסך 3 — הקדמה (כותרת כחולה + 2 משפטים) + סעיף א ---
+   עודכן (2026-09-17, בקשה מפורשת): הטבלה (.scq-table-wrap) עברה
+   להיות עמודה נפרדת ב-.s2-page עצמו (שורת flex, לא עמודה) — כדי
+   שהטבלה תהיה מיושרת לקו העליון בדיוק כמו הכותרת הכחולה (שתיהן
+   align-items:flex-start ב-.s2-page), במקום לשבת בתוך .s6-scq-row
+   ולהתחיל רק אחרי כל בלוק ההקדמה. .s2-text-col עוטף את ההקדמה+השאלה
+   יחד בעמודה אחת (flex:1/min-width:0, כדי שיתכווץ נכון לרוחב הזמין
+   ליד עמודת הטבלה הקבועה 600px), פיזית בצד ימין (RTL, ילד ראשון);
+   הטבלה פיזית בצד שמאל (ילד שני) — אותו מיקום פיזי שהיה לה קודם
+   בתוך .s6-scq-row, רק גבוה יותר. */
+.s2-page { position: absolute; top: 139px; left: 40px; right: 40px; display: flex; flex-direction: row; align-items: flex-start; gap: 16px; direction: rtl; }
+.s2-text-col { display: flex; flex-direction: column; gap: 24px; flex: 1; min-width: 0; }
+.s2-intro { display: flex; flex-direction: column; gap: 16px; width: 100%; }
 .s6-table-title { font-size: 24px; font-weight: 700; color: var(--subject-500); text-align: right; margin: 0; }
 
-/* --- סקשנים 3-4 — SCQ + טבלה ליד המסיחים (סעיפים א/ב) ---
+/* --- מסכים 3-4 — SCQ + טבלה ליד המסיחים (סעיפים א/ב) ---
    שורת flex אמיתית ב-RTL: תוכן השאלה ראשון (ימין פיזי), עמודת הטבלה
    שנייה (שמאל פיזי, כמו .scq-img בסיין 5) — בלי טריק direction:ltr. */
 .s6-scq-row { display: flex; flex-direction: row; align-items: flex-start; gap: 16px; width: 100%; }
+.s3-content { position: absolute; top: 139px; left: 40px; right: 40px; }
 .scq-content { direction: rtl; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; flex: 1; min-width: 0; }
 .scq-qtext { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 100%; max-width: 792px; }
 .scq-qtitle { font-weight: 700; font-size: 24px; color: var(--subject-500); text-align: right; width: 100%; }
@@ -341,9 +269,10 @@ img { display: block; max-width: none; }
 .scq-table-wrap .tbl-table--compact .tbl-td { font-size: 22px; padding: 3px 5px; white-space: normal; overflow-wrap: break-word; }
 
 /* ════════════════════════════════════════════════════════
-   סקשן 5 — סעיף ג: שאלת גרירה (makeDragQuestion factory), רכיבי
+   מסך 5 — סעיף ג: שאלת גרירה (makeDragQuestion factory), רכיבי
    dq-* — הועתקו מסיין 5 (שם הועתקו במקור מסיין 3), גנריים/לא-scoped.
    ════════════════════════════════════════════════════════ */
+.s4-content { position: absolute; top: 139px; left: 40px; right: 40px; display: flex; flex-direction: column; gap: 20px; }
 .dq-instruction-bold {
   font-size: 24px; font-weight: 700; color: #303030;
   direction: rtl; text-align: right; width: 100%;
@@ -400,16 +329,10 @@ img { display: block; max-width: none; }
 .dq-drag-card.ghost { color: transparent; background: #f3f4f5; border: 1px solid rgba(174,174,174,0.3); pointer-events: none; }
 .dq-drag-card.locked { cursor: default; }
 
-/* Gesture Hint — Cursor Scroll + Cursor Drag (SELF-QA.md §7, Figma nodes 2915:35184/2915:35185).
-   Ported from Sain 1 (methodica-science-mass-measure-03-01, which this family's SELF-QA.md
-   governs) — missed here in the first pass. */
-.gesture-hint-scroll-wrap {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 74px;
-  pointer-events: none;
-  z-index: 20;
-}
-.gesture-hint-scroll-wrap[hidden] { display: none; }
+/* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
+   (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in
+   the first pass. עודכן (2026-09-17): גרסת "Cursor Scroll" (.gesture-hint-scroll-wrap ומשתני
+   הטבעת --big/--small שלה) הוסרה — לא נותר בפרויקט הזה אף מסך גלילה שצריך אותה. */
 .gesture-hint {
   position: absolute;
   left: 50%; top: 50%;
@@ -417,11 +340,6 @@ img { display: block; max-width: none; }
   width: 0; height: 0;
   pointer-events: none;
 }
-/* 2026-09-08: horizontal anchor moved from center (left:50%, the base .gesture-hint rule) to the
-   scroll container's right edge, where the native scrollbar physically sits (these containers force
-   direction:ltr — see CLAUDE.md). Client feedback: the hand must sit ON the scrollbar itself, not
-   floating in the middle of the content. */
-.gesture-hint-scroll-wrap .gesture-hint { top: 62%; left: auto; right: 10px; }
 .gesture-hint-hand,
 .gesture-hint-ring {
   position: absolute;
@@ -432,19 +350,6 @@ img { display: block; max-width: none; }
 .gesture-hint-ring {
   border-radius: 50%;
   opacity: 0;
-}
-.gesture-hint-ring--small {
-  width: 12px; height: 12px;
-  border: 1.5px solid #B0DFFF;
-  z-index: 2;
-  animation: gesture-ring-small 2s infinite;
-}
-.gesture-hint-ring--big {
-  width: 64px; height: 64px;
-  background: #B0DFFF;
-  border: 2.5px solid #00BAFF;
-  z-index: 1;
-  animation: gesture-ring-big 2s infinite;
 }
 .gesture-hint-ring--drag-big {
   width: 42px; height: 43px;

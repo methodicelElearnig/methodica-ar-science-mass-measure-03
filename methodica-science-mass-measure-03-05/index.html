@@ -85,7 +85,9 @@
           </div>
         </div>
         <div class="dq-sim-dropzone" id="s1-sim-dropzone"></div>
-        <img class="dq-sim-necklace" id="s1-sim-necklace" src="weighting-application/gold-necklace.png" alt="שרשרת זהב">
+        <div class="dq-sim-necklace" id="s1-sim-necklace">
+          <img src="weighting-application/gold-necklace.png" alt="שרשרת זהב" draggable="false">
+        </div>
       </div>
     </div>
 
@@ -95,9 +97,9 @@
       <!-- ===== עמוד 1 — תיאור התרחיש ===== -->
       <section class="tbl-page">
         <div class="tbl-page-header">
-          <p class="scq-qbody">מפעל תכשיטי זהב פיתח מאזניים חדשים לבקרת איכות.<br><br>המאזניים מסייעים לעובדות ועובדי המפעל לקבוע את מסת תליון הזהב בדיוק גבוה ככל האפשר.<br><br>
+          <p class="scq-qbody">מפעל תכשיטי זהב פיתח מאזניים חדשים לבקרת איכות.<br>המאזניים מסייעים לעובדות ועובדי המפעל לקבוע את מסת התכשיטים בדיוק גבוה ככל האפשר.<br>
             
-           הניחו את השרשרת על המאזניים כדי למדוד את המסה. הסירו אותה והניחו אותה שוב לפי הצורך.<br><br>
+           הניחו את השרשרת על המאזניים כדי למדוד את המסה. הסירו אותה והניחו אותה שוב לפי הצורך.<br>
             לאחר כל מדידת מסה היישומון:</p>
           <ul class="s1-app-behavior-list">
             <li>
@@ -286,7 +288,7 @@
         <div class="scq-qtext">
           <div class="scq-qtext-body">
             <p class="scq-qtitle">סעיף ב</p>
-            <p class="scq-qbody">קראו את הטענה של אחד העובדים במפעל.<br>האם הוא צודק?</p>
+            <p class="scq-qbody">קראו את הטענה של אחד העובדים במפעל.<br><b>האם הוא צודק?</b></p>
           </div>
         </div>
         <div class="scq-answers" role="radiogroup" aria-label="אפשרויות תשובה">
@@ -333,46 +335,43 @@
     </div>
   </section>
 
-  <!-- ============ מסך 5 — סעיף ג: מסך גלילה — תמונה+בועה (למעלה) + שאלת גרירה (למטה) ============
-       עמוד עליון (לפני הגלילה): מקור אמת — פיגמה (fileKey
-       Z9sD0kksYj1Ph1kUcs71sw, node 2312:12312, "לומדת התנסות"),
-       לפי בקשת המשתמשת המפורשת "פיגמה הוא SOURCE OF TRUTH". מיקומים
-       הועתקו 1:1 מ-get_metadata/get_design_context (קנבס הפיגמה עצמו
-       1280×710 — זהה לקנבס שלנו, בלי צורך בסקאלה): כותרת+טקסט
-       right:40px/top:71px, קבוצת בועה+תמונה left:138px/top:292px.
-       תמונה: הפיגמה עצמה מציגה placeholder אפור (rgba(201,206,216,0.4),
-       330×274px) בלי תמונה אמיתית — מומש כפי שהוא (ראו ARCHITECTURE.md,
-       ממתין לתמונה אמיתית של מוריה). בועת דיבור: CSS (זנב פונה ימינה
-       לעבר התמונה), אותה טכניקה כמו .s18-bubble--tail-right בסיין 1.
-       עמוד תחתון (אחרי הגלילה): שאלת גרירה להשלמת משפט ממחסן מילים
-       (6 מקומות, 9 קלפים — 6 נכונים+3 מסיחים), הועתקה ממסך 4 של
-       Methodica-science-mass-measure-02-06 (makeDragQuestion factory,
-       זהה למנגנון שכבר קיים בסיין 3 כאן) — **בלי** תג "חלק X"
-       (.dq-part-badge), לפי בקשה מפורשת. תוכן: תסריט הפקה, שקפים
-       145-150. correctMap: 4/ממוצע/התייצב/3/אי-ודאות/אמינה. תיקון
-       כתיב: "התשבה"←"התשובה" (שקף 147). **בלי qnav**. מסך זה הוא הסעיף
-       האחרון של מועד א' — בסיומו מתבצעת בדיקת moedAFullyPassed() (כעת
-       4 חלקים: היישומון+א+ב+ג) והניתוב בהתאם (ראו script.js). -->
+  <!-- ============ מסך 5 — סעיף ג: תמונה+בועה (שמאל) + שאלת גרירה (ימין) ============
+       עודכן (2026-09-17, בקשה מפורשת): נבנה מחדש בפריסת "שאלה עם תמונה
+       מלווה" הרגילה של הפרויקט — אותם class-ים בדיוק כמו מסך 4 (סעיף ב,
+       id="s3"): .scq-question (שורת flex, direction:ltr) > .scq-img
+       -bubble-wrap (עמודה פיזית-שמאלית: .s3-bubble מעל .scq-img, כולל
+       img-zoom-btn — לא היה קודם) + .scq-content (עמודה פיזית-ימנית:
+       כותרת+טקסט, ואז שאלת הגרירה). בוטל לגמרי מנגנון הגלילה
+       (.tbl-content/.tbl-page/#s4-scroll-gesture/s4MaybeShowScrollGesture)
+       — התוכן המשולב נכנס בלי גלילה בפריסת שתי-העמודות הזו, בדיוק כמו
+       שאר מסכי ה-SCQ עם תמונה בפרויקט. תוכן/לוגיקת השאלה (שאלת גרירה,
+       makeDragQuestion factory, correctMap) ללא שינוי — ראו
+       ARCHITECTURE.md לפירוט המקורי (תוכן: תסריט הפקה, שקפים 145-150).
+       מסך זה הוא הסעיף האחרון של מועד א' — בסיומו מתבצעת בדיקת
+       moedAFullyPassed() (4 חלקים: היישומון+א+ב+ג) והניתוב בהתאם (ראו
+       script.js). -->
   <section class="screen" data-screen="4" id="s4">
-    <div class="tbl-content s4-scroll-area" id="s4-scroll-area" tabindex="0">
-     <div class="tbl-content-inner">
-
-      <!-- ===== חלק 1 — תמונה+בועה ===== -->
-      <section class="tbl-page">
-        <div class="tbl-page-header">
-          <p class="s4-title">סעיף ג</p>
-          <p class="s4-body">מוריה, מנהלת המפעל מבקשת את המלצתכם:</p>
+    <div class="scq-question">
+      <div class="scq-img-bubble-wrap">
+        <div class="s3-bubble">
+          <p>תוכלו בבקשה להמליץ לי כמה מדידות לבצע לכל תליון כדי להשיג איזון בין דיוק מדעי והשקעת זמן במדידות?</p>
         </div>
-        <div class="s4-visual-group">
-          <img class="s4-img-placeholder" src="assets/images/screen05-woman-setting.jpg" alt="מוריה, מנהלת המפעל">
-          <div class="s4-bubble s4-bubble--tail-right">
-            <p>תוכלו בבקשה להמליץ לי כמה מדידות לבצע לכל תליון כדי להשיג איזון בין דיוק מדעי והשקעת זמן במדידות?</p>
-          </div>
+        <div class="scq-img"><div class="scq-img-inner">
+          <button class="img-zoom-btn" type="button" aria-label="הגדלת התמונה"
+                  data-zoom-src="assets/images/screen05-woman-setting.jpg" data-zoom-alt="מוריה, מנהלת המפעל">
+            <svg class="img-zoom-btn__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <img src="assets/images/screen05-woman-setting.jpg" alt="מוריה, מנהלת המפעל">
+        </div></div>
+      </div>
+      <div class="scq-content">
+        <div class="scq-qtext-body">
+          <p class="scq-qtitle">סעיף ג</p>
+          <p class="scq-qbody">מוריה, מנהלת המפעל מבקשת את המלצתכם:</p>
         </div>
-      </section>
-
-      <!-- ===== חלק 2 — שאלת גרירה: השלמת המלצה למוריה ===== -->
-      <section class="tbl-page">
         <div class="s4-dq-content">
           <p class="dq-instruction-bold">השלימו את ההמלצה למוריה בעזרת המילים המתאימות:</p>
 
@@ -402,19 +401,6 @@
             <div class="dq-source-slot" id="slot-s4-drag-shguya"></div>
           </div>
         </div>
-      </section>
-
-     </div>
-    </div>
-
-    <!-- Gesture Hint — Cursor Scroll (SELF-QA.md §7). Sibling of #s4-scroll-area, not a child, so it
-         stays fixed on screen instead of scrolling away. Shown once, hidden on real scroll — see
-         s4MaybeShowScrollGesture() in script.js. -->
-    <div class="gesture-hint-scroll-wrap" id="s4-scroll-gesture" hidden>
-      <div class="gesture-hint">
-        <div class="gesture-hint-ring gesture-hint-ring--big"></div>
-        <div class="gesture-hint-ring gesture-hint-ring--small"></div>
-        <img class="gesture-hint-hand" src="assets/images/gesture-hand-cursor.svg" alt="">
       </div>
     </div>
 
