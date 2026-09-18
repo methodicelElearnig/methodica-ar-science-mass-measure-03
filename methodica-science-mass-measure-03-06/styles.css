@@ -209,16 +209,21 @@ img { display: block; max-width: none; }
    שורת flex אמיתית ב-RTL (בלי טריק direction:ltr — לא בין 2 החריגים
    המאושרים): תוכן ראשון ב-DOM = ימין פיזי, תמונה שנייה = שמאל פיזי,
    תואם למקור (שם image ראשון תחת direction:ltr = שמאל פיזי). */
-.s6-textimg-row { display: flex; flex-direction: row; align-items: flex-start; gap: 16px; width: 100%; }
+.s6-textimg-row { display: flex; flex-direction: row; align-items: flex-start; gap: 16px; }
 .s1-content { position: absolute; top: 139px; left: 40px; right: 40px; }
-.s6-textimg-content { direction: rtl; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+.s6-textimg-content { direction: rtl; display: flex; flex-direction: column; gap: 24px; flex: 1; min-width: 0; }
 .s6-textimg-title { font-size: 24px; font-weight: 700; color: #303030; text-align: right; margin: 0; }
 .s6-textimg-body { display: flex; flex-direction: column; gap: 24px; }
 .s6-textimg-body p { font-size: 22px; font-weight: 400; color: #303030; text-align: right; line-height: 1.5; margin: 0; }
-.s6-textimg-img {
-  flex-shrink: 0; width: 380px; height: 380px;
-  border-radius: 16px; object-fit: cover;
+/* עודכן (2026-09-18, בקשה מפורשת): התמונה ממוקמת ובמסגרת בדיוק כמו
+   .scq-img/.scq-img-inner הרפרנס (סיין 4 מסך 2) — בלי כפתור הגדלה,
+   לפי בקשת הלקוח שאין צורך בהגדלה כאן. */
+.scq-img { flex-shrink: 0; width: 380px; height: 380px; padding: 8px; }
+.scq-img-inner {
+  position: relative; width: 100%; height: 100%; border: 1px solid rgba(174, 174, 174, 0.5);
+  border-radius: 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fff;
 }
+.scq-img-inner img { width: 100%; height: 100%; object-fit: cover; }
 
 /* --- מסך 3 — הקדמה (כותרת כחולה + 2 משפטים) + סעיף א ---
    עודכן (2026-09-17, בקשה מפורשת): הטבלה (.scq-table-wrap) עברה
@@ -237,9 +242,11 @@ img { display: block; max-width: none; }
 
 /* --- מסכים 3-4 — SCQ + טבלה ליד המסיחים (סעיפים א/ב) ---
    שורת flex אמיתית ב-RTL: תוכן השאלה ראשון (ימין פיזי), עמודת הטבלה
-   שנייה (שמאל פיזי, כמו .scq-img בסיין 5) — בלי טריק direction:ltr. */
-.s6-scq-row { display: flex; flex-direction: row; align-items: flex-start; gap: 16px; width: 100%; }
-.s3-content { position: absolute; top: 139px; left: 40px; right: 40px; }
+   שנייה (שמאל פיזי, כמו .scq-img בסיין 5) — בלי טריק direction:ltr.
+   עודכן (2026-09-18, בקשה מפורשת): מסך 4 (s3) עבר להשתמש באותם
+   מחלקות מבניות כמו מסך 3 (s2) — .s2-page/.s2-text-col — כדי
+   שמיקום הטבלה יהיה זהה בדיוק בין שני המסכים; .s6-scq-row/.s3-content
+   הוסרו (לא היה עוד שימוש בהם). */
 .scq-content { direction: rtl; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; flex: 1; min-width: 0; }
 .scq-qtext { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; width: 100%; max-width: 792px; }
 .scq-qtitle { font-weight: 700; font-size: 24px; color: var(--subject-500); text-align: right; width: 100%; }
