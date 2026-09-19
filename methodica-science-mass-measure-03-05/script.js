@@ -103,9 +103,12 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* resume: לצייר מסך שכבר נענה — בכל ניווט, לא רק בנחיתת השחזור. */
+  try { repaintScreen(n); } catch (e) { console.error('[resume] repaint', e); }
   /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
      עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
   try { xapiOnScreen(n); } catch (e) {}
+  try { scheduleResumeSave(); } catch (e) {}
   requestAnimationFrame(function () {
     target.querySelectorAll('.tbl-content').forEach(initFakeScrollbar);
   });
@@ -151,19 +154,26 @@ function resolveCharBubbleVideo(videoId, assetMap) {
    part1 הוא שלב איסוף נתונים מקדים, לא "סעיף" בפני עצמו.
    ========================================================= */
 
+/* ⚠️ עובר דרך setUnitResult ולא ישירות ל-localStorage.
+   s4SectionGDecision מנתב את הלומד על סמך התוצאות האלה, ו-localStorage אינו
+   עובר בין מכשירים — לומד שממשיך את אותו registration במחשב אחר היה קורא
+   null ונשלח למועד ב' שכבר עבר. setUnitResult כותב לשניהם: למסמך ה-state
+   (שמגיע מ-Kata לכל מכשיר) ולקאש המקומי הסינכרוני. */
 function saveMoedAResult(part, passed) {
-  try { localStorage.setItem('lomda_moedA_part' + part + '_result', passed ? 'pass' : 'fail'); } catch (e) {}
+  var key = 'lomda_moedA_part' + part + '_result';
+  if (typeof setUnitResult === 'function') { setUnitResult(key, passed ? 'pass' : 'fail'); return; }
+  try { localStorage.setItem(key, passed ? 'pass' : 'fail'); } catch (e) {}
+}
+
+/* קריאה תואמת: מסמך קודם, קאש מקומי כ-fallback. */
+function readMoedAResult(part) {
+  var key = 'lomda_moedA_part' + part + '_result';
+  if (typeof getUnitResult === 'function') return getUnitResult(key);
+  try { return localStorage.getItem(key); } catch (e) { return null; }
 }
 
 function moedAFullyPassed() {
-  let p1 = null, p2 = null, p3 = null, p4 = null;
-  try {
-    p1 = localStorage.getItem('lomda_moedA_part1_result');
-    p2 = localStorage.getItem('lomda_moedA_part2_result');
-    p3 = localStorage.getItem('lomda_moedA_part3_result');
-    p4 = localStorage.getItem('lomda_moedA_part4_result');
-  } catch (e) {}
-  return p1 === 'pass' && p2 === 'pass' && p3 === 'pass' && p4 === 'pass';
+  return [1, 2, 3, 4].every(function (n) { return readMoedAResult(n) === 'pass'; });
 }
 
 /* =========================================================
@@ -258,6 +268,7 @@ function s1FinishWeighing() {
      תשולב עם ולידציה אמיתית של הנתונים */
   saveMoedAResult(1, true);
   document.getElementById('s1-continue').disabled = false;
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s1Continue() { goTo(2); }
@@ -461,8 +472,24 @@ function makeSingleScaleSimulation(cfg) {
     showNecklaceGestureHint();
   }
 
+  /* resume: measureIndex הוא הסמן לתוך S1_SIM_VALUES. שחזור הטבלה בלעדיו
+     היה מגיש ללומד שוב את המדידה הראשונה — כלומר משבש את הנתונים שהוא
+     ממשיך לחשב מהם בסעיפים א/ב/ג. `dragging` לא נשמר: scratch של גרירה. */
+  function simGetState() {
+    return { x: state.x, y: state.y, placed: state.placed, measureIndex: state.measureIndex };
+  }
+  function simSetState(s) {
+    if (!s) return;
+    if (typeof s.x === 'number') state.x = s.x;
+    if (typeof s.y === 'number') state.y = s.y;
+    state.placed = !!s.placed;
+    state.measureIndex = s.measureIndex || 0;
+    state.dragging = false;
+    renderNecklace();
+  }
+
   reset();
-  return { reset: reset };
+  return { reset: reset, getState: simGetState, setState: simSetState };
 }
 
 const s1Sim = makeSingleScaleSimulation({ rootId: 's1-sim', values: S1_SIM_VALUES, hit: S1_SIM_HIT });
@@ -543,6 +570,7 @@ function s2Check() {
     s2ShowFeedback('correct', true);
     saveMoedAResult(2, true);
     s2SetBarDone('המשך', function () { goTo(3); });
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -568,6 +596,7 @@ function s2Check() {
     saveMoedAResult(2, false);
     s2SetBarDone('המשך', function () { goTo(3); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s2LockOptions() {
@@ -703,6 +732,7 @@ function s3Check() {
     s3ShowFeedback('correct', true);
     saveMoedAResult(3, true);
     s3SetBarDone('המשך');
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -728,6 +758,7 @@ function s3Check() {
     saveMoedAResult(3, false);
     s3SetBarDone('המשך');
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s3LockOptions() {
@@ -907,6 +938,9 @@ function makeDragQuestion(cfg) {
   let done = false;
   let answerSnapshot = null; // הפלייסמנט של הלומד ברגע הניסיון האחרון הכושל, לפני revealCorrect()
   let revealed = false;
+  /* resume: ⚠️ נשמר במפורש ואינו נגזר בדיעבד מ-placement — revealCorrect()
+     דורס אותו בפתרון הנכון, ומאותו רגע הלוח "נראה" נכון תמיד. */
+  let passed = false;
 
   function render() {
     dragIds.forEach(function (dragId) {
@@ -1063,6 +1097,8 @@ function makeDragQuestion(cfg) {
 
   function saveResult(passed) {
     if (!cfg.resultKey) return;
+    /* אותה סיבה כמו ב-saveMoedAResult: התוצאה הזאת משתתפת בניתוב. */
+    if (typeof setUnitResult === 'function') { setUnitResult(cfg.resultKey, passed ? 'pass' : 'fail'); return; }
     try { localStorage.setItem(cfg.resultKey, passed ? 'pass' : 'fail'); } catch (e) {}
   }
 
@@ -1123,15 +1159,19 @@ function makeDragQuestion(cfg) {
       });
     }
 
+    try { flushResumeSave(); } catch (e) {}
+
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
+      passed = true;
       saveResult(true);
       showFeedback('correct');
       if (cfg.onResult) cfg.onResult('success');
       if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
     } else if (attempts >= maxAttempts) {
       done = true;
+      passed = false;
       saveResult(false);
       if (cfg.revealBtnId) {
         answerSnapshot = Object.assign({}, placement); // לפני כל reveal
@@ -1190,7 +1230,7 @@ function makeDragQuestion(cfg) {
 
   function resetInitial() {
     done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
-    answerSnapshot = null; revealed = false;
+    answerSnapshot = null; revealed = false; passed = false;
     shuffleWordBank();
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
     targetIds.forEach(function (tId) {
@@ -1245,7 +1285,74 @@ function makeDragQuestion(cfg) {
   window[cfg.prefix + 'CloseHint'] = closeHint;
   window[cfg.prefix + 'ToggleReveal'] = toggleReveal;
 
-  return { reset: reset };
+  /* ── resume: שער מפורש למצב ה-closure ── */
+  function getState() {
+    var bankOrder = null;
+    if (cfg.wordBankId) {
+      var bank = document.getElementById(cfg.wordBankId);
+      if (bank) bankOrder = [].slice.call(bank.querySelectorAll('.dq-source-slot')).map(function (s) { return s.id; });
+    }
+    return {
+      placement: Object.assign({}, placement),
+      attempts: attempts, done: done, checked: checked, passed: passed, revealed: revealed,
+      answerSnapshot: answerSnapshot ? Object.assign({}, answerSnapshot) : null,
+      /* resetInitial() מערבב מחדש את מאגר המילים, ולכן בלי שמירת הסדר
+         הלומד היה חוזר ללוח מסודר אחרת. */
+      bankOrder: bankOrder
+    };
+  }
+
+  function setState(s) {
+    if (!s) return;
+    if (s.placement) dragIds.forEach(function (id) { placement[id] = s.placement[id] || 'source'; });
+    attempts = s.attempts || 0;
+    done = !!s.done; checked = !!s.checked; passed = !!s.passed; revealed = !!s.revealed;
+    answerSnapshot = s.answerSnapshot ? Object.assign({}, s.answerSnapshot) : null;
+    if (s.bankOrder && cfg.wordBankId) {
+      var bank = document.getElementById(cfg.wordBankId);
+      if (bank) s.bankOrder.forEach(function (slotId) {
+        var slot = document.getElementById(slotId);
+        if (slot) bank.appendChild(slot);
+      });
+    }
+    dragActive = null;
+    dropHandled = false;
+  }
+
+  /* מחקה את כתיבות ה-DOM של check() בלבד. */
+  function restoreUI() {
+    /* ⚠️ מסך נקי → render() בלבד, לעולם לא resetInitial(): הוא מאפס את
+       placement **וגם** מערבב מחדש את המאגר — בכל ניווט, לא רק בשחזור. */
+    if (!done && attempts === 0) { hideFeedback(); render(); return; }
+
+    targetIds.forEach(function (tId) {
+      const valid = correctMap[tId];
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      const ok = (placed === valid) || (placed && labels[placed] === labels[valid]);
+      const zone = document.getElementById(tId);
+      if (zone) { zone.classList.remove('correct', 'wrong'); zone.classList.add(ok ? 'correct' : 'wrong'); }
+    });
+
+    if (done) {
+      if (passed) showFeedback('correct');
+      else if (revealed) showFeedback('wrongFinal');
+      else showFeedback(cfg.revealBtnId ? 'pending' : 'wrongFinal');
+      restoreFinal();
+      return;
+    }
+
+    showFeedback('wrong1');
+    render();
+    if (cfg.hintBtnId) {
+      const hintBtn = document.getElementById(cfg.hintBtnId);
+      if (hintBtn) hintBtn.hidden = false;
+    }
+    const btn = document.getElementById(cfg.checkBtnId);
+    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+  }
+
+  return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
 }
 
 /* תוצאת הרכיב: שלושת הסעיפים א/ב/ג (חלקים 2/3/4), בדיוק מה שמסך 0 מבטיח —
@@ -1255,8 +1362,7 @@ function makeDragQuestion(cfg) {
 function moedAComponentResult() {
   let _n = 0;
   try {
-    _n = ['lomda_moedA_part2_result', 'lomda_moedA_part3_result', 'lomda_moedA_part4_result']
-      .filter(function (k) { return localStorage.getItem(k) === 'pass'; }).length;
+    _n = [2, 3, 4].filter(function (n) { return readMoedAResult(n) === 'pass'; }).length;
   } catch (e) {}
   return { success: moedAFullyPassed(), score: { scaled: _n / 3 } };
 }
@@ -1477,6 +1583,149 @@ scaleApp();
 scqFbMakeDraggable('s2-feedbox');
 scqFbMakeDraggable('s3-feedbox');
 scqFbMakeDraggable('s4-feedbox');
+
+/* ═══════════════════ resume — ארבעת ה-hooks של הסין ═══════════════════ */
+
+function capturePartPayload() {
+  var st = { currentScreen: currentScreen };
+  st.qResults = Object.assign({}, XAPI_Q_RESULTS);
+
+  /* מסך 1 — טבלת השקילה. השורות **מוזרקות** (resetScreenState1 ו-s1AddRow),
+     ולכן אחרי טעינת עמוד ה-tbody חוזר לברירת המחדל שב-markup וכל ערך
+     שהוקלד אבד. rowCount בונה מחדש את המבנה ו-cells ממלאים אותו;
+     הממוצעים **אינם** נשמרים — s1ComputeAverages גוזרת אותם מחדש. */
+  st.s1 = { rowCount: s1RowCount, finished: s1Finished, cells: [] };
+  document.querySelectorAll('#s1-table-body tr .tbl-input')
+    .forEach(function (i) { st.s1.cells.push(i.value); });
+  st.s1.sim = s1Sim.getState ? s1Sim.getState() : null;
+
+  st.scq = {
+    s2: { sel: s2Selected, att: s2Attempts, done: s2Done, phase: s2Phase },
+    s3: { sel: s3Selected, att: s3Attempts, done: s3Done, phase: s3Phase }
+  };
+  st.dqG = dqSectionG.getState();
+  return st;
+}
+
+function applyResumeVars(st) {
+  if (!st) return;
+  if (st.qResults) Object.keys(st.qResults).forEach(function (k) { XAPI_Q_RESULTS[k] = st.qResults[k]; });
+  if (st.s1) {
+    s1RowCount = st.s1.rowCount || 1;
+    s1Finished = !!st.s1.finished;
+    if (st.s1.sim && s1Sim.setState) s1Sim.setState(st.s1.sim);
+  }
+  if (st.scq) {
+    if (st.scq.s2) { s2Selected = st.scq.s2.sel || null; s2Attempts = st.scq.s2.att || 0; s2Done = !!st.scq.s2.done; s2Phase = st.scq.s2.phase || 'before'; }
+    if (st.scq.s3) { s3Selected = st.scq.s3.sel || null; s3Attempts = st.scq.s3.att || 0; s3Done = !!st.scq.s3.done; s3Phase = st.scq.s3.phase || 'before'; }
+  }
+  if (st.dqG) dqSectionG.setState(st.dqG);
+  /* הערכים של הטבלה נשמרים כאן ומוחלים ב-s1RestoreUI: אי אפשר לכתוב
+     ל-<input> שעוד לא נוצר, והשורות מוזרקות. */
+  __s1Cells = (st.s1 && st.s1.cells) ? st.s1.cells.slice() : null;
+}
+
+/* ⚠️ חריגה מכוונת מהכלל "ערכי DOM ב-applyResumeDom": שורות הטבלה עדיין לא
+   קיימות בשלב הזה. מילוי הערכים קורה ב-s1RestoreUI, אחרי הבנייה מחדש. */
+var __s1Cells = null;
+function applyResumeDom(st) {}
+
+function restoreScreenUI(n) {
+  try {
+    if (n === 1) s1RestoreUI();
+    if (n === 2) restoreScqUI({ screenSel: '#s2', cfg: S2, selected: s2Selected, attempts: s2Attempts,
+      done: s2Done, phase: s2Phase, optEl: s2OptEl, lock: s2LockOptions, showFeedback: s2ShowFeedback,
+      setBarDone: s2SetBarDone, check: s2Check, checkBtnId: 's2-check', hintBtnId: 's2-hint',
+      onContinue: function () { goTo(3); } });
+    if (n === 3) restoreScqUI({ screenSel: '#s3', cfg: S3, selected: s3Selected, attempts: s3Attempts,
+      done: s3Done, phase: s3Phase, optEl: s3OptEl, lock: s3LockOptions, showFeedback: s3ShowFeedback,
+      /* ⚠️ s3SetBarDone מקבל ארגומנט אחד בלבד (היעד שלו קבוע), בניגוד לכל
+         שאר sNSetBarDone בפרויקט — מתאם, אחרת המטפל היה נבלע. */
+      setBarDone: function (label, handler) { s3SetBarDone(label); },
+      check: s3Check, checkBtnId: 's3-check', hintBtnId: 's3-hint',
+      onContinue: function () {} });
+    if (n === 4) dqSectionG.restoreUI();
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* צייר חד-ברירה — זהה לזה שבסיין 4 ובסיין 2. */
+function restoreScqUI(o) {
+  if (!o.done && o.attempts === 0 && !o.selected) return;
+  if (o.done) {
+    if (o.phase === 'correct') {
+      var okEl = o.optEl(o.selected);
+      if (okEl) { okEl.classList.add('correct'); okEl.classList.remove('selected'); }
+      o.showFeedback('correct', true);
+    } else {
+      var badEl = o.optEl(o.selected);
+      if (badEl && o.selected !== o.cfg.correctId) { badEl.classList.add('wrong'); badEl.classList.remove('selected'); }
+      var corrEl = o.optEl(o.cfg.correctId);
+      if (corrEl) corrEl.classList.add('correct');
+      o.showFeedback('wrong2', false);
+    }
+    o.lock();
+    o.setBarDone('המשך', o.onContinue);
+    return;
+  }
+  var checkBtn = document.getElementById(o.checkBtnId);
+  if (o.phase === 'wrong1') {
+    var wEl = o.optEl(o.selected);
+    if (wEl) { wEl.classList.add('wrong'); wEl.classList.remove('selected'); }
+    o.showFeedback('wrong1', false);
+    var hintBtn = document.getElementById(o.hintBtnId);
+    if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
+    return;
+  }
+  var selEl = o.optEl(o.selected);
+  if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = !o.selected; }
+}
+
+/* מסך 1 — בונה מחדש את טבלת השקילה וממלא את הערכים שהוקלדו.
+   ⚠️ מתקן גם נעילה שקיימת בקוד ללא קשר ל-resume: resetScreenState1 יוצאת
+   מוקדם כש-s1Finished, ולכן לומד שסיים לשקול וריענן היה נוחת על טבלה ריקה
+   עם "המשך" מושבת — ובלי שום דרך להתקדם, כי s1FinishWeighing גם היא יוצאת
+   מוקדם ולא תפעיל אותו שוב. */
+function s1RestoreUI() {
+  var hasCells = __s1Cells && __s1Cells.some(function (v) { return v !== ''; });
+  if (!s1Finished && s1RowCount <= 1 && !hasCells) return;   /* מסך נקי */
+
+  var tbody = document.getElementById('s1-table-body');
+  if (!tbody) return;
+
+  /* אותה תבנית <tr> בדיוק כמו ב-resetScreenState1 / s1AddRow. */
+  var html = '';
+  for (var r = 1; r <= s1RowCount; r++) {
+    html += '<tr data-row="' + r + '">' +
+      '<td class="tbl-td"><span class="tbl-avg-display" id="s1-avg-' + r + '"></span></td>' +
+      '<td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="מסה בגרם, מדידה ' + r + '" oninput="s1OnCellInput()"></td>' +
+      '<td class="tbl-td">' + r + '</td>' +
+      '</tr>';
+  }
+  tbody.innerHTML = html;
+
+  if (__s1Cells) {
+    tbody.querySelectorAll('.tbl-input').forEach(function (input, i) {
+      if (typeof __s1Cells[i] === 'string') input.value = __s1Cells[i];
+    });
+  }
+  s1ComputeAverages();   /* עמודת הממוצע נגזרת, ולכן לא נשמרה */
+
+  var addBtn = document.getElementById('s1-add-row');
+  var finishBtn = document.getElementById('s1-finish-weighing');
+  var contBtn = document.getElementById('s1-continue');
+  if (s1Finished) {
+    tbody.querySelectorAll('.tbl-input').forEach(function (i) { i.disabled = true; });
+    if (addBtn) addBtn.disabled = true;
+    if (finishBtn) finishBtn.disabled = true;
+    if (contBtn) contBtn.disabled = false;   /* ← שחרור הנעילה */
+  } else {
+    if (addBtn) addBtn.disabled = (s1RowCount >= 7);
+    if (finishBtn) finishBtn.disabled = false;
+    if (contBtn) contBtn.disabled = true;
+  }
+}
 
 /* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
    נתונים בלבד. השכבה המשותפת ב-../unit-js/ קוראת אותם בזמן call. */
