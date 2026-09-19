@@ -809,18 +809,20 @@
   <!-- ============ מסך 13 — מסך מעבר: דמות + בועית דיבור (Transition) ============
        הועתק 1:1 ממסך 1 (data-screen="0", id="s0") של
        Methodica-science-mass-measure-02-02. תוכן: תסריט הפקה, שקף 33 —
-       "6 שאלות" ("6 שאלות" בגודל 40/700 בשקף, תואם ל-.transition-title;
-       שתי פסקאות מסביב הן .transition-sub). ⚠️ שימו לב: השקף אומר "6
-       שאלות" אבל משאיר את סף המעבר "4 שאלות (80%)" ללא שינוי — זה לא
-       תואם מתמטית (4/6≈67%, לא 80%) — כנראה נשאר מתבנית לחמש שאלות
-       שלא עודכנה; לא תוקן כאן, מוצג verbatim (ראו PROJECT_BRIEF.md).
+       מספר השאלות (בגודל 40/700 בשקף, תואם ל-.transition-title; שתי
+       פסקאות מסביב הן .transition-sub). תוקן ל"5 שאלות" (2026-09-19):
+       השקף אמר "6 שאלות" אך השאיר את סף המעבר על "4 שאלות לפחות", מה
+       שאינו עקבי (4/6≈67%, לא 80%). בפועל נבנו חמש שאלות בלבד —
+       stationBQuestionNum מתקדם חמש פעמים והתא השישי לעולם אינו מתמלא —
+       והקטלוג מסכים (פריטים 007..011 הם חמישה). 4 מתוך 5 הוא 80%,
+       כלומר הסף המקורי נכון לחמש שאלות.
        דמות+בועית: **placeholder זמני** — תמונות מסך 1 (כמו במסך 10),
        לא פוזה ייעודית; טרם סופקה. -->
   <section class="screen" data-screen="12" id="s12">
     <div class="transition-content">
       <div class="transition-title-block">
         <p class="transition-sub">סיימנו את שלב הלימוד, נעבור לתרגול הראשון ונענה על</p>
-        <h2 class="transition-title">6 שאלות</h2>
+        <h2 class="transition-title">5 שאלות</h2>
         <p class="transition-sub">צריך לענות נכון על 4 שאלות לפחות.</p>
       </div>
       <div class="transition-avatar-wrap">
@@ -943,11 +945,6 @@
         <div class="qnav-icon qnav-future" id="s14-qnav-icon-5"></div>
         <span class="qnav-label" id="s14-qnav-label-5">שאלה 5</span>
       </div>
-      <div class="qnav-line" id="s14-qnav-line-5"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s14-qnav-icon-6"></div>
-        <span class="qnav-label" id="s14-qnav-label-6">שאלה 6</span>
-      </div>
     </div>
 
     <div class="scq-question">
@@ -1057,11 +1054,6 @@
         <div class="qnav-icon qnav-future" id="s15-qnav-icon-5"></div>
         <span class="qnav-label" id="s15-qnav-label-5">שאלה 5</span>
       </div>
-      <div class="qnav-line" id="s15-qnav-line-5"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s15-qnav-icon-6"></div>
-        <span class="qnav-label" id="s15-qnav-label-6">שאלה 6</span>
-      </div>
     </div>
 
     <div class="s15-content">
@@ -1166,11 +1158,6 @@
       <div class="qnav-item">
         <div class="qnav-icon qnav-future" id="s16-qnav-icon-5"></div>
         <span class="qnav-label" id="s16-qnav-label-5">שאלה 5</span>
-      </div>
-      <div class="qnav-line" id="s16-qnav-line-5"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s16-qnav-icon-6"></div>
-        <span class="qnav-label" id="s16-qnav-label-6">שאלה 6</span>
       </div>
     </div>
 
@@ -1293,11 +1280,6 @@
       <div class="qnav-item">
         <div class="qnav-icon qnav-future" id="s17-qnav-icon-5"></div>
         <span class="qnav-label" id="s17-qnav-label-5">שאלה 5</span>
-      </div>
-      <div class="qnav-line" id="s17-qnav-line-5"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s17-qnav-icon-6"></div>
-        <span class="qnav-label" id="s17-qnav-label-6">שאלה 6</span>
       </div>
     </div>
 
@@ -1445,11 +1427,6 @@
         <div class="qnav-icon qnav-future" id="s19-qnav-icon-5"></div>
         <span class="qnav-label" id="s19-qnav-label-5">שאלה 5</span>
       </div>
-      <div class="qnav-line" id="s19-qnav-line-5"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s19-qnav-icon-6"></div>
-        <span class="qnav-label" id="s19-qnav-label-6">שאלה 6</span>
-      </div>
     </div>
 
     <div class="scq-question">
@@ -1589,11 +1566,6 @@
       <div class="qnav-item">
         <div class="qnav-icon qnav-current" id="s21-qnav-icon-5"></div>
         <span class="qnav-label qnav-label-active" id="s21-qnav-label-5">שאלה 5</span>
-      </div>
-      <div class="qnav-line" id="s21-qnav-line-5"></div>
-      <div class="qnav-item">
-        <div class="qnav-icon qnav-future" id="s21-qnav-icon-6"></div>
-        <span class="qnav-label" id="s21-qnav-label-6">שאלה 6</span>
       </div>
     </div>
 

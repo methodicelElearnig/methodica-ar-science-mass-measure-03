@@ -114,6 +114,9 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
+     עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
+  try { xapiOnScreen(n); } catch (e) {}
   /* Deferred to next frame: target is still display:none at this exact point (same ordering
      constraint as showDragGestureHint(), see its own comment) — initFakeScrollbar() needs real
      geometry, so it must run after 'active' has actually painted. Centralized here (rather than
@@ -149,6 +152,27 @@ function resetScreenState(n) {
   if (n === 19) resetScreenState19();
   if (n === 20) resetScreenState20();
   if (n === 21) resetScreenState21();
+}
+
+
+/* כמה משאלות תחנה ב נענו נכון.
+   ⚠️ המכנה הוא 5, לא 6: stationBProgress מוגדר עם שישה תאים והניווט מצייר
+   שישה, אבל רק חמש שאלות נבנו בפועל (תא 6 לעולם אינו מתמלא), והקטלוג מסכים —
+   פריטים 007..011 הם חמישה. טקסט מסך 12 תוקן ל"5 שאלות" בהתאם. */
+function getStationBScore() {
+  return [1, 2, 3, 4, 5].filter(function (i) {
+    return stationBProgress[i] === 'success';
+  }).length;
+}
+
+/* סוף הרכיב — הלחיצה האחרונה של הלומד, בשני המסלולים.
+   ⚠️ הרכיב אינו מנווט: Kata מסירה אותו מהמסך ברגע שה-completed מגיע
+   ומחליטה מהקטלוג מה הבא. הניווט נשאר ל-walkthrough מקומי בלבד. */
+function s21Finish() {
+  const _n = getStationBScore();
+  xapiEndComponent({ success: _n >= 4, score: { scaled: _n / 5 } },
+    document.getElementById('s21-check'));
+  if (DEV_NAV) window.location.href = '../methodica-science-mass-measure-03-02/index.html';
 }
 
 /* ---------- Dev postMessage bridge (index_dev.html free nav) ---------- */
@@ -406,6 +430,9 @@ const VIQ_SCREENS = {
   5: { correct: 0.1, inputId: 's5-input', checkBtnId: 's5-check', feedboxId: 's5-feedbox', revealBtnId: 's5-reveal-btn', nextScreen: 7 },
   6: { correct: 0.037, inputId: 's6-input', checkBtnId: 's6-check', feedboxId: 's6-feedbox', revealBtnId: 's6-reveal-btn', nextScreen: 7 }
 };
+/* xAPI: מסך → סיומת הפריט. שני המסכים הם שני מסלולים חלופיים (בחירה במסך 4),
+   והלומד עובר באחד בלבד — הפריט השני פשוט לא מדווח אצלו. */
+const VIQ_XAPI_ITEM = { 5: '002', 6: '003' };
 const viqAttempts = {};
 const viqDone = {};
 const viqAnswerSnapshot = {}; // הערך שהלומד הזין בפועל בניסיון השני הכושל, לפני כל reveal
@@ -454,6 +481,10 @@ function viqCheck(n) {
   const isCorrect = Number(input.value) === cfg.correct;
 
   viqAttempts[n] = (viqAttempts[n] || 0) + 1;
+  /* xAPI: מסך 5 (זהב) הוא פריט 002 ומסך 6 (תרופה) הוא 003 — הלומד הולך
+     במסלול אחד בלבד (בחירה במסך 4), ולכן רק אחד משניהם מדווח אי פעם. */
+  xapiAnswered(VIQ_XAPI_ITEM[n], 'q1', isCorrect, isCorrect || viqAttempts[n] >= 2,
+    xapiFieldsAnswer([cfg.inputId]));
   fb.classList.remove('collapsed');
   scqFbResetPosition(cfg.feedboxId);
 
@@ -877,6 +908,8 @@ function s8Check() {
   if (!s8Selected || s8Done) return;
   s8Attempts++;
   const optEl = s8OptEl(s8Selected);
+  xapiAnswered('004', 'q1', s8Selected === S8.correctId,
+    s8Selected === S8.correctId || s8Attempts >= S8.maxAttempts, xapiAnswerText(optEl));
 
   if (s8Selected === S8.correctId) {
     optEl.classList.add('correct');
@@ -928,6 +961,8 @@ function s8UnlockOptions() {
 
 function s8OpenHint() {
   if (s8Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('004', 'q1');
   document.getElementById('s8-hint-overlay').hidden = false;
 }
 
@@ -1125,6 +1160,8 @@ function s10Check() {
   if (!s10Selected || s10Done) return;
   s10Attempts++;
   const optEl = s10OptEl(s10Selected);
+  xapiAnswered('005', 'q1', s10Selected === S10.correctId,
+    s10Selected === S10.correctId || s10Attempts >= S10.maxAttempts, xapiAnswerText(optEl));
 
   if (s10Selected === S10.correctId) {
     optEl.classList.add('correct');
@@ -1180,6 +1217,8 @@ function s10UnlockOptions() {
 
 function s10OpenHint() {
   if (s10Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('005', 'q1');
   document.getElementById('s10-hint-overlay').hidden = false;
 }
 
@@ -1549,6 +1588,20 @@ function makeDragQuestion(cfg) {
 
     render();
 
+    /* xAPI: **אחרי** לולאת האזורים, ולפני ההסתעפות.
+       ⚠️ xapiZoneAnswer לא מתאים לפקטורי הזה: העוזר בונה מזהי אזור בתבנית
+       <prefix>-zone-<id>, בעוד היעדים כאן הם <prefix>-target-N. */
+    if (cfg.xapiItem) {
+      const _ans = targetIds.map(function (tId) {
+        let placed = null;
+        dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+        return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
+      }).join(' | ');
+      (cfg.xapiQuestions || ['q1']).forEach(function (q) {
+        xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
+      });
+    }
+
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
@@ -1586,6 +1639,8 @@ function makeDragQuestion(cfg) {
   function openHint() {
     const hintBtn = document.getElementById(cfg.hintBtnId);
     if (hintBtn) hintBtn.disabled = true;
+    /* xAPI: אחרי הגארד ומיד לפני שהרמז נחשף בפועל. */
+    if (cfg.xapiItem) xapiRequestedHint(cfg.xapiItem, (cfg.xapiQuestions || ['q1'])[0]);
     document.getElementById(cfg.hintOverlayId).hidden = false;
   }
   function closeHint() {
@@ -1693,6 +1748,8 @@ const TEXTS_S11_DQ = {
 };
 
 const dq11 = makeDragQuestion({
+  /* xAPI: פריט 006 — השלמת משפט על חזרות וממוצע. */
+  xapiItem: '006',
   prefix: 's11',
   screenSelector: '#s11',
   panelId: 's11-question-panel',
@@ -1772,10 +1829,13 @@ function s13Continue() {
    ========================================================= */
 
 let stationBQuestionNum = 1;
-let stationBProgress = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
+/* חמש שאלות, לא שש. התא השישי היה קיים כאן ובניווט אך לעולם לא התמלא:
+   stationBQuestionNum מתקדם בדיוק חמש פעמים (שאלה 1 = סעיפים א+ב יחד,
+   ואז מסכים 16, 17, 19, 21). הקטלוג מסכים — פריטים 007..011 הם חמישה. */
+let stationBProgress = { 1: null, 2: null, 3: null, 4: null, 5: null };
 
 function updateQuestionNavB(prefix) {
-  for (let i = 1; i <= 6; i++) {
+  for (let i = 1; i <= 5; i++) {
     const icon = document.getElementById(prefix + '-qnav-icon-' + i);
     const label = document.getElementById(prefix + '-qnav-label-' + i);
     if (!icon) continue;
@@ -1795,7 +1855,7 @@ function updateQuestionNavB(prefix) {
       icon.classList.add('qnav-future');
     }
   }
-  for (let j = 1; j <= 5; j++) {
+  for (let j = 1; j <= 4; j++) {
     const line = document.getElementById(prefix + '-qnav-line-' + j);
     if (!line) continue;
     line.className = 'qnav-line';
@@ -1899,6 +1959,8 @@ function s14Check() {
   if (!s14Selected || s14Done) return;
   s14Attempts++;
   const optEl = s14OptEl(s14Selected);
+  xapiAnswered('007', 'q1', s14Selected === S14.correctId,
+    s14Selected === S14.correctId || s14Attempts >= S14.maxAttempts, xapiAnswerText(optEl));
 
   if (s14Selected === S14.correctId) {
     optEl.classList.add('correct');
@@ -1952,6 +2014,8 @@ function s14UnlockOptions() {
 
 function s14OpenHint() {
   if (s14Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('007', 'q1');
   document.getElementById('s14-hint-overlay').hidden = false;
 }
 
@@ -2075,6 +2139,8 @@ function s15Check() {
   if (!s15Selected || s15Done) return;
   s15Attempts++;
   const optEl = s15OptEl(s15Selected);
+  xapiAnswered('007', 'q2', s15Selected === S15.correctId,
+    s15Selected === S15.correctId || s15Attempts >= S15.maxAttempts, xapiAnswerText(optEl));
 
   if (s15Selected === S15.correctId) {
     optEl.classList.add('correct');
@@ -2130,6 +2196,8 @@ function s15UnlockOptions() {
 
 function s15OpenHint() {
   if (s15Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('007', 'q2');
   document.getElementById('s15-hint-overlay').hidden = false;
 }
 
@@ -2199,6 +2267,8 @@ const TEXTS_S16_DQ = {
 };
 
 const dq16 = makeDragQuestion({
+  /* xAPI: פריט 008 — זיהוי מדידה חריגה וחישוב ממוצע. */
+  xapiItem: '008',
   prefix: 's16',
   screenSelector: '#s16',
   panelId: 's16-question-panel',
@@ -2453,6 +2523,12 @@ function s17Check() {
     if (!zoneOk) allCorrect = false;
   });
 
+  /* xAPI: **אחרי** לולאת האזורים, כי allCorrect סופי רק בסופה.
+     כאן — ורק כאן בפרויקט — האזורים באמת בתבנית s17-zone-<id> והפריטים
+     נושאים class המכיל "drag-item", ולכן xapiZoneAnswer מתאים כמות שהוא. */
+  xapiAnswered('009', 'q1', allCorrect, allCorrect || s17Attempts >= 2,
+    xapiZoneAnswer('s17', S17_ZONE_IDS));
+
   const checkBtn = document.getElementById('s17-check');
   if (allCorrect) {
     s17Done = true;
@@ -2492,6 +2568,8 @@ function s17Check() {
 
 function s17OpenHint() {
   if (s17Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('009', 'q1');
   document.getElementById('s17-hint-overlay').hidden = false;
 }
 
@@ -2638,6 +2716,8 @@ function s19Check() {
   if (!s19Selected || s19Done) return;
   s19Attempts++;
   const optEl = s19OptEl(s19Selected);
+  xapiAnswered('010', 'q1', s19Selected === S19.correctId,
+    s19Selected === S19.correctId || s19Attempts >= S19.maxAttempts, xapiAnswerText(optEl));
 
   if (s19Selected === S19.correctId) {
     optEl.classList.add('correct');
@@ -2695,6 +2775,8 @@ function s19UnlockOptions() {
 
 function s19OpenHint() {
   if (s19Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('010', 'q1');
   document.getElementById('s19-hint-overlay').hidden = false;
 }
 
@@ -2827,6 +2909,8 @@ function s21Check() {
   if (!s21Selected || s21Done) return;
   s21Attempts++;
   const optEl = s21OptEl(s21Selected);
+  xapiAnswered('011', 'q1', s21Selected === S21.correctId,
+    s21Selected === S21.correctId || s21Attempts >= S21.maxAttempts, xapiAnswerText(optEl));
 
   if (s21Selected === S21.correctId) {
     optEl.classList.add('correct');
@@ -2838,7 +2922,7 @@ function s21Check() {
     /* קישור בין סינים: מסך אחרון בסיין 1 -> מסך ראשון בסיין 2 (נתיב יחסי,
        אותה מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science-mass
        -measure-02-linked). goTo(22) היה no-op (TOTAL_SCREENS=22). */
-    s21SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-02/index.html'; });
+    s21SetBarDone('המשך', s21Finish);
     stationBProgress[stationBQuestionNum] = 'success';
     stationBQuestionNum++;
     updateQuestionNavB('s21');
@@ -2867,7 +2951,7 @@ function s21Check() {
     /* קישור בין סינים: מסך אחרון בסיין 1 -> מסך ראשון בסיין 2 (נתיב יחסי,
        אותה מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science-mass
        -measure-02-linked). goTo(22) היה no-op (TOTAL_SCREENS=22). */
-    s21SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-02/index.html'; });
+    s21SetBarDone('המשך', s21Finish);
     stationBProgress[stationBQuestionNum] = 'fail';
     stationBQuestionNum++;
     updateQuestionNavB('s21');
@@ -2890,6 +2974,8 @@ function s21UnlockOptions() {
 
 function s21OpenHint() {
   if (s21Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('011', 'q1');
   document.getElementById('s21-hint-overlay').hidden = false;
 }
 
@@ -3051,6 +3137,50 @@ scqFbMakeDraggable('s16-feedbox');
 scqFbMakeDraggable('s17-feedbox');
 scqFbMakeDraggable('s19-feedbox');
 scqFbMakeDraggable('s21-feedbox');
+
+/* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
+   נתונים בלבד. השכבה המשותפת ב-../unit-js/ קוראת אותם בזמן call. */
+
+/* ⚠️ חייב להחזיק בדיוק TOTAL_SCREENS מפתחות (22), 0..21, בלי חורים.
+   מפתח חסר אינו ניתן להבחנה מ-null, כלומר מסך שלא מדווח בשקט. */
+var SCREEN_TO_SUBCONTENT = {
+  0: null,          /* בחירת דמות מלווה — כרום של היחידה, לא פריט */
+  1: ['001', 1],    /* וידאו פודקאסט 1 — "3 גרם טונה ששווים 12 מיליון דולר?" */
+  2: ['001', 2],    /* שאלת דעה (בלי בדיקה ובלי משוב) */
+  3: ['001', 3],    /* וידאו פודקאסט 2 — התשובה; סוגר את אותו הוק נרטיבי */
+  4: null,          /* בחירת מסלול: תרופה / זהב */
+  5: ['002', 1],    /* מסלול זהב — סימולציה + קלט מספרי */
+  6: ['003', 1],    /* מסלול תרופה — סימולציה + קלט מספרי */
+  7: ['004', 1],    /* וידאו: המסלולים מתכנסים — מכין את שאלת מסך 8 */
+  8: ['004', 2],    /* צמצום שגיאת מדידה אקראית */
+  9: null,          /* מעבר נרטיבי */
+  10: ['005', 1],   /* היומן של גברת פיקל */
+  11: ['006', 1],   /* גרירה: השלמת משפט חזרות/ממוצע */
+  12: null,         /* מעבר: "5 שאלות" */
+  13: ['007', 1],   /* הסבר: שלושה סוגי מאזניים (מחקר האורז) */
+  14: ['007', 2],   /* שאלה 1, סעיף א — q1 */
+  15: ['007', 3],   /* שאלה 1, סעיף ב — q2 */
+  16: ['008', 1],   /* שאלה 2 — זיהוי מדידה חריגה */
+  17: ['009', 1],   /* שאלה 3 — גרירת מוצר למאזניים */
+  18: ['010', 1],   /* הקדמה: יורם ואדיר מתווכחים */
+  19: ['010', 2],   /* שאלה 4 — מי זקוק למאזניים מדויקים יותר */
+  20: ['011', 1],   /* הקדמה: שרשרת הזהב והמנורה של דן */
+  21: ['011', 2]    /* שאלה 5 — אצל מי הטעות קריטית יותר */
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-01';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+/* פריטים שנושאים שאלה **מדורגת בקוד**.
+   ⚠️ 001 מוחרג במכוון: שאלת הדעה במסך 2 היא ללא בדיקה, ללא ניסיונות וללא
+   משוב — s2Select רק מאפשר את "המשך". S2.correctId הוא תיעוד בלבד. */
+var XAPI_EVAL_ITEMS = {
+  '002': 1, '003': 1, '004': 1, '005': 1, '006': 1,
+  '007': 1, '008': 1, '009': 1, '010': 1, '011': 1
+};
+
+var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-01.json';
+
 /* קישור בין סינים — חזרה: אם הגענו לכאן עם #screen=N (מכפתור "חזרה"
    בסיין הבא, סיין 2), קופצים ישר למסך הזה במקום למסך הראשון. אותה
    מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science-mass-measure
