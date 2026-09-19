@@ -1,17 +1,16 @@
 {
   "id": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/",
   "title": "הוק עד סוף תרגול סטנדרטי",
-  "learningUnitId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/",
+  "learningUnitId": "methodica-science-mass-measure-03",
   "componentPurpose": "both",
   "isAssessment": false,
-  "manufacture": "methodica",
   "recommendedAfterFail": [],
   "isRequired": true,
   "relativeDifficulty": 3,
   "masteryLevel": "intermediate",
   "order": 1,
-  "depthLevel": "basic-curriculum-core",
-  "cognitiveLevel": "applying-a-model-or-procedure",
+  "depthLevel": "core-curriculum-basic",
+  "cognitiveLevels": ["applying-a-model-or-procedure"],
   "languages": ["Hebrew"],
   "skills": [],
   "estimatedTimeInMinutes": 24,
@@ -23,7 +22,7 @@
       "title": "הוק: פודקאסט - האם 3 גרם טונה שווים 12 מיליון דולר?",
       "informationToBot": "מטרת הפריט: יצירת סקרנות סביב תביעה משפטית אמיתית (2013, StarKist) שבה חוסר של 3-8 גרם בקופסת טונה של 142 גרם עורר ויכוח - האם זו סטייה הגיונית או בעיה חמורה. מה התלמיד אמור להבין: מציג את הצורך במדידה כמותית (מספרים ויחידות) לעומת תצפית איכותנית ('מרגיש לי קליל') כדי להוכיח טענה בבית משפט. כיווני חשיבה ואסטרטגיות: הלומד מביע דעה אישית בשאלת דעה פתוחה ('מי צודק, נועם או דניאלה'). טעויות נפוצות: אין - זוהי שאלת דעה שאין לה תשובה נכונה אחת (התסריט עצמו מציין 'התוצאות ממש צמודות, אין פה תשובה נכונה אחת'). מידע נוסף: פותח את היחידה עם דיון בסגנון פודקאסט (נועם ודניאלה), וממשיך להסביר את ההבדל בין תצפית איכותנית למדידה כמותית. צילום מסך: לא צורף.",
       "contentType": "motivational",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-001/q1",
@@ -39,7 +38,7 @@
       "title": "הקנייה 1: פער מדידה - זהב",
       "informationToBot": "מטרת הפריט: הדגמה אינטראקטיבית שגם מאזניים 'רגילים' לא מודדים בדיוק מוחלט - יש פער בינם לבין מאזניים רגישים. מה התלמיד אמור להבין/לתרגל: שקילת זהב על מאזניים רגילים לעומת מאזניים רגישים חושפת פער של 0.1 גרם. כיווני חשיבה ואסטרטגיות: התנסות ביישומון שקילה ותיעוד הפער שהתקבל. טעויות נפוצות: אין. מידע נוסף: נבחר על ידי הלומד כאחד משני נתיבי הקנייה מקבילים (זהב/תרופות) - שניהם ממחישים אותו עיקרון. צילום מסך: לא צורף.",
       "contentType": "instruction",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-002/q1",
@@ -55,7 +54,7 @@
       "title": "הקנייה 2: פער מדידה - תרופות",
       "informationToBot": "מטרת הפריט: הדגמה אינטראקטיבית מקבילה (נתיב 'תרופות') לאותה עקרון - פער בין מאזניים רגילים לרגישים. מה התלמיד אמור להבין/לתרגל: שקילת תרופה על מאזניים רגילים לעומת רגישים חושפת פער של 0.037 גרם. כיווני חשיבה ואסטרטגיות: התנסות ביישומון שקילה ותיעוד הפער. טעויות נפוצות: אין. מידע נוסף: נתיב חלופי לפריט 002 (זהב) - הלומד בוחר אחד מהשניים. צילום מסך: לא צורף.",
       "contentType": "instruction",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-003/q1",
@@ -71,7 +70,7 @@
       "title": "הקנייה 3: כיצד לצמצם טעויות מדידה אקראיות",
       "informationToBot": "מטרת הפריט: הקניית העיקרון המרכזי של היחידה - חזרות וחישוב ממוצע מצמצמים טעויות מדידה אקראיות. מה התלמיד אמור להבין/לתרגל: הדרך הטובה ביותר לצמצם טעויות מדידה אקראיות היא לבצע כמה מדידות ולחשב את הממוצע שלהן - לא להשתמש רק במאזניים היקרים, לא לבחור את המדידה הגבוהה ביותר, ולא לעגל למספר שלם. כיווני חשיבה ואסטרטגיות: הבנה שאף מאזניים אינם מושלמים, וחזרות+ממוצע הם הכלי המדעי הבסיסי להתגבר על כך. טעויות נפוצות: בחירת פתרון שמתמקד רק באיכות המכשיר (מאזניים יקרים) במקום בשיטת המדידה (חזרות). מידע נוסף: המשך דיאלוג הפודקאסט של נועם ודניאלה, כולל דוגמת זהב (530 ש\"ח לגרם) להמחשת חשיבות הדיוק. צילום מסך: לא צורף.",
       "contentType": "instruction",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-004/q1",
@@ -92,7 +91,7 @@
       "title": "חימום 1: תצפית איכותנית מול מדידה כמותית",
       "informationToBot": "מטרת הפריט: שאלת חימום ראשונה - הבחנה בין תצפית איכותנית למדידה כמותית. מה התלמיד אמור להבין/לתרגל: 'מסת הקופסה היא בדיוק 400 גרם' (גברת פיקל) היא מדידה כמותית (מספר+יחידת מידה), לא תצפית איכותנית. כיווני חשיבה ואסטרטגיות: בדיקה האם הדיווח כולל מספר ויחידת מידה רשמית, או רק תיאור כללי. טעויות נפוצות: בחירת 'תצפית איכותנית' למרות שיש מספר ויחידה מפורשים. מידע נוסף: פריט ראשון מתוך 2 שאלות חימום. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-005/q1",
@@ -108,7 +107,7 @@
       "title": "חימום 2: חישוב ממוצע מדידות",
       "informationToBot": "מטרת הפריט: שאלת חימום שנייה - השלמת המונחים 'חזרות' ו'ממוצע' בהקשר קופסת טונה שנשקלה 3 פעמים. מה התלמיד אמור להבין/לתרגל: ביצוע מספר חזרות של המדידה וחישוב ממוצע התוצאות (141,144,141 → 142 גרם) עוזרים למזער אי-ודאות ולקבל נתונים אמינים. כיווני חשיבה ואסטרטגיות: זיהוי המונחים הנכונים מתוך מחסן מילים (חזרות/ממוצע, לא הפחתות/סיכום). טעויות נפוצות: בחירת 'הפחתות' או 'סיכום' במקום 'חזרות'/'ממוצע'. מידע נוסף: פריט שני מתוך 2 שאלות חימום. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-006/q1",
@@ -130,7 +129,7 @@
       "title": "סטנדרטי 1: בחירת מאזניים לניסוי גידול אורז (2 סעיפים)",
       "informationToBot": "מטרת הפריט: תרגול סטנדרטי בבחירת מכשיר מדידה מתאים לפי גודל השינוי הצפוי במחקר. מה התלמיד אמור להבין/לתרגל: סעיף א - לפני בחירת מאזניים יש לדעת את המסה הממוצעת של צמח אורז צעיר ואת קצב הגדילה השבועי הצפוי, כדי לדעת איזה שינוי צריך לזהות. סעיף ב - צמח אורז שוקל כ-5 גרם וצפוי לעלות כ-0.1 גרם בשבוע - מאזני מעבדה (דיוק 0.01 גרם) מתאימים ביותר (גם אנליטיים יתאימו, אך יקרים יותר ומיותרים כאן). כיווני חשיבה ואסטרטגיות: דיוק מדעי חייב להתאים לגודל השינוי הנמדד - לא תמיד צריך את המכשיר היקר ביותר. טעויות נפוצות: בחירת מאזניים אנליטיים 'ליתר ביטחון' במקום המאזניים המתאימים בפועל לסדר הגודל הנדרש; בחירת מידע לא רלוונטי (מחיר השוק) בסעיף א. מידע נוסף: תרחיש מחקר אמיתי (תוסף גדילה לאורז בהודו). צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-007/q1",
@@ -158,7 +157,7 @@
       "title": "סטנדרטי 2: זיהוי תוצאה חריגה וחישוב ממוצע",
       "informationToBot": "מטרת הפריט: תרגול זיהוי תוצאה חריגה (outlier) בסדרת מדידות וחישוב ממוצע ללא ההשפעה שלה. מה התלמיד אמור להבין/לתרגל: מתוך 4 מדידות (5.09, 5.11, 5.90, 5.12), התוצאה 5.90 היא תוצאה חריגה (לא הופיעה שוב, לא הגיונית ביחס לשאר) - מדענים קוראים לזה 'תוצאה חריגה'. הממוצע של שלוש המדידות התקינות (5.09, 5.11, 5.12) הוא 5.10 גרם. כיווני חשיבה ואסטרטגיות: זיהוי מדידה שאינה עקבית עם השאר, החרגתה מהחישוב, וחישוב ממוצע מהמדידות התקינות בלבד. טעויות נפוצות: הכללת התוצאה החריגה בחישוב הממוצע (מה שהיה נותן 5.305 גרם, לא 5.10). מידע נוסף: המשך תרחיש מחקר האורז. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-008/q1",
@@ -181,7 +180,7 @@
       "title": "סטנדרטי 3: התאמת מוצר למאזניים המתאימים",
       "informationToBot": "מטרת הפריט: תרגול יישום עקרון 'התאמת רמת הדיוק למשימה' על שלושה מוצרים שונים בבת אחת. מה התלמיד אמור להבין/לתרגל: שקילת אורז (1 ק\"ג, לצרכי מטבח) → מאזני מטבח (דיוק 1 גרם). טבעת זהב (5 גרם, ערך גבוה ורגישות גבוהה לטעות יחסית) → מאזניים אנליטיים (דיוק 0.001 גרם). תרופה (דורשת דיוק גבוה אך פחות קיצוני מזהב במסה קטנה) → מאזני מעבדה (דיוק 0.01 גרם). כיווני חשיבה ואסטרטגיות: שקילת שיקולים של גודל המוצר, ערכו הכספי/רפואי, וההשלכות של טעות קטנה. טעויות נפוצות: שימוש במאזני מטבח גם למוצרים קטנים/יקרים, או במאזניים אנליטיים למוצר גדול ולא רגיש (בזבוז). מידע נוסף: מבוסס ישירות על העקרונות שנלמדו בפריטי הרכיב הקודמים (007-008). צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-009/q1",
@@ -204,7 +203,7 @@
       "title": "סטנדרטי 4: זהב מול עגבניות - מי צריך דיוק רב יותר",
       "informationToBot": "מטרת הפריט: תרגול יישום העיקרון 'ככל שערך החומר גבוה יותר, כך נדרש דיוק גבוה יותר' על ויכוח בין שני בעלי עסקים. מה התלמיד אמור להבין/לתרגל: אדיר הצורף זקוק למאזניים המדויקים ביותר, כי טעות קטנה במסת זהב עלולה לגרום להפסד כספי גדול - יותר מאשר טעות דומה במשקל ירקות. כיווני חשיבה ואסטרטגיות: השוואת ההשלכות הכספיות של טעות זהה (בגרמים) בשני הקשרים שונים. טעויות נפוצות: הנחה ששני הטיעונים שווי משקל, או שהערך הכספי הכולל (לא הדיוק היחסי) הוא הקריטריון הרלוונטי. מידע נוסף: המשך ישיר לעיקרון שנלמד בפריט 009. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-010/q1",
@@ -225,7 +224,7 @@
       "title": "סטנדרטי 5: טעות קריטית - שרשרת זהב מול חנוכייה",
       "informationToBot": "מטרת הפריט: תרגול חישוב אחוז טעות יחסי, ולא רק ערך הטעות המוחלט. מה התלמיד אמור להבין/לתרגל: שרשרת זהב (2.3 גרם) וחנוכייה עתיקה (150 גרם) נמדדו על מאזני מטבח (דיוק 1 גרם). טעות של 1 גרם על החנוכייה מהווה רק 0.7% טעות, כמעט לא משפיעה - אך אותה טעות (1 גרם) על השרשרת מהווה 43% טעות, קריטית ביותר. כיווני חשיבה ואסטרטגיות: חישוב אחוז הטעות ביחס למסה הכוללת של כל פריט, לא התבוננות בערך הטעות המוחלט (1 גרם) בלבד. טעויות נפוצות: הנחה שטעות זהה (1 גרם) משמעה השפעה זהה בשני המקרים. מידע נוסף: פריט מסכם לרכיב, מבוסס על אותם עקרונות שנלמדו בפריטים הקודמים. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/methodica-science-mass-measure-03-01-011/q1",

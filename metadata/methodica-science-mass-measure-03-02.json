@@ -1,10 +1,9 @@
 {
   "id": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-02/",
   "title": "תרגול בסיסי וסטנדרטי ב",
-  "learningUnitId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/",
+  "learningUnitId": "methodica-science-mass-measure-03",
   "componentPurpose": "practice",
   "isAssessment": false,
-  "manufacture": "methodica",
   "recommendedAfterFail": [
     "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/"
   ],
@@ -12,8 +11,8 @@
   "relativeDifficulty": 2,
   "masteryLevel": "basic",
   "order": 2,
-  "depthLevel": "basic-curriculum-core",
-  "cognitiveLevel": "applying-a-model-or-procedure",
+  "depthLevel": "core-curriculum-basic",
+  "cognitiveLevels": ["applying-a-model-or-procedure"],
   "languages": ["Hebrew"],
   "skills": [],
   "estimatedTimeInMinutes": 14,
@@ -25,7 +24,7 @@
       "title": "בסיסי 1: היכן דרוש דיוק מדידה גבוה יותר",
       "informationToBot": "מטרת הפריט: תרגול תגבור בסיסי בזיהוי מצבים הדורשים דיוק מדידה גבוה. מה התלמיד אמור להבין/לתרגל: שקילת חומר להכנת תרופה ושקילת טבעת זהב למכירה דורשות דיוק גבוה במיוחד, לעומת שקילת עגבניות לסלט או כדורגל לאימון. כיווני חשיבה ואסטרטגיות: זיהוי היכן טעות קטנה עלולה לגרום לנזק בריאותי או הפסד כספי משמעותי. טעויות נפוצות: בחירת מצבים שבהם דיוק נמוך מספיק (עגבניות, כדורגל). מידע נוסף: יש להצליח ב-2 מתוך 3 השאלות הבסיסיות. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-02/methodica-science-mass-measure-03-02-001/q1",
@@ -41,7 +40,7 @@
       "title": "בסיסי 2: מדוע לשקול דגימה מספר פעמים",
       "informationToBot": "מטרת הפריט: תרגול תגבור בסיסי בהבנת מטרת החזרות במדידה. מה התלמיד אמור להבין/לתרגל: מדענית ששוקלת אותה דגימה 3 פעמים עושה זאת כדי להקטין את השפעתן של טעויות מדידה אקראיות - לא כדי להגדיל סיכוי לתוצאה רצויה, לקבל מספר גדול יותר, או לחסוך זמן. כיווני חשיבה ואסטרטגיות: זיהוי שהמטרה היא הפחתת אי-ודאות, לא מניפולציה של התוצאה. טעויות נפוצות: בחירת מטרות שגויות שאינן קשורות לצמצום טעויות אקראיות. מידע נוסף: פריט שני מתוך 3 שאלות בסיסיות. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-02/methodica-science-mass-measure-03-02-002/q1",
@@ -62,7 +61,7 @@
       "title": "בסיסי 3: מדידה כמותית מול תחושה",
       "informationToBot": "מטרת הפריט: תרגול תגבור בסיסי בזיהוי מדידה כמותית לעומת תיאור המבוסס על תחושה. מה התלמיד אמור להבין/לתרגל: 'מסת הטבעת היא 5.20 גרם' (גברת מילי) מבוסס על מספר ויחידת מידה - זו הראיה המדעית הטובה יותר, לעומת 'הטבעת כבדה' (מר קילו) שמתאר תחושה בלבד. כיווני חשיבה ואסטרטגיות: זיהוי איזו טענה מבוססת על נתונים כמותיים הניתנים לבדיקה והשוואה. טעויות נפוצות: התייחסות לשתי הטענות כשוות ערך. מידע נוסף: פריט שלישי מתוך 3 שאלות בסיסיות. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-02/methodica-science-mass-measure-03-02-003/q1",
@@ -83,7 +82,7 @@
       "title": "סטנדרטי ב 1: בדיקת כדור FIFA (4 סעיפים)",
       "informationToBot": "מטרת הפריט: תרגול ברמת קושי מעט גבוהה יותר - בחירת מאזניים, חישוב ממוצע, ובדיקת עמידה בתקן. מה התלמיד אמור להבין/לתרגל: תקן FIFA למסת כדורגל הוא 410-450 גרם - טווח סבילות רחב (40 גרם), כך שמאזני מטבח (דיוק 1 גרם) מספיקים (אין צורך בדיוק של אלפיות גרם). סעיף א - בחירת מאזני מטבח. סעיף ב - ממוצע 3 מדידות (428, 430, 429) = 429 גרם. סעיף ג - 429 נמצא בטווח 410-450, ולכן הכדור עומד בתקן (נכון). סעיף ד - חישוב ממוצע עדיף על מדידה בודדת כדי לצמצם השפעת טעויות אקראיות. כיווני חשיבה ואסטרטגיות: התאמת רמת הדיוק לרוחב טווח הסבילות של התקן - טווח רחב לא מצדיק מכשיר יקר ומדויק מדי. טעויות נפוצות: בחירת מאזניים מדויקים מדי (אנליטיים) כשהתקן עצמו סובלני יחסית; שכחת בדיקת הממוצע מול טווח התקן. מידע נוסף: 4 סעיפים בפריט אחד. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-02/methodica-science-mass-measure-03-02-004/q1",

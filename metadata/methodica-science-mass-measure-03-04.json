@@ -1,17 +1,16 @@
 {
   "id": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-04/",
   "title": "תרגול מתקדם",
-  "learningUnitId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/",
+  "learningUnitId": "methodica-science-mass-measure-03",
   "componentPurpose": "practice",
   "isAssessment": false,
-  "manufacture": "methodica",
   "recommendedAfterFail": [],
   "isRequired": true,
   "relativeDifficulty": 5,
   "masteryLevel": "advanced",
   "order": 4,
-  "depthLevel": "advanced-curriculum-core",
-  "cognitiveLevel": "analyzing",
+  "depthLevel": "core-curriculum-advanced",
+  "cognitiveLevels": ["analyzing"],
   "languages": ["Hebrew"],
   "skills": [],
   "estimatedTimeInMinutes": 12,
@@ -23,7 +22,7 @@
       "title": "מתקדם 1: מסקנה ממדגם קטן (2 כדורים)",
       "informationToBot": "מטרת הפריט: תרגול מתקדם בהבנת מגבלות ההכללה ממדגם קטן. מה התלמיד אמור להבין/לתרגל: יצרן מדד 2 כדורים בלבד (418, 421 גרם, תקן FIFA: 410-450). המסקנה הטובה ביותר: הכדורים שנבדקו תקניים, אך נדרשות בדיקות נוספות (מדידה של 2 כדורים אינה מספיקה כדי להסיק על כלל הייצור של המפעל). כיווני חשיבה ואסטרטגיות: הבחנה בין מסקנה לגבי הפריטים שנבדקו בפועל, לבין הכללה לכלל קו הייצור. טעויות נפוצות: הכללה מיידית ('כל הכדורים תקניים') מתוך מדגם קטן מדי. מידע נוסף: תרחיש יצרני מונדיאל. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-04/methodica-science-mass-measure-03-04-001/q1",
@@ -44,7 +43,7 @@
       "title": "מתקדם 2: השוואת ראיות מדעיות - דיוק מול חזרות",
       "informationToBot": "מטרת הפריט: תרגול מתקדם בהערכת חוזק ראייתי - שילוב בין דיוק המכשיר לבין ביצוע חזרות. מה התלמיד אמור להבין/לתרגל: 3 קבוצות בדקו חומר פעיל (כ-0.053 גרם). קבוצה א' (אנליטיים, מדידה בודדת 0.051), קבוצה ב' (מעבדה, 3 מדידות עקביות של 0.050), קבוצה ג' (אנליטיים, 3 מדידות 0.050/0.051/0.050). קבוצה ג' הציגה את הראיה החזקה ביותר - שילוב של מכשיר מדויק (אנליטי) עם חזרות. כיווני חשיבה ואסטרטגיות: הבנה ששני מרכיבים נדרשים יחד - גם דיוק המכשיר וגם מספר מדידות - לא מספיק רק אחד מהם. טעויות נפוצות: בחירת קבוצה א' (דיוק בלבד, ללא חזרות) או קבוצה ב' (חזרות בלבד, פחות מדויק) כבעלת הראיה החזקה ביותר. מידע נוסף: כולל טבלת השוואה מפורטת של 3 הקבוצות. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-04/methodica-science-mass-measure-03-04-002/q1",
@@ -65,7 +64,7 @@
       "title": "מתקדם 3: נכון/לא נכון - מדוע 3 מדידות (4 סעיפים)",
       "informationToBot": "מטרת הפריט: תרגול מתקדם בהבנת התפקיד של מדידה שלישית כשיש שתי מדידות שונות. מה התלמיד אמור להבין/לתרגל: חוקרת שקלה דגימה פעמיים (5.0, 5.8 גרם) - שתי תוצאות שונות. סעיף 1 - לא נכון: המדידה הגבוהה יותר אינה בהכרח המדויקת יותר. סעיף 2 - נכון: כמה מדידות מאפשרות ממוצע אמין יותר. סעיף 3 - נכון: עם רק 2 מדידות שונות קשה לדעת איזו מייצגת טוב יותר. סעיף 4 - לא נכון: מדידה שלישית נועדה לזהות אמינות/חריגות, לא רק לקבל מספר גדול יותר. כיווני חשיבה ואסטרטגיות: הבנה שכאשר 2 מדידות סותרות, מדידה נוספת עוזרת להכריע ביניהן, לא סתם 'להגדיל' את התוצאה. טעויות נפוצות: הנחה שגויה שמדידה 'גבוהה יותר' או 'אחרונה' היא אוטומטית המדויקת. מידע נוסף: 4 היגדים נפרדים, כל אחד נכון/לא נכון. צילום מסך: לא צורף.",
       "contentType": "practice",
-      "mediaFormat": "content-interactive",
+      "mediaFormat": "interactive-content",
       "questions": [
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-04/methodica-science-mass-measure-03-04-003/q1",
