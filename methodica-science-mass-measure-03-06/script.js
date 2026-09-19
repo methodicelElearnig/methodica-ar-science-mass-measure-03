@@ -38,9 +38,12 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* resume: לצייר מסך שכבר נענה — בכל ניווט, לא רק בנחיתת השחזור. */
+  try { repaintScreen(n); } catch (e) { console.error('[resume] repaint', e); }
   /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
      עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
   try { xapiOnScreen(n); } catch (e) {}
+  try { scheduleResumeSave(); } catch (e) {}
 }
 
 function resetScreenState(n) {
@@ -196,6 +199,9 @@ function s6aCheck() {
     s6aShowFeedback('wrong1', false);
   }
   s6aSyncBar();
+  /* resume: סנכרוני. כאן, בניגוד לשאר הסינים, הזנב משותף לשלושת הענפים
+     ולכן flush אחד מכסה כל מסלול. */
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s6aOpenHint() {
@@ -232,7 +238,11 @@ function s6aSyncBar() {
 }
 
 function resetScreenState2() {
-  if (s6aDone) { s6aSyncBar(); return; } // resume-state guard — הושלם כבר, לא מאפסים
+  /* resume-state guard. ⚠️ לא רק Done: לומד שניסה פעם אחת, טעה ועזב הוא
+     במצב not-done-but-attempted, ואיפוס כאן היה מוחק את בחירתו לפני
+     ש-repaintScreen מספיק לצייר אותה. אותה מוסכמה בדיוק כמו בשאר
+     הסינים (סיין 4: `if (sNDone || sNAttempts > 0 || sNSelected) return`). */
+  if (s6aDone || s6aAttempts > 0 || s6aSelected) { s6aSyncBar(); return; }
   s6aSelected = null;
   s6aAttempts = 0;
   document.querySelectorAll('#s2 .scq-opt').forEach(function (el) {
@@ -326,6 +336,9 @@ function s6bCheck() {
     s6bShowFeedback('wrong1', false);
   }
   s6bSyncBar();
+  /* resume: סנכרוני. כאן, בניגוד לשאר הסינים, הזנב משותף לשלושת הענפים
+     ולכן flush אחד מכסה כל מסלול. */
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s6bOpenHint() {
@@ -359,7 +372,11 @@ function s6bSyncBar() {
 }
 
 function resetScreenState3() {
-  if (s6bDone) { s6bSyncBar(); return; } // resume-state guard — הושלם כבר, לא מאפסים
+  /* resume-state guard. ⚠️ לא רק Done: לומד שניסה פעם אחת, טעה ועזב הוא
+     במצב not-done-but-attempted, ואיפוס כאן היה מוחק את בחירתו לפני
+     ש-repaintScreen מספיק לצייר אותה. אותה מוסכמה בדיוק כמו בשאר
+     הסינים (סיין 4: `if (sNDone || sNAttempts > 0 || sNSelected) return`). */
+  if (s6bDone || s6bAttempts > 0 || s6bSelected) { s6bSyncBar(); return; }
   s6bSelected = null;
   s6bAttempts = 0;
   document.querySelectorAll('#s3 .scq-opt').forEach(function (el) {
@@ -488,6 +505,10 @@ function makeDragQuestion(cfg) {
   let done = false;
   let answerSnapshot = null; // הפלייסמנט של הלומד ברגע הניסיון האחרון הכושל, לפני revealCorrect()
   let revealed = false;
+  /* resume: ⚠️ נשמר במפורש ואינו נגזר בדיעבד מ-placement. revealCorrect()
+     דורס את placement בפתרון הנכון, ומאותו רגע הלוח "נראה" נכון בלי קשר
+     למה שהלומד באמת עשה. */
+  let passed = false;
 
   function render() {
     dragIds.forEach(function (dragId) {
@@ -705,14 +726,18 @@ function makeDragQuestion(cfg) {
       });
     }
 
+    try { flushResumeSave(); } catch (e) {}
+
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
+      passed = true;
       saveResult(true);
       showFeedback('correct');
       if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else if (attempts >= maxAttempts) {
       done = true;
+      passed = false;
       saveResult(false);
       if (cfg.revealBtnId) {
         answerSnapshot = Object.assign({}, placement); // לפני כל reveal
@@ -752,7 +777,7 @@ function makeDragQuestion(cfg) {
 
   function resetInitial() {
     done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
-    answerSnapshot = null; revealed = false;
+    answerSnapshot = null; revealed = false; passed = false;
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
     targetIds.forEach(function (tId) {
       const zone = document.getElementById(tId);
@@ -816,7 +841,77 @@ function makeDragQuestion(cfg) {
   window[cfg.prefix + 'CloseHint'] = closeHint;
   window[cfg.prefix + 'ToggleReveal'] = toggleReveal;
 
-  return { reset: reset };
+  /* ── resume: המצב של הפקטורי חי ב-closure, ולכן נדרש שער מפורש ──
+     הוחזר קודם { reset } בלבד; ארבעת ה-hooks של הסין אינם יכולים להגיע
+     לכאן בשום דרך אחרת. */
+  function getState() {
+    return {
+      placement: Object.assign({}, placement),
+      attempts: attempts,
+      done: done,
+      checked: checked,
+      passed: passed,
+      revealed: revealed,
+      /* התשובה של הלומד עצמו, כפי שהייתה לפני כל reveal. בלעדיה שחזור היה
+         מקבע את הפתרון הנכון על המסך כאילו הוא זה שהגיש אותו. */
+      answerSnapshot: answerSnapshot ? Object.assign({}, answerSnapshot) : null
+    };
+  }
+
+  function setState(s) {
+    if (!s) return;
+    if (s.placement) dragIds.forEach(function (id) { placement[id] = s.placement[id] || 'source'; });
+    attempts = s.attempts || 0;
+    done = !!s.done;
+    checked = !!s.checked;
+    passed = !!s.passed;
+    revealed = !!s.revealed;
+    answerSnapshot = s.answerSnapshot ? Object.assign({}, s.answerSnapshot) : null;
+    /* גרירה חיה — scratch, לעולם לא משוחזר: ערך ישן היה גורם ל-drop לפעול
+       על קלף רפאים. */
+    dragActive = null;
+    dropHandled = false;
+  }
+
+  /* מחקה את כתיבות ה-DOM של check() בלבד: בלי שינוי מצב, בלי דיווח. */
+  function restoreUI() {
+    /* ⚠️ מסך נקי → render() בלבד, לעולם לא resetInitial(): הוא היה מאפס את
+       placement ל-'source' ומוחק גרירות שטרם הוגשו — בכל ניווט, לא רק
+       בשחזור. */
+    if (!done && attempts === 0) { hideFeedback(); render(); return; }
+
+    /* סימוני האזורים — אותה לולאה בדיוק כמו ב-check(). */
+    targetIds.forEach(function (tId) {
+      const valid = correctMap[tId];
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      const ok = (placed === valid) || (placed && labels[placed] === labels[valid]);
+      const zone = document.getElementById(tId);
+      if (zone) { zone.classList.remove('correct', 'wrong'); zone.classList.add(ok ? 'correct' : 'wrong'); }
+    });
+
+    if (done) {
+      /* שלושת הערכים יחד: מה שמוצג עכשיו (placement), התשובה של הלומד
+         (answerSnapshot) ומי מהם על המסך (revealed). */
+      if (passed) showFeedback('correct');
+      else if (revealed) showFeedback('wrongFinal');
+      else showFeedback(cfg.revealBtnId ? 'pending' : 'wrongFinal');
+      restoreFinal();
+      return;
+    }
+
+    /* ניסיון שגוי שאינו אחרון. */
+    showFeedback('wrong1');
+    render();
+    if (cfg.hintBtnId) {
+      const hintBtn = document.getElementById(cfg.hintBtnId);
+      if (hintBtn) hintBtn.hidden = false;
+    }
+    const btn = document.getElementById(cfg.checkBtnId);
+    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+  }
+
+  return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
 }
 
 const TEXTS_S6C_DQ = {
@@ -992,6 +1087,80 @@ document.addEventListener('keydown', function (e) {
   const modal = document.getElementById('img-zoom-modal');
   if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) imgZoomClose();
 });
+
+/* ═══════════════════ resume — ארבעת ה-hooks של הסין ═══════════════════ */
+
+function capturePartPayload() {
+  var st = { currentScreen: currentScreen };
+  st.qResults = Object.assign({}, XAPI_Q_RESULTS);
+  /* ⚠️ אין בסין הזה משתנה phase. sNCheck מסמן done בשני הענפים המסיימים
+     ומבדיל ביניהם רק לפי האפשרות שנבחרה — ולכן הצייר גוזר נכונות מתוך
+     **הבחירה השמורה**, ולעולם לא ממספר הניסיונות. */
+  st.s6a = { sel: s6aSelected, att: s6aAttempts, done: s6aDone };
+  st.s6b = { sel: s6bSelected, att: s6bAttempts, done: s6bDone };
+  st.dqC = dqSectionC.getState();
+  return st;
+}
+
+function applyResumeVars(st) {
+  if (!st) return;
+  if (st.qResults) Object.keys(st.qResults).forEach(function (k) { XAPI_Q_RESULTS[k] = st.qResults[k]; });
+  if (st.s6a) { s6aSelected = st.s6a.sel || null; s6aAttempts = st.s6a.att || 0; s6aDone = !!st.s6a.done; }
+  if (st.s6b) { s6bSelected = st.s6b.sel || null; s6bAttempts = st.s6b.att || 0; s6bDone = !!st.s6b.done; }
+  if (st.dqC) dqSectionC.setState(st.dqC);
+}
+
+/* ריק, וזה נכון: אין בסין הזה ערך שחי רק ב-DOM. */
+function applyResumeDom(st) {}
+
+function restoreScreenUI(n) {
+  try {
+    if (n === 2) restoreNoPhaseScqUI({
+      screenSel: '#s2', correctId: S6A.correctId, selected: s6aSelected,
+      attempts: s6aAttempts, done: s6aDone, optEl: s6aOptEl,
+      lock: s6aLockOptions, showFeedback: s6aShowFeedback, sync: s6aSyncBar
+    });
+    if (n === 3) restoreNoPhaseScqUI({
+      screenSel: '#s3', correctId: S6B.correctId, selected: s6bSelected,
+      attempts: s6bAttempts, done: s6bDone, optEl: s6bOptEl,
+      lock: s6bLockOptions, showFeedback: s6bShowFeedback, sync: s6bSyncBar
+    });
+    if (n === 4) dqSectionC.restoreUI();
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* חד-ברירה בלי משתנה phase, מונע-syncBar. צייר אחד לשני הסעיפים.
+   ⚠️ ה-selector מגיע ב-cfg ואינו נגזר מהתחילית: מספרי המסכים ואותיות
+   הסעיפים מוסטים באחד כאן (סעיף א יושב ב-#s2, סעיף ב ב-#s3). */
+function restoreNoPhaseScqUI(o) {
+  if (!o.done && o.attempts === 0 && !o.selected) return;
+
+  if (o.done) {
+    var isRight = (o.selected === o.correctId);
+    var selEl = o.optEl(o.selected);
+    if (isRight) {
+      if (selEl) { selEl.classList.add('correct'); selEl.classList.remove('selected'); }
+      o.showFeedback('correct', true);
+    } else {
+      if (selEl) { selEl.classList.add('wrong'); selEl.classList.remove('selected'); }
+      var corrEl = o.optEl(o.correctId);
+      if (corrEl) corrEl.classList.add('correct');
+      o.showFeedback('wrong2', false);
+    }
+    o.lock();
+  } else if (o.attempts > 0) {
+    var wEl = o.optEl(o.selected);
+    if (wEl) { wEl.classList.add('wrong'); wEl.classList.remove('selected'); }
+    o.showFeedback('wrong1', false);
+  } else if (o.selected) {
+    var sEl = o.optEl(o.selected);
+    if (sEl) { sEl.classList.add('selected'); sEl.setAttribute('aria-checked', 'true'); }
+  }
+
+  /* תמיד לסיים כאן: sNSyncBar הוא בדיוק ה"חישוב מחדש מאותו פרדיקט" —
+     הוא קובע את תווית הכפתור, את disabled ואת נראות הרמז. */
+  o.sync();
+}
 
 /* כמה משלושת הסעיפים של מועד ב נפתרו נכון. נקרא מ-localStorage ולא ממשתנה
    בזיכרון, כי שלושת הסעיפים כותבים דרך saveMoedBResult / cfg.resultKey. */
