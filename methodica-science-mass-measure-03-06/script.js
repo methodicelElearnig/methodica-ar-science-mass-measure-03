@@ -38,6 +38,9 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
+     עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
+  try { xapiOnScreen(n); } catch (e) {}
 }
 
 function resetScreenState(n) {
@@ -167,6 +170,10 @@ function s6aCheck() {
   if (!s6aSelected || s6aDone) return;
   s6aAttempts++;
   const optEl = s6aOptEl(s6aSelected);
+  /* xAPI: בראש הפונקציה, לפני ההסתעפות. המבנה כאן הוא else-if בלי return
+     מוקדם, ולכן הצבה בתוך אחד הענפים הייתה מפספסת את השאר. */
+  xapiAnswered('001', 'q1', s6aSelected === S6A.correctId,
+    s6aSelected === S6A.correctId || s6aAttempts >= S6A.maxAttempts, xapiAnswerText(optEl));
 
   if (s6aSelected === S6A.correctId) {
     optEl.classList.add('correct');
@@ -193,6 +200,9 @@ function s6aCheck() {
 
 function s6aOpenHint() {
   if (s6aDone) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל.
+     הפונקציה פותחת בלבד (hidden=false) ולא toggle, ולכן אין דיווח כפול. */
+  xapiRequestedHint('001', 'q1');
   document.getElementById('s2-hint-overlay').hidden = false;
 }
 function s6aCloseHint() { document.getElementById('s2-hint-overlay').hidden = true; }
@@ -292,6 +302,8 @@ function s6bCheck() {
   if (!s6bSelected || s6bDone) return;
   s6bAttempts++;
   const optEl = s6bOptEl(s6bSelected);
+  xapiAnswered('001', 'q2', s6bSelected === S6B.correctId,
+    s6bSelected === S6B.correctId || s6bAttempts >= S6B.maxAttempts, xapiAnswerText(optEl));
 
   if (s6bSelected === S6B.correctId) {
     optEl.classList.add('correct');
@@ -318,6 +330,9 @@ function s6bCheck() {
 
 function s6bOpenHint() {
   if (s6bDone) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל.
+     הפונקציה פותחת בלבד (hidden=false) ולא toggle, ולכן אין דיווח כפול. */
+  xapiRequestedHint('001', 'q2');
   document.getElementById('s3-hint-overlay').hidden = false;
 }
 function s6bCloseHint() { document.getElementById('s3-hint-overlay').hidden = true; }
@@ -674,12 +689,28 @@ function makeDragQuestion(cfg) {
 
     render();
 
+    /* xAPI: **אחרי** לולאת האזורים, כי allCorrect סופי רק בסופה, ולפני
+       ההסתעפות כדי שירוץ פעם אחת בכל מסלול.
+       ⚠️ xapiZoneAnswer לא מתאים כאן: העוזר בונה מזהי אזור בתבנית
+       <prefix>-zone-<id>, בעוד היעדים של הפקטורי הזה הם s6c-target-N.
+       לכן בונים את מחרוזת התשובה מקומית מתוך placement. */
+    if (cfg.xapiItem) {
+      const _ans = targetIds.map(function (tId) {
+        let placed = null;
+        dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+        return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
+      }).join(' | ');
+      (cfg.xapiQuestions || ['q1']).forEach(function (q) {
+        xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
+      });
+    }
+
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
       saveResult(true);
       showFeedback('correct');
-      if (btn) { if (cfg.onContinue) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
+      if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else if (attempts >= maxAttempts) {
       done = true;
       saveResult(false);
@@ -693,7 +724,7 @@ function makeDragQuestion(cfg) {
         revealCorrect();
         showFeedback('wrongFinal');
       }
-      if (btn) { if (cfg.onContinue) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
+      if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else {
       showFeedback('wrong1');
       checked = false;
@@ -708,6 +739,8 @@ function makeDragQuestion(cfg) {
     if (!cfg.hintBtnId) return;
     const hintBtn = document.getElementById(cfg.hintBtnId);
     if (hintBtn) hintBtn.disabled = true;
+    /* xAPI: אחרי הגארד ומיד לפני שהרמז נחשף בפועל. */
+    if (cfg.xapiItem) xapiRequestedHint(cfg.xapiItem, (cfg.xapiQuestions || ['q1'])[0]);
     document.getElementById(cfg.hintOverlayId).hidden = false;
   }
   function closeHint() {
@@ -743,7 +776,7 @@ function makeDragQuestion(cfg) {
   function restoreFinal() {
     const btn = document.getElementById(cfg.checkBtnId);
     if (btn) {
-      if (cfg.onContinue) { btn.hidden = false; btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+      if (cfg.onContinue) { btn.hidden = false; btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; }
       else { btn.hidden = true; }
     }
     if (cfg.hintBtnId) {
@@ -814,6 +847,16 @@ const dqSectionC = makeDragQuestion({
   feedboxId: 's4-feedbox',
   revealBtnId: 's4-reveal-btn',
   resultKey: 'lomda_moedB_part3_result',
+  /* xAPI: סעיף ג הוא השאלה השלישית של פריט 001. */
+  xapiItem: '001',
+  xapiQuestions: ['q3'],
+  /* סוף הרכיב. עד 2026-09-17 לא היה כאן onContinue כלל, ולכן הפקטורי הסתיר
+     את כפתור הבדיקה והמסך הזה נגמר "בלי לחיצה אחרונה". זה לא מספיק מרגע
+     שמדווחים completed: Kata מסירה את הרכיב מהמסך ברגע שהדיווח מגיע
+     (הנחיות 2.7 עמ' 23), ודיווח בתוך check() היה חוטף מהלומד את המשוב ואת
+     כפתור "התשובה הנכונה" באותו רגע. לכן נוסף כפתור סיום מפורש. */
+  continueLabel: 'סיימתי',
+  onContinue: function () { s6cFinish(); },
   labels: {
     's6c-drag-medayekim': 'המדייקים',
     's6c-drag-teken': 'התקן',
@@ -949,6 +992,48 @@ document.addEventListener('keydown', function (e) {
   const modal = document.getElementById('img-zoom-modal');
   if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) imgZoomClose();
 });
+
+/* כמה משלושת הסעיפים של מועד ב נפתרו נכון. נקרא מ-localStorage ולא ממשתנה
+   בזיכרון, כי שלושת הסעיפים כותבים דרך saveMoedBResult / cfg.resultKey. */
+function getMoedBScore() {
+  let n = 0;
+  try {
+    n = ['lomda_moedB_part1_result', 'lomda_moedB_part2_result', 'lomda_moedB_part3_result']
+      .filter(function (k) { return localStorage.getItem(k) === 'pass'; }).length;
+  } catch (e) {}
+  return n;
+}
+
+/* סוף הרכיב — הלחיצה האחרונה של הלומד, בכפתור "סיימתי" של סעיף ג, אחרי
+   שהמשוב והפתרון כבר הוצגו. מדווח בשני המסלולים (הצלחה וכישלון).
+   ⚠️ הרכיב אינו מנווט: Kata מסירה אותו מהמסך ברגע שה-completed מגיע.
+   מסך 0 מבטיח "3 סעיפים, עליכם להצליח בכולם", ולכן success הוא 3 מתוך 3. */
+function s6cFinish() {
+  const _n = getMoedBScore();
+  xapiEndComponent({ success: _n === 3, score: { scaled: _n / 3 } },
+    document.getElementById('s4-check'));
+}
+
+/* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
+   נתונים בלבד. השכבה המשותפת ב-../unit-js/ קוראת אותם בזמן call. */
+
+/* ⚠️ חייב להחזיק בדיוק TOTAL_SCREENS מפתחות (5), 0..4, בלי חורים.
+   כל הרכיב הוא פריט קטלוגי אחד (001) שנושא שלוש שאלות — סעיפים א/ב/ג —
+   ולכן מסכים 1..4 חולקים סיומת אחת ולא נשלח ביניהם שום statement. */
+var SCREEN_TO_SUBCONTENT = {
+  0: null,          /* מעבר: הקדמה למשימת השיא (מועד ב) */
+  1: ['001', 1],    /* "מי יזכה במכרז המלכותי?" — הקדמה נרטיבית לשאלת השיא */
+  2: ['001', 2],    /* סעיף א — q1 */
+  3: ['001', 3],    /* סעיף ב — q2 */
+  4: ['001', 4]     /* סעיף ג — q3 (גרירה), ובסופו כפתור "סיימתי" */
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-06';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+var XAPI_EVAL_ITEMS = { '001': 1 };
+
+var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-06.json';
 
 /* אתחול */
 scaleApp();
