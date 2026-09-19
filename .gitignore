@@ -1,7 +1,40 @@
-# Internal working docs / source material — not part of the delivered lomda code
+# Internal working docs / source material — not part of the delivered lomda code.
+# The *.md rule is anchored to the repo root on purpose: the loose working notes
+# that live at the top level stay out, while the design docs under docs-and-tools/
+# and _test/README.md are tracked. An unanchored *.md would silently swallow those.
+/*.md
+!/README.md
+!/HOWTO-720-REPORTING.md
+
 archive/
-*.md
 *.pptx
 *.ppt
 *.docx
 *.doc
+
+# The Kata API key — the one live credential allowed to sit on disk, and the
+# reason docs-and-tools/ needs an allowlist rather than a denylist at packaging.
+# Never commit it.
+kata-api-key.txt
+
+# Logs written by the metadata scripts.
+send-metadata.log
+retrieve-metadata.log
+rename-to-iri.log
+
+# Catalogue snapshot pulled down to diff against metadata/ — not a source of truth.
+metadata-from/
+
+# Test harness dependencies. jsdom is ~26MB and this tree is OneDrive-synced, so
+# install it outside the project and point at it with NODE_PATH (see _test/README.md).
+node_modules/
+
+# Snapshots taken by docs-and-tools/save-restore-state.html. These are QA run
+# artifacts and may contain a real learner's answers.
+docs-and-tools/states/*
+!docs-and-tools/states/.gitkeep
+
+# Windows / OneDrive
+Thumbs.db
+desktop.ini
+.DS_Store
