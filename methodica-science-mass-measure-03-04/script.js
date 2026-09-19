@@ -105,12 +105,19 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* resume: לצייר מסך שכבר נענה. ⚠️ בכל ניווט, לא רק בנחיתת השחזור —
+     applyResumeVars מחזיר את משתני **כל** השאלות בסין, ובלי הציור הזה מסך
+     שנענה היה נראה פתוח אך אינו מגיב ללחיצות (sNSelect פותח ב-if (sNDone)
+     return, והכפתור מושבת מה-markup). */
+  try { repaintScreen(n); } catch (e) { console.error('[resume] repaint', e); }
   /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
      עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
   try { xapiOnScreen(n); } catch (e) {}
   requestAnimationFrame(function () {
     target.querySelectorAll('.tbl-content').forEach(initFakeScrollbar);
   });
+  /* resume: נקודת השמירה. debounce של 800ms — תוחם את האובדן למסך אחד. */
+  try { scheduleResumeSave(); } catch (e) {}
 }
 
 function resetScreenState(n) {
@@ -286,6 +293,9 @@ function s1Check() {
     stationProgress.q1 = 'success';
     updateQuestionNav('s1');
     s1SetBarDone('המשך', function () { goTo(2); });
+    /* resume: סנכרוני, לא debounce — התשובה כבר מחויבת, ולשונית שנסגרת
+       לפני הניווט הבא לא תאבד אותה. ⚠️ לפני ה-return, לא אחריו. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -312,6 +322,7 @@ function s1Check() {
     updateQuestionNav('s1');
     s1SetBarDone('המשך', function () { goTo(2); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s1LockOptions() {
@@ -473,6 +484,9 @@ function s2Check() {
     stationProgress.q2 = 'success';
     updateQuestionNav('s2');
     s2SetBarDone('המשך', function () { goTo(3); });
+    /* resume: סנכרוני, לא debounce — התשובה כבר מחויבת, ולשונית שנסגרת
+       לפני הניווט הבא לא תאבד אותה. ⚠️ לפני ה-return, לא אחריו. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -499,6 +513,7 @@ function s2Check() {
     updateQuestionNav('s2');
     s2SetBarDone('המשך', function () { goTo(3); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s2LockOptions() {
@@ -684,6 +699,9 @@ function s3Check() {
     stationProgress.q3 = 'success';
     updateQuestionNav('s3');
     s3SetBarDone('המשך', s3Finish);
+    /* resume: סנכרוני, לא debounce — התשובה כבר מחויבת, ולשונית שנסגרת
+       לפני הניווט הבא לא תאבד אותה. ⚠️ לפני ה-return, לא אחריו. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -716,6 +734,7 @@ function s3Check() {
     updateQuestionNav('s3');
     s3SetBarDone('המשך', s3Finish);
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 /* מספר השאלות שנענו נכון מתוך השלוש שהלומד הובטח להן ("3 שאלות מתקדמות",
@@ -887,6 +906,169 @@ document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) imgZoomClose();
 });
 
+/* ═══════════════════ resume — ארבעת ה-hooks של הסין ═══════════════════
+   ../unit-js/40-resume.js קורא להם; הם חייבים לשבת כאן ולא שם, כי כל מצב
+   הלומד מוגדר כ-let/const ברמת הקובץ — כלומר בסקופ הלקסיקלי הגלובלי, שאינו
+   נגיש דרך window.
+
+   הציירים מחקים **רק** את כתיבות ה-DOM של ענפי ההגשה: בלי שינוי מצב, בלי
+   xapiAnswered ובלי stationProgress — כל אלה כבר קרו בפעם הראשונה, ושכפולם
+   כאן היה מדווח תשובה שנייה. updateQuestionNav נקרא ממילא מ-resetScreenState
+   לפני הגארד, ולכן ה-qnav מצויר מ-stationProgress המשוחזר בלי שהצייר יגע בו.
+   ═══════════════════════════════════════════════════════════════════ */
+
+function capturePartPayload() {
+  var st = { currentScreen: currentScreen };
+  /* ציון וניתוב. מפה פר-סין שלא ניתן להגיע אליה מהשכבה המשותפת. */
+  st.qResults = Object.assign({}, XAPI_Q_RESULTS);
+  st.stations = Object.assign({}, stationProgress);
+  st.scq = {
+    s1: { sel: s1Selected, att: s1Attempts, done: s1Done, phase: s1Phase },
+    s2: { sel: s2Selected, att: s2Attempts, done: s2Done, phase: s2Phase }
+  };
+  /* טבלת נכון/לא-נכון. כל סימון שהצייר מצייר נגזר מהמפה הזאת מול
+     TF_S3_CORRECT — s3Select לעולם לא מאפס אותה, ולכן (בניגוד לרב-ברירה
+     בסיין 2) אין כאן שום ערך שיושב רק ב-DOM. */
+  st.s3 = { sel: Object.assign({}, s3Selected), att: s3Attempts, done: s3Done, phase: s3Phase };
+  return st;
+}
+
+function applyResumeVars(st) {
+  if (!st) return;
+  /* מוטציה לפי מפתח ולא השמה: הקוד כותב ל-stationProgress.qN ישירות,
+     ו-updateQuestionNav קורא דרך אותה הצמדה חיה. */
+  if (st.qResults) Object.keys(st.qResults).forEach(function (k) { XAPI_Q_RESULTS[k] = st.qResults[k]; });
+  if (st.stations) Object.keys(st.stations).forEach(function (k) { stationProgress[k] = st.stations[k]; });
+  if (st.scq) {
+    if (st.scq.s1) {
+      s1Selected = st.scq.s1.sel || null; s1Attempts = st.scq.s1.att || 0;
+      s1Done = !!st.scq.s1.done; s1Phase = st.scq.s1.phase || 'before';
+    }
+    if (st.scq.s2) {
+      s2Selected = st.scq.s2.sel || null; s2Attempts = st.scq.s2.att || 0;
+      s2Done = !!st.scq.s2.done; s2Phase = st.scq.s2.phase || 'before';
+    }
+  }
+  if (st.s3) {
+    if (st.s3.sel) Object.keys(st.s3.sel).forEach(function (k) { s3Selected[k] = st.s3.sel[k]; });
+    s3Attempts = st.s3.att || 0; s3Done = !!st.s3.done; s3Phase = st.s3.phase || 'before';
+  }
+}
+
+/* ריק, וזה נכון: אין בסין הזה ערך שחי רק ב-DOM. */
+function applyResumeDom(st) {}
+
+function restoreScreenUI(n) {
+  try {
+    if (n === 1) restoreScqUI({
+      screenSel: '#s1', cfg: S1, selected: s1Selected, attempts: s1Attempts,
+      done: s1Done, phase: s1Phase, optEl: s1OptEl, lock: s1LockOptions,
+      showFeedback: s1ShowFeedback, setBarDone: s1SetBarDone, check: s1Check,
+      checkBtnId: 's1-check', hintBtnId: 's1-hint',
+      onContinue: function () { goTo(2); }
+    });
+    if (n === 2) restoreScqUI({
+      screenSel: '#s2', cfg: S2, selected: s2Selected, attempts: s2Attempts,
+      done: s2Done, phase: s2Phase, optEl: s2OptEl, lock: s2LockOptions,
+      showFeedback: s2ShowFeedback, setBarDone: s2SetBarDone, check: s2Check,
+      checkBtnId: 's2-check', hintBtnId: 's2-hint',
+      onContinue: function () { goTo(3); }
+    });
+    if (n === 3) restoreTfTableUI();
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* צייר אחד לכל שאלות החד-ברירה בסין. ⚠️ ה-cfg מגיע כפרמטר ולעולם לא נקרא
+   כגלובל לפי שם — טעות כזאת נבלעת ב-try/catch שעוטף את הצייר ונעלמת. */
+function restoreScqUI(o) {
+  /* מסך נקי — לא נוגעים. גם מבטיח שהצייר אינו מאפס כלום. */
+  if (!o.done && o.attempts === 0 && !o.selected) return;
+
+  if (o.done) {
+    if (o.phase === 'correct') {
+      var okEl = o.optEl(o.selected);
+      if (okEl) { okEl.classList.add('correct'); okEl.classList.remove('selected'); }
+      o.showFeedback('correct', true);
+    } else {
+      /* אותו סדר כמו ב-sNCheck: קודם הטעות של הלומד, אחר כך הנכונה —
+         כך חפיפה מסתיימת בירוק. */
+      var badEl = o.optEl(o.selected);
+      if (badEl && o.selected !== o.cfg.correctId) {
+        badEl.classList.add('wrong'); badEl.classList.remove('selected');
+      }
+      var corrEl = o.optEl(o.cfg.correctId);
+      if (corrEl) corrEl.classList.add('correct');
+      o.showFeedback('wrong2', false);
+    }
+    o.lock();
+    o.setBarDone('המשך', o.onContinue);
+    return;
+  }
+
+  var checkBtn = document.getElementById(o.checkBtnId);
+  if (o.phase === 'wrong1') {
+    var wEl = o.optEl(o.selected);
+    if (wEl) { wEl.classList.add('wrong'); wEl.classList.remove('selected'); }
+    o.showFeedback('wrong1', false);
+    var hintBtn = document.getElementById(o.hintBtnId);
+    if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+    /* מושבת עד בחירה חדשה — בדיוק כמו בקוד החי; sNSelect מפעיל מחדש,
+       ולכן הלומד אינו תקוע. */
+    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
+    return;
+  }
+
+  /* נבחרה אפשרות אך טרם נבדקה. הכפתור מחושב מאותו פרדיקט שבו sNSelect
+     משתמש — בלי זה מסך משוחזר עם בחירה היה מציג כפתור מושבת לנצח. */
+  var selEl = o.optEl(o.selected);
+  if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = !o.selected; }
+}
+
+/* טבלת נכון/לא-נכון (מסך 3). מחקה את כתיבות ה-DOM של s3Check בלבד. */
+function restoreTfTableUI() {
+  /* "מסך נקי" = אף שורה לא נבחרה. ⚠️ לא s3AllSelected(): לומד שסימן שתיים
+     מארבע השורות ועזב אמנם לא יכול עדיין ללחוץ "צדקתי?", אבל הבחירות שלו
+     כן צריכות לחזור — גארד שמסתמך על "כולן נבחרו" היה מוחק אותן בשקט. */
+  var anyRowChosen = ['r1', 'r2', 'r3', 'r4'].some(function (r) { return !!s3Selected[r]; });
+  if (!s3Done && s3Attempts === 0 && !anyRowChosen) return;
+
+  if (s3Done) {
+    /* s3LockRows(true) מצייר בעצמו btn-correct/btn-wrong לכל שורה, ולכן
+       בענף הכישלון אין צורך בלולאה שנייה. בענף ההצלחה מעבירים false,
+       בדיוק כמו הקוד החי — טבלה נכונה לגמרי אינה מסומנת. */
+    s3LockRows(s3Phase !== 'correct');
+    s3ShowFeedback(s3Phase === 'correct' ? 'correct' : 'wrong2', s3Phase === 'correct');
+    s3SetBarDone('המשך', s3Finish);
+    return;
+  }
+
+  [1, 2, 3, 4].forEach(function (rowNum) {
+    var r = 'r' + rowNum;
+    var val = s3Selected[r];
+    if (!val) return;
+    var btn = document.getElementById('s3-r' + rowNum + '-' + val);
+    if (s3Attempts === 0) { if (btn) btn.classList.add('selected'); return; }
+    /* אחרי ניסיון שגוי: אותה לולאה בדיוק כמו ב-s3Check. */
+    if (val === TF_S3_CORRECT[r]) {
+      if (btn) btn.classList.add('btn-correct');
+    } else {
+      var row = document.getElementById('s3-row-' + rowNum);
+      if (row) row.classList.add('row-wrong');
+      if (btn) btn.classList.add('btn-wrong');
+    }
+  });
+
+  if (s3Attempts > 0) {
+    s3ShowFeedback('wrong1', false);
+    var hintBtn = document.getElementById('s3-hint');
+    if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+  }
+  /* אותו פרדיקט שבו s3Select משתמש. */
+  var checkBtn = document.getElementById('s3-check');
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s3Check; checkBtn.disabled = !s3AllSelected(); }
+}
+
 /* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
    נתונים בלבד. השכבה המשותפת ב-../unit-js/ קוראת אותם בזמן call. */
 
@@ -916,8 +1098,14 @@ scaleApp();
 scqFbMakeDraggable('s1-feedbox');
 scqFbMakeDraggable('s2-feedbox');
 scqFbMakeDraggable('s3-feedbox');
-/* קישור בין סינים — חזרה: אם הגענו לכאן עם #screen=N (מכפתור "חזרה"
-   בסיין הבא), קופצים ישר למסך הזה במקום למסך הראשון. */
+/* נחיתה ראשונית, סינכרונית.
+   ⚠️ ה-#screen=N (מכפתור "חזרה" בסיין הבא) בוחר כאן **רק את המסך**, והוא
+   אינו מבטל שחזור: כשיש מסמך, 50-loader.js מעביר אותו מאוחר יותר
+   כ-screenOverride ל-applyExecutionState, שמנווט שוב לאותו מסך — הפעם עם
+   המצב משוחזר. עד שתוקן, דילוג על השחזור כשהיה hash איבד את
+   XAPI_Q_RESULTS ואת stationProgress, ולומד שכבר עמד בסף נותב לתרגול מתקן.
+   כשאין מסמך (לומד חדש) הלואדר לא מנווט כלל, ולכן הנחיתה הזאת היא מה שמכבד
+   את ה-hash. */
 (function () {
   const m = /^#screen=(\d+)$/.exec(location.hash);
   if (m) goTo(parseInt(m[1], 10));
