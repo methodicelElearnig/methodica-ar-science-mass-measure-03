@@ -105,6 +105,9 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
+     עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
+  try { xapiOnScreen(n); } catch (e) {}
   requestAnimationFrame(function () {
     target.querySelectorAll('.tbl-content').forEach(initFakeScrollbar);
   });
@@ -268,6 +271,10 @@ function s1Check() {
   if (!s1Selected || s1Done) return;
   s1Attempts++;
   const optEl = s1OptEl(s1Selected);
+  /* xAPI: לפני ההסתעפות, כדי שירוץ בדיוק פעם אחת לכל לחיצה בשני המסלולים.
+     isLast הוא "נכון, או שנגמרו הניסיונות" — רק answered.last נכנס למכנה. */
+  xapiAnswered('001', 'q1', s1Selected === S1.correctId,
+    s1Selected === S1.correctId || s1Attempts >= S1.maxAttempts, xapiAnswerText(optEl));
 
   if (s1Selected === S1.correctId) {
     optEl.classList.add('correct');
@@ -322,6 +329,9 @@ function s1UnlockOptions() {
 
 function s1OpenHint() {
   if (s1Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל.
+     הפונקציה פותחת בלבד (hidden=false) ולא toggle, ולכן אין דיווח כפול. */
+  xapiRequestedHint('001', 'q1');
   document.getElementById('s1-hint-overlay').hidden = false;
 }
 function s1CloseHint() { document.getElementById('s1-hint-overlay').hidden = true; }
@@ -450,6 +460,8 @@ function s2Check() {
   if (!s2Selected || s2Done) return;
   s2Attempts++;
   const optEl = s2OptEl(s2Selected);
+  xapiAnswered('002', 'q1', s2Selected === S2.correctId,
+    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, xapiAnswerText(optEl));
 
   if (s2Selected === S2.correctId) {
     optEl.classList.add('correct');
@@ -504,6 +516,9 @@ function s2UnlockOptions() {
 
 function s2OpenHint() {
   if (s2Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל.
+     הפונקציה פותחת בלבד (hidden=false) ולא toggle, ולכן אין דיווח כפול. */
+  xapiRequestedHint('002', 'q1');
   document.getElementById('s2-hint-overlay').hidden = false;
 }
 function s2CloseHint() { document.getElementById('s2-hint-overlay').hidden = true; }
@@ -650,6 +665,17 @@ function s3Check() {
     return s3Selected[r] === TF_S3_CORRECT[r];
   });
 
+  /* xAPI: פריט 003 נושא ארבע שאלות נכון/לא-נכון על מסך אחד, והקוד יודע את
+     נכונות כל שורה בנפרד — לכן כל אחת מדווחת בנפרד ולא כתוצאה הכל-או-כלום.
+     isLast **משותף** לארבעתן: הוא מתאר את מצב המסך, לא את השורה. */
+  const _s3Last = allCorrect || s3Attempts >= S3.maxAttempts;
+  ['r1', 'r2', 'r3', 'r4'].forEach(function (r, i) {
+    xapiAnswered('003', 'q' + (i + 1),
+      s3Selected[r] === TF_S3_CORRECT[r],
+      _s3Last,
+      xapiAnswerText(document.getElementById('s3-r' + (i + 1) + '-' + s3Selected[r])));
+  });
+
   if (allCorrect) {
     s3Phase = 'correct';
     s3Done = true;
@@ -657,10 +683,7 @@ function s3Check() {
     s3ShowFeedback('correct', true);
     stationProgress.q3 = 'success';
     updateQuestionNav('s3');
-    /* קישור בין סינים: מסך אחרון בסיין 4 -> מסך ראשון בסיין 5 (נתיב יחסי,
-       אותה מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science-mass
-       -measure-02-linked). */
-    s3SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-05/index.html'; });
+    s3SetBarDone('המשך', s3Finish);
     return;
   }
 
@@ -691,15 +714,35 @@ function s3Check() {
     s3ShowFeedback('wrong2', false);
     stationProgress.q3 = 'fail';
     updateQuestionNav('s3');
-    /* קישור בין סינים: מסך אחרון בסיין 4 -> מסך ראשון בסיין 5 (נתיב יחסי,
-       אותה מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science-mass
-       -measure-02-linked). */
-    s3SetBarDone('המשך', function () { window.location.href = '../methodica-science-mass-measure-03-05/index.html'; });
+    s3SetBarDone('המשך', s3Finish);
   }
+}
+
+/* מספר השאלות שנענו נכון מתוך השלוש שהלומד הובטח להן ("3 שאלות מתקדמות",
+   מסך 0). המסך של ארבע השורות נספר כשאלה אחת, הכל-או-כלום — בדיוק כפי
+   ש-stationProgress.q3 כבר עובד. */
+function getStation04Score() {
+  return ['q1', 'q2', 'q3'].filter(function (k) {
+    return stationProgress[k] === 'success';
+  }).length;
+}
+
+/* סוף הרכיב — הלחיצה האחרונה של הלומד, בשני המסלולים (הצלחה וכישלון).
+   ⚠️ הרכיב עצמו אינו מנווט: Kata מסירה אותו מהמסך ברגע שה-completed מגיע,
+   ומחליטה מהקטלוג מה הרכיב הבא. הניווט הבין-סיני נשאר רק ל-walkthrough
+   מקומי (DEV_NAV ב-10-identity.js). */
+function s3Finish() {
+  const _n = getStation04Score();
+  xapiEndComponent({ success: _n === 3, score: { scaled: _n / 3 } },
+    document.getElementById('s3-check'));
+  if (DEV_NAV) window.location.href = '../methodica-science-mass-measure-03-05/index.html';
 }
 
 function s3OpenHint() {
   if (s3Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל.
+     הפונקציה פותחת בלבד (hidden=false) ולא toggle, ולכן אין דיווח כפול. */
+  xapiRequestedHint('003', 'q1');
   document.getElementById('s3-hint-overlay').hidden = false;
 }
 function s3CloseHint() { document.getElementById('s3-hint-overlay').hidden = true; }
@@ -843,6 +886,30 @@ document.addEventListener('keydown', function (e) {
   const modal = document.getElementById('img-zoom-modal');
   if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) imgZoomClose();
 });
+
+/* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
+   נתונים בלבד. השכבה המשותפת ב-../unit-js/ קוראת אותם בזמן call. */
+
+/* מסך → [סיומת הפריט בקטלוג, עמוד בתוך הפריט].
+   null = מסך בלי פריט בקטלוג (מעבר/נרטיב).
+   ⚠️ חייב להחזיק בדיוק TOTAL_SCREENS מפתחות (4), 0..3, בלי חורים. מפתח חסר
+   אינו ניתן להבחנה מ-null, כלומר מסך שלא מדווח בשקט. _test/verify-report.js
+   אוכף את זה, וקורא את הבלוק הזה כטקסט מקור — לשמור אותו אובייקט ליטרלי עם
+   מפתחות מספריים וסיומות במרכאות. */
+var SCREEN_TO_SUBCONTENT = {
+  0: null,          /* מעבר: "זמן ל-3 שאלות מתקדמות" */
+  1: ['001', 1],    /* שאלה 1/3 — חד-ברירה עם תמונה */
+  2: ['002', 1],    /* שאלה 2/3 — מסך גלילה: טבלה + חד-ברירה */
+  3: ['003', 1]     /* שאלה 3/3 — נכון/לא נכון, ארבע שורות = q1..q4 */
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-04';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+/* פריטים שנושאים שאלה **מדורגת בקוד**. שלושתם כאלה בסין הזה. */
+var XAPI_EVAL_ITEMS = { '001': 1, '002': 1, '003': 1 };
+
+var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-04.json';
 
 /* אתחול */
 scaleApp();
