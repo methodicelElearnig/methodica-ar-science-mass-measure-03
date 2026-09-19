@@ -63,9 +63,12 @@ $ExcludeExt = @('.ps1', '.log')
 $ExcludeUnderscoreSegment = $true
 
 # ── Directory names that are source material wherever they appear, even inside assets/ ──
-#    originals-backup/ holds the pre-edit copies of the simulation's plane images: 8 files,
-#    16.3 MB, referenced by nothing.
-$ExcludeDirSegment = @('originals-backup')
+#    originals/ holds pre-edit copies of avatar and scene images — 12 files, 19 MB across
+#    the five components, referenced by nothing. Verified by grepping every filename under
+#    it against all html/js/css in the unit: zero hits. The only mention of the word
+#    anywhere is a COMMENT in 03-02/script.js:177 recording where a source was kept, not a
+#    code path that builds the URL.
+$ExcludeDirSegment = @('originals', 'originals-backup')
 
 # ── Individual files that look shippable and are not ─────────────────────────
 #    Every one verified by grep across all html/js/css in the unit. This is safe to assert
@@ -77,23 +80,11 @@ $ExcludeDirSegment = @('originals-backup')
 #    ⚠️ Do NOT extend this list by eye. An asset that merely looks unused may be built at
 #    runtime from a colour or a screen number; a missing image costs more than its bytes.
 $ExcludeRelPaths = @(
-    # unused font — no @font-face and no font-family names it anywhere (2 identical copies)
-    'methodica-science-mass-measure-02-05/assets/fonts/GeistPixel-Regular-VariableFont_ELSH.ttf',
-    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/fonts/GeistPixel-Regular-VariableFont_ELSH.ttf',
-    # pre-crop originals, superseded by their -cropped twins, which are what the sim loads
-    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/fuel-card.png',
-    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/luggage-card.png',
-    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/passengers-card.png',
-    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/original-plane-empty.png',
-    # avatar poster stills: the videos are used, these PNGs are not, in either component
-    'methodica-science-mass-measure-02-01/assets/images/avatar-green-come-in.png',
-    'methodica-science-mass-measure-02-02/assets/images/avatar-green-come-in.png',
-    'methodica-science-mass-measure-02-01/assets/images/avatar-orange-come-in.png',
-    'methodica-science-mass-measure-02-02/assets/images/avatar-orange-come-in.png',
-    'methodica-science-mass-measure-02-01/assets/images/avatar-green-clapping-hands.png',
-    'methodica-science-mass-measure-02-02/assets/images/avatar-green-clapping-hands.png',
-    'methodica-science-mass-measure-02-01/assets/images/avatar-orange-clapping-hands.png',
-    'methodica-science-mass-measure-02-02/assets/images/avatar-orange-clapping-hands.png'
+    # Empty for this unit. The entries inherited from mass-measure-02 named files that do
+    # not exist here, and per the warning above this list must never be extended by eye —
+    # an asset that merely looks unused may be built at runtime from a colour or a screen
+    # number. The bulk exclusion this unit actually needs is the originals/ directory,
+    # handled by $ExcludeDirSegment above.
 )
 
 # ── What each shipped area contributes ──
@@ -108,14 +99,19 @@ $UnitDirs = @{
 
 # Inside a component folder: these files, plus everything under assets/.
 $ComponentFiles = @('index.html', 'script.js', 'styles.css')
-$ComponentGlob  = 'methodica-science-mass-measure-02-[0-9][0-9]'
+$ComponentGlob  = 'methodica-science-mass-measure-03-[0-9][0-9]'
 
 # ── Sub-apps: a self-contained site inside a component, loaded by <iframe> ───
-#    methodica-science-mass-measure-02-05/index.html lines 101, 143 and 219 each carry
-#    <iframe src="plane-mass-simulation/index.html">. It has its own document, so its
-#    relative paths resolve from ITS directory, not the component's.
-#    Note style.css is SINGULAR here — the components use styles.css.
-$ComponentSubApps = @('plane-mass-simulation')
+#    A sub-app is a self-contained site inside a component, pulled in by <iframe>. It has
+#    its own document, so its relative paths resolve from ITS directory rather than the
+#    component's, which is why it needs its own file list. (Note style.css would be
+#    SINGULAR there — the components use styles.css.)
+#    This unit has no iframe sub-app. The two Hebrew-named folders in component 01 are a
+#    dead React prototype of the weighing simulation — the shipped simulation is vanilla JS
+#    inside script.js — and component 05's weighting-application/ holds stray reference
+#    images. None is referenced, and the component rule ships only assets/ plus the three
+#    named files, so all three are already excluded without naming them.
+$ComponentSubApps = @()
 $SubAppFiles      = @('index.html', 'script.js', 'style.css')
 
 # ── Hygiene: if any of these turn up INSIDE a package, it is unsafe to upload ──
