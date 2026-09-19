@@ -51,23 +51,21 @@ window.XAPI_UNIT_ID = 'methodica-science-mass-measure-03';
 /* המקטע האחרון של מזהה קנוני — ה-slug הקצר שטופס דיווח הבעיות רושם. */
 function shortId(u) { return String(u || '').replace(/\/+$/, '').split('/').pop(); }
 
-/* Resume (KATA State API) — **כבוי בינתיים**.
+/* Resume (KATA State API) — **פעיל**.
 
    ⚠️ הדגל הזה משנה גם את הדיווחיות, לא רק את השחזור: הוא מוביל את
    50-loader.js לטעון xapi-720-k.js (הבילד שנושא את שכבת ה-State) במקום
    xapi-720-i.js. ראו 50-loader.js.
 
-   ── מדוע false כרגע ──
-   ארבעת ה-hooks לכל סין (capturePartPayload / applyResumeVars / applyResumeDom
-   / restoreScreenUI) והציירים שלהם עדיין לא נכתבו בסינים של היחידה הזאת.
-   הנחיית הבנייה מפורשת: לא מתחילים resume לפני ש-xAPI מאומת, כי הבאגים הקשים
-   של resume אינם ניתנים להבחנה מבאגי דיווח כשהדיווח עצמו לא ידוע-תקין.
+   ── מה מיושם ──
+   מסמך state אחד לכל רכיב, מצביע מסך, יומן ה-completed בתוך המסמך (ולכן הוא
+   שורד סגירת לשונית), וארבעת ה-hooks בכל חמשת הסינים עם הציירים שלהם.
+   שערי מועד א' עוברים דרך setUnitResult/getUnitResult, ולכן הניתוב נכון גם
+   כשהלומד ממשיך את אותו registration במכשיר אחר.
 
-   ⚠️ **אין להעביר ל-true לפני שכל חמשת הסינים מיישמים את ארבעת ה-hooks.**
-   40-resume.js עצמו נטען בכל מקרה — 20-xapi.js תלוי ב-sendCompletedOnce,
-   ב-itemLedgerKey וב-currentPartSlug שמוגדרים בו — אבל כל הכותבים בו יוצאים
-   מוקדם כל עוד הדגל כבוי. */
-var RESUME_ENABLED = false;
+   ⚠️ כיבוי הדגל אינו רק "בלי שחזור": הוא גם מחליף את ספריית ה-CDN. לא
+   לכבות כדי לנפות באג שחזור — להשתמש ב-?resetState. */
+var RESUME_ENABLED = true;
 
 /* ── ניווט בין סינים: כבוי בייצור, פתוח רק ל-walkthrough מקומי (2026-09-16) ──
    הפלטפורמה (Kata) היא שמחליטה מה הרכיב הבא. היא משגרת כל רכיב בנפרד

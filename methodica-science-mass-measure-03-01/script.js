@@ -114,9 +114,12 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* resume: לצייר מסך שכבר נענה — בכל ניווט, לא רק בנחיתת השחזור. */
+  try { repaintScreen(n); } catch (e) { console.error('[resume] repaint', e); }
   /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
      עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
   try { xapiOnScreen(n); } catch (e) {}
+  try { scheduleResumeSave(); } catch (e) {}
   /* Deferred to next frame: target is still display:none at this exact point (same ordering
      constraint as showDragGestureHint(), see its own comment) — initFakeScrollbar() needs real
      geometry, so it must run after 'active' has actually painted. Centralized here (rather than
@@ -439,7 +442,10 @@ const viqAnswerSnapshot = {}; // הערך שהלומד הזין בפועל בנ�
 const viqRevealed = {};
 
 function resetScreenStateViq(n) {
-  if (viqDone[n]) return; // resume-state guard — אין ניסיון נוסף בחזרה למסך שכבר הושלם
+  /* resume-state guard. ⚠️ לא רק Done: לומד שניסה פעם אחת, טעה ועזב הוא
+     במצב not-done-but-attempted, ואיפוס כאן היה מוחק את הקלט ואת הניסיון
+     לפני ש-repaintScreen מספיק לצייר. */
+  if (viqDone[n] || viqAttempts[n] > 0) return;
   const cfg = VIQ_SCREENS[n];
   const input = document.getElementById(cfg.inputId);
   const btn = document.getElementById(cfg.checkBtnId);
@@ -520,6 +526,7 @@ function viqCheck(n) {
     if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = 'התשובה הנכונה'; }
     viqFinish(n);
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function viqToggleReveal(n) {
@@ -919,6 +926,7 @@ function s8Check() {
     s8LockOptions();
     s8ShowFeedback('correct', true);
     s8SetBarDone('המשך', function () { goTo(9); });
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -943,6 +951,7 @@ function s8Check() {
     s8ShowFeedback('wrong2', false);
     s8SetBarDone('המשך', function () { goTo(9); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s8LockOptions() {
@@ -1173,6 +1182,8 @@ function s10Check() {
     s10SetBarDone('המשך', function () { goTo(11); });
     stationProgress.q10 = 'success';
     updateQuestionNav('s10');
+    /* resume: אחרי כל הבוקקיפינג ו**לפני** ה-return. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -1199,6 +1210,7 @@ function s10Check() {
     stationProgress.q10 = 'fail';
     updateQuestionNav('s10');
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s10LockOptions() {
@@ -1387,6 +1399,9 @@ function makeDragQuestion(cfg) {
   let done = false;
   let answerSnapshot = null; // הפלייסמנט של הלומד ברגע הניסיון השני הכושל, לפני revealCorrect()
   let revealed = false; // false = מציג "רוצים לראות?"/הצבעה של הלומד; true = הפתרון הנכון גלוי
+  /* resume: ⚠️ נשמר במפורש ואינו נגזר בדיעבד — revealCorrect() דורס את
+     placement בפתרון הנכון. */
+  let passed = false;
 
   function render() {
     dragIds.forEach(function (dragId) {
@@ -1598,19 +1613,26 @@ function makeDragQuestion(cfg) {
         return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
       }).join(' | ');
       (cfg.xapiQuestions || ['q1']).forEach(function (q) {
-        xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
+        /* ⚠️ 2 כמספר ולא maxAttempts: לעותק הזה של הפקטורי אין הקשירה
+           הזאת — הוא בודק `attempts >= 2` ישירות. שם לא-מוגדר היה זורק
+           ReferenceError תחת 'use strict'. */
+        xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= 2, _ans);
       });
     }
+
+    try { flushResumeSave(); } catch (e) {}
 
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
+      passed = true;
       saveResult(true);
       showFeedback('correct');
       if (cfg.onResult) cfg.onResult('success');
       if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
     } else if (attempts >= 2) {
       done = true;
+      passed = false;
       saveResult(false);
       if (cfg.revealBtnId) {
         // לומד-יוזם: לא חושפים אוטומטית — שומרים snapshot של הפלייסמנט
@@ -1669,7 +1691,7 @@ function makeDragQuestion(cfg) {
 
   function resetInitial() {
     done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
-    answerSnapshot = null; revealed = false;
+    answerSnapshot = null; revealed = false; passed = false;
     shuffleWordBank();
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
     targetIds.forEach(function (tId) {
@@ -1725,7 +1747,68 @@ function makeDragQuestion(cfg) {
   window[cfg.prefix + 'CloseHint'] = closeHint;
   window[cfg.prefix + 'ToggleReveal'] = toggleReveal;
 
-  return { reset: reset };
+  /* ── resume: שער מפורש למצב ה-closure ── */
+  function getState() {
+    var bankOrder = null;
+    if (cfg.wordBankId) {
+      var bank = document.getElementById(cfg.wordBankId);
+      if (bank) bankOrder = [].slice.call(bank.querySelectorAll('.dq-source-slot')).map(function (s) { return s.id; });
+    }
+    return {
+      placement: Object.assign({}, placement),
+      attempts: attempts, done: done, checked: checked, passed: passed, revealed: revealed,
+      answerSnapshot: answerSnapshot ? Object.assign({}, answerSnapshot) : null,
+      /* resetInitial() מערבב מחדש את המאגר, ולכן הסדר נשמר. */
+      bankOrder: bankOrder
+    };
+  }
+
+  function setState(s) {
+    if (!s) return;
+    if (s.placement) dragIds.forEach(function (id) { placement[id] = s.placement[id] || 'source'; });
+    attempts = s.attempts || 0;
+    done = !!s.done; checked = !!s.checked; passed = !!s.passed; revealed = !!s.revealed;
+    answerSnapshot = s.answerSnapshot ? Object.assign({}, s.answerSnapshot) : null;
+    if (s.bankOrder && cfg.wordBankId) {
+      var bank = document.getElementById(cfg.wordBankId);
+      if (bank) s.bankOrder.forEach(function (slotId) {
+        var slot = document.getElementById(slotId);
+        if (slot) bank.appendChild(slot);
+      });
+    }
+    dragActive = null;
+    dropHandled = false;
+  }
+
+  function restoreUI() {
+    /* ⚠️ מסך נקי → render() בלבד, לעולם לא resetInitial(). */
+    if (!done && attempts === 0) { hideFeedback(); render(); return; }
+    targetIds.forEach(function (tId) {
+      const valid = correctMap[tId];
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      const ok = (placed === valid) || (placed && labels[placed] === labels[valid]);
+      const zone = document.getElementById(tId);
+      if (zone) { zone.classList.remove('correct', 'wrong'); zone.classList.add(ok ? 'correct' : 'wrong'); }
+    });
+    if (done) {
+      if (passed) showFeedback('correct');
+      else if (revealed) showFeedback('wrongFinal');
+      else showFeedback(cfg.revealBtnId ? 'pending' : 'wrongFinal');
+      restoreFinal();
+      return;
+    }
+    showFeedback('wrong1');
+    render();
+    if (cfg.hintBtnId) {
+      const hintBtn = document.getElementById(cfg.hintBtnId);
+      if (hintBtn) hintBtn.hidden = false;
+    }
+    const btn = document.getElementById(cfg.checkBtnId);
+    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+  }
+
+  return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
 }
 
 const TEXTS_S11_DQ = {
@@ -1971,6 +2054,8 @@ function s14Check() {
     s14ShowFeedback('correct', true);
     s14SetBarDone('המשך', function () { goTo(15); });
     stationBSectionDone('a', 'success');
+    /* resume: אחרי כל הבוקקיפינג ו**לפני** ה-return. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -1996,6 +2081,7 @@ function s14Check() {
     s14SetBarDone('המשך', function () { goTo(15); });
     stationBSectionDone('a', 'fail');
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s14LockOptions() {
@@ -2152,6 +2238,8 @@ function s15Check() {
     s15SetBarDone('המשך', function () { goTo(16); });
     stationBSectionDone('b', 'success');
     updateQuestionNavB('s15');
+    /* resume: אחרי כל הבוקקיפינג ו**לפני** ה-return. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -2178,6 +2266,7 @@ function s15Check() {
     stationBSectionDone('b', 'fail');
     updateQuestionNavB('s15');
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s15LockOptions() {
@@ -2339,6 +2428,9 @@ let s17HintShown = false;
 let s17DragId = null;
 let s17AnswerSnapshot = null; // הפלייסמנט של הלומד ברגע הניסיון השני הכושל (item id → zone id | 'source')
 let s17Revealed = false;
+/* resume: נשמר במפורש. אחרי reveal אין ב-DOM דבר שמבדיל בין "פתר נכון"
+   לבין "חשף את הפתרון", ואין כאן משתנה phase. */
+let s17Passed = false;
 
 function s17AllPlaced() {
   return S17_ITEM_IDS.every(function (id) {
@@ -2532,6 +2624,7 @@ function s17Check() {
   const checkBtn = document.getElementById('s17-check');
   if (allCorrect) {
     s17Done = true;
+    s17Passed = true;
     s17ShowFeedback('correct', true);
     checkBtn.textContent = 'המשך';
     checkBtn.disabled = false;
@@ -2542,6 +2635,7 @@ function s17Check() {
     updateQuestionNavB('s17');
   } else if (s17Attempts >= 2) {
     s17Done = true;
+    s17Passed = false;
     s17AnswerSnapshot = s17SnapshotPlacement(); // לפני כל reveal
     s17Revealed = false;
     s17ShowFeedback('pending', false);
@@ -2564,6 +2658,7 @@ function s17Check() {
       hintBtn.disabled = false;
     }
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s17OpenHint() {
@@ -2730,6 +2825,8 @@ function s19Check() {
     stationBProgress[stationBQuestionNum] = 'success';
     stationBQuestionNum++;
     updateQuestionNavB('s19');
+    /* resume: אחרי כל הבוקקיפינג ו**לפני** ה-return. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -2757,6 +2854,7 @@ function s19Check() {
     stationBQuestionNum++;
     updateQuestionNavB('s19');
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s19LockOptions() {
@@ -2926,6 +3024,8 @@ function s21Check() {
     stationBProgress[stationBQuestionNum] = 'success';
     stationBQuestionNum++;
     updateQuestionNavB('s21');
+    /* resume: אחרי כל הבוקקיפינג ו**לפני** ה-return. */
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -2956,6 +3056,7 @@ function s21Check() {
     stationBQuestionNum++;
     updateQuestionNavB('s21');
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s21LockOptions() {
@@ -3137,6 +3238,281 @@ scqFbMakeDraggable('s16-feedbox');
 scqFbMakeDraggable('s17-feedbox');
 scqFbMakeDraggable('s19-feedbox');
 scqFbMakeDraggable('s21-feedbox');
+
+/* ═══════════════════ resume — ארבעת ה-hooks של הסין ═══════════════════
+   הסין הגדול ביותר: 14 מסכים שניתן לענות בהם, שישה סוגי אינטראקציה, ארבעה
+   מתגי "התשובה הנכונה" ושתי מערכות qnav. */
+
+function capturePartPayload() {
+  var st = { currentScreen: currentScreen };
+  st.qResults = Object.assign({}, XAPI_Q_RESULTS);
+
+  /* שתי התחנות. מפות פר-סין שאינן נגישות מהשכבה המשותפת. */
+  st.stations = Object.assign({}, stationProgress);     /* מסכים 10, 11 */
+  st.stationsB = Object.assign({}, stationBProgress);   /* מסכים 14-21 */
+  /* ⚠️ הסמן, לא רק המפה. updateQuestionNavB מצייר "נוכחי" ממנו, ו-s17/s19/s21
+     **כותבים** ל-stationBProgress[stationBQuestionNum]. שחזור המפה בלי הסמן
+     היה גורם למסך הבא שנענה לדרוס משבצת שכבר הוכרעה. */
+  st.stationBNum = stationBQuestionNum;
+  /* שאלה 1 פרושה על שני מסכים (14=א, 15=ב) ותוצאתה המשולבת נקבעת רק
+     כששניהם נוחתים. בלי זה, ריענון בין השניים היה מאבד את הציון. */
+  st.stationBSections = Object.assign({}, stationBSectionResults);
+
+  st.s2Selected = s2Selected;      /* מסך 2 — שאלת דעה, שער "המשך" בלבד */
+  st.s4Path = s4SelectedPath;      /* מסך 4 — מחליט 5 מול 6; אובדנו מפצל מסלול */
+
+  /* מסכים 5/6 — קלט מספרי עם מתג חשיפה. שלושת הערכים יחד:
+     vals = מה שמוצג עכשיו (אולי הפתרון), snap = תשובת הלומד,
+     revealed = מי מהם על המסך. */
+  st.viq = { att: {}, done: {}, snap: {}, revealed: {}, vals: {} };
+  [5, 6].forEach(function (n) {
+    st.viq.att[n] = viqAttempts[n] || 0;
+    st.viq.done[n] = !!viqDone[n];
+    st.viq.snap[n] = (typeof viqAnswerSnapshot[n] === 'string') ? viqAnswerSnapshot[n] : null;
+    st.viq.revealed[n] = !!viqRevealed[n];
+    var cfg = VIQ_SCREENS[n];
+    var el = cfg && document.getElementById(cfg.inputId);
+    st.viq.vals[n] = el ? el.value : '';
+  });
+
+  st.scq = {
+    s8:  { sel: s8Selected,  att: s8Attempts,  done: s8Done,  phase: s8Phase  },
+    s10: { sel: s10Selected, att: s10Attempts, done: s10Done, phase: s10Phase },
+    s14: { sel: s14Selected, att: s14Attempts, done: s14Done, phase: s14Phase },
+    s15: { sel: s15Selected, att: s15Attempts, done: s15Done, phase: s15Phase },
+    s19: { sel: s19Selected, att: s19Attempts, done: s19Done, phase: s19Phase },
+    s21: { sel: s21Selected, att: s21Attempts, done: s21Done, phase: s21Phase }
+  };
+
+  st.dq11 = dq11.getState();
+  st.dq16 = dq16.getState();
+
+  /* מסך 17 — גרירה בכתב יד: המיקום **הוא** ההורות ב-DOM.
+     place = מה שעל המסך עכשיו (אחרי reveal — הפתרון), snap = של הלומד. */
+  st.s17 = {
+    place: s17SnapshotPlacement(),
+    snap: s17AnswerSnapshot ? Object.assign({}, s17AnswerSnapshot) : null,
+    revealed: s17Revealed, done: s17Done, att: s17Attempts,
+    hint: s17HintShown, passed: s17Passed
+  };
+  /* s17DragId לא נשמר במכוון: scratch של גרירה חיה, null בין גרירות, וערך
+     ישן היה גורם ל-s17Drop לפעול על פריט רפאים. */
+  return st;
+}
+
+function applyResumeVars(st) {
+  if (!st) return;
+  if (st.qResults) Object.keys(st.qResults).forEach(function (k) { XAPI_Q_RESULTS[k] = st.qResults[k]; });
+  if (st.stations) Object.keys(st.stations).forEach(function (k) { stationProgress[k] = st.stations[k]; });
+  if (st.stationsB) Object.keys(st.stationsB).forEach(function (k) { stationBProgress[k] = st.stationsB[k]; });
+  if (typeof st.stationBNum === 'number') stationBQuestionNum = st.stationBNum;
+  if (st.stationBSections) Object.keys(st.stationBSections).forEach(function (k) { stationBSectionResults[k] = st.stationBSections[k]; });
+
+  if (typeof st.s2Selected === 'string') s2Selected = st.s2Selected;
+  if (typeof st.s4Path === 'string') s4SelectedPath = st.s4Path;
+
+  if (st.viq) [5, 6].forEach(function (n) {
+    viqAttempts[n] = (st.viq.att && st.viq.att[n]) || 0;
+    viqDone[n] = !!(st.viq.done && st.viq.done[n]);
+    viqAnswerSnapshot[n] = (st.viq.snap && typeof st.viq.snap[n] === 'string') ? st.viq.snap[n] : null;
+    viqRevealed[n] = !!(st.viq.revealed && st.viq.revealed[n]);
+  });
+
+  if (st.scq) {
+    var S = st.scq;
+    if (S.s8)  { s8Selected  = S.s8.sel  || null; s8Attempts  = S.s8.att  || 0; s8Done  = !!S.s8.done;  s8Phase  = S.s8.phase  || 'before'; }
+    if (S.s10) { s10Selected = S.s10.sel || null; s10Attempts = S.s10.att || 0; s10Done = !!S.s10.done; s10Phase = S.s10.phase || 'before'; }
+    if (S.s14) { s14Selected = S.s14.sel || null; s14Attempts = S.s14.att || 0; s14Done = !!S.s14.done; s14Phase = S.s14.phase || 'before'; }
+    if (S.s15) { s15Selected = S.s15.sel || null; s15Attempts = S.s15.att || 0; s15Done = !!S.s15.done; s15Phase = S.s15.phase || 'before'; }
+    if (S.s19) { s19Selected = S.s19.sel || null; s19Attempts = S.s19.att || 0; s19Done = !!S.s19.done; s19Phase = S.s19.phase || 'before'; }
+    if (S.s21) { s21Selected = S.s21.sel || null; s21Attempts = S.s21.att || 0; s21Done = !!S.s21.done; s21Phase = S.s21.phase || 'before'; }
+  }
+
+  /* ⚠️ לפני goTo: reset() של הפקטורי בודק hasProgress מתוך placement/attempts,
+     וכך resetInitial() (שמערבב מחדש ומוחק גרירות) נמנע כראוי. */
+  if (st.dq11) dq11.setState(st.dq11);
+  if (st.dq16) dq16.setState(st.dq16);
+
+  if (st.s17) {
+    s17Done = !!st.s17.done;
+    s17Attempts = st.s17.att || 0;
+    s17HintShown = !!st.s17.hint;
+    s17Revealed = !!st.s17.revealed;
+    s17AnswerSnapshot = st.s17.snap ? Object.assign({}, st.s17.snap) : null;
+    s17Passed = !!st.s17.passed;
+    s17DragId = null;
+    __s17Place = st.s17.place || null;
+  }
+}
+
+var __s17Place = null;
+
+function applyResumeDom(st) {
+  if (!st) return;
+  /* מסכים 5/6 — ערך הקלט חי רק ב-DOM. מוצב כאן, לפני הצייר שמשבית אותו. */
+  if (st.viq && st.viq.vals) [5, 6].forEach(function (n) {
+    var cfg = VIQ_SCREENS[n];
+    var el = cfg && document.getElementById(cfg.inputId);
+    if (el && typeof st.viq.vals[n] === 'string') el.value = st.viq.vals[n];
+  });
+  /* מסך 17 — מחזירים את הפריטים להורות ה-DOM שלהם. s17RestoreSnapshot עושה
+     בדיוק את זה **וגם** מסמן את האזורים, ולכן הוא מופעל רק כשיש כבר ניסיון;
+     אחרת היה מסמן correct/wrong על הצבה שטרם הוגשה. */
+  if (st.s17 && st.s17.place) {
+    if (s17Attempts > 0 || s17Done) {
+      s17RestoreSnapshot(st.s17.place);
+    } else {
+      S17_ITEM_IDS.forEach(function (id) {
+        var item = document.getElementById(id);
+        if (!item) return;
+        var where = st.s17.place[id];
+        var dest = (where === 'source' || !where)
+          ? document.getElementById('s17-source-bank')
+          : document.getElementById('s17-zone-' + where);
+        if (dest && item.parentElement !== dest) {
+          if (item.parentElement) item.parentElement.removeChild(item);
+          dest.appendChild(item);
+        }
+      });
+    }
+  }
+}
+
+function restoreScreenUI(n) {
+  try {
+    /* מסכים 2 ו-4 הם שערי "המשך" בלבד, ו-resetScreenState שלהם הוא כבר
+       צייר אידמפוטנטי שקורא את המשתנה ומחשב את הכפתור — אין צורך בצייר. */
+    if (n === 2) resetScreenState2();
+    if (n === 4) resetScreenState4();
+    if (n === 5) restoreViqUI(5);
+    if (n === 6) restoreViqUI(6);
+    if (n === 8)  restoreScqUI({ cfg: S8,  selected: s8Selected,  attempts: s8Attempts,  done: s8Done,  phase: s8Phase,
+      optEl: s8OptEl,  lock: s8LockOptions,  showFeedback: s8ShowFeedback,  setBarDone: s8SetBarDone,  check: s8Check,
+      checkBtnId: 's8-check',  hintBtnId: 's8-hint',  onContinue: function () { goTo(9); } });
+    if (n === 10) restoreScqUI({ cfg: S10, selected: s10Selected, attempts: s10Attempts, done: s10Done, phase: s10Phase,
+      optEl: s10OptEl, lock: s10LockOptions, showFeedback: s10ShowFeedback, setBarDone: s10SetBarDone, check: s10Check,
+      checkBtnId: 's10-check', hintBtnId: 's10-hint', onContinue: function () { goTo(11); } });
+    if (n === 11) dq11.restoreUI();
+    if (n === 14) restoreScqUI({ cfg: S14, selected: s14Selected, attempts: s14Attempts, done: s14Done, phase: s14Phase,
+      optEl: s14OptEl, lock: s14LockOptions, showFeedback: s14ShowFeedback, setBarDone: s14SetBarDone, check: s14Check,
+      checkBtnId: 's14-check', hintBtnId: 's14-hint', onContinue: function () { goTo(15); } });
+    if (n === 15) restoreScqUI({ cfg: S15, selected: s15Selected, attempts: s15Attempts, done: s15Done, phase: s15Phase,
+      optEl: s15OptEl, lock: s15LockOptions, showFeedback: s15ShowFeedback, setBarDone: s15SetBarDone, check: s15Check,
+      checkBtnId: 's15-check', hintBtnId: 's15-hint', onContinue: function () { goTo(16); } });
+    if (n === 16) dq16.restoreUI();
+    if (n === 17) restoreS17UI();
+    if (n === 19) restoreScqUI({ cfg: S19, selected: s19Selected, attempts: s19Attempts, done: s19Done, phase: s19Phase,
+      optEl: s19OptEl, lock: s19LockOptions, showFeedback: s19ShowFeedback, setBarDone: s19SetBarDone, check: s19Check,
+      checkBtnId: 's19-check', hintBtnId: 's19-hint', onContinue: function () { goTo(20); } });
+    if (n === 21) restoreScqUI({ cfg: S21, selected: s21Selected, attempts: s21Attempts, done: s21Done, phase: s21Phase,
+      optEl: s21OptEl, lock: s21LockOptions, showFeedback: s21ShowFeedback, setBarDone: s21SetBarDone, check: s21Check,
+      checkBtnId: 's21-check', hintBtnId: 's21-hint', onContinue: s21Finish });
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* צייר חד-ברירה — אותו אחד כמו בסינים 2/4/5. משרת כאן שישה מסכים.
+   ⚠️ ה-cfg כפרמטר, לעולם לא גלובל לפי שם.
+   ⚠️ אינו נוגע ב-stationProgress / stationBProgress / updateQuestionNav*:
+   אלה כבר עודכנו בפעם הראשונה, ושכפולם כאן היה מקדם את הסמן פעם שנייה. */
+function restoreScqUI(o) {
+  if (!o.done && o.attempts === 0 && !o.selected) return;
+  if (o.done) {
+    if (o.phase === 'correct') {
+      var okEl = o.optEl(o.selected);
+      if (okEl) { okEl.classList.add('correct'); okEl.classList.remove('selected'); }
+      o.showFeedback('correct', true);
+    } else {
+      var badEl = o.optEl(o.selected);
+      if (badEl && o.selected !== o.cfg.correctId) { badEl.classList.add('wrong'); badEl.classList.remove('selected'); }
+      var corrEl = o.optEl(o.cfg.correctId);
+      if (corrEl) corrEl.classList.add('correct');
+      o.showFeedback('wrong2', false);
+    }
+    o.lock();
+    o.setBarDone('המשך', o.onContinue);
+    return;
+  }
+  var checkBtn = document.getElementById(o.checkBtnId);
+  if (o.phase === 'wrong1') {
+    var wEl = o.optEl(o.selected);
+    if (wEl) { wEl.classList.add('wrong'); wEl.classList.remove('selected'); }
+    o.showFeedback('wrong1', false);
+    var hintBtn = document.getElementById(o.hintBtnId);
+    if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
+    return;
+  }
+  var selEl = o.optEl(o.selected);
+  if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = !o.selected; }
+}
+
+/* מסכים 5/6 — קלט מספרי עם מתג חשיפה. צייר אחד, נבדל רק ב-VIQ_SCREENS[n]. */
+function restoreViqUI(n) {
+  if (!viqDone[n] && !(viqAttempts[n] > 0)) return;
+  var cfg = VIQ_SCREENS[n];
+  if (!cfg) return;
+  var input = document.getElementById(cfg.inputId);
+  var btn = document.getElementById(cfg.checkBtnId);
+  var fb = document.getElementById(cfg.feedboxId);
+  var revealBtn = cfg.revealBtnId ? document.getElementById(cfg.revealBtnId) : null;
+  if (!input || !fb) return;
+
+  if (viqDone[n]) {
+    input.disabled = true;
+    fb.classList.remove('collapsed');
+    fb.classList.add('visible');
+    var titleEl = fb.querySelector('.scq-fb-title-text');
+    var bodyEl = fb.querySelector('.scq-fb-body');
+    /* snapshot === null פירושו שהלומד ענה נכון — הוא נכתב רק בענף הכישלון. */
+    if (viqAnswerSnapshot[n] === null) {
+      input.classList.add('correct');
+      fb.classList.remove('is-wrong'); fb.classList.add('is-correct');
+      if (titleEl) titleEl.textContent = 'נכון!';
+      if (bodyEl) bodyEl.textContent = 'מדובר בפער קטן,\nעד כמה לדעתכם הוא משמעותי?';
+    } else {
+      input.classList.add(viqRevealed[n] ? 'correct' : 'wrong');
+      fb.classList.remove('is-correct'); fb.classList.add('is-wrong');
+      if (titleEl) titleEl.textContent = viqRevealed[n] ? 'זו טעות. התשובה הנכונה מוצגת.' : 'התשובה אינה נכונה.';
+      if (bodyEl) bodyEl.textContent = viqRevealed[n] ? '' : 'רוצים לראות את הפתרון הנכון?';
+      if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = viqRevealed[n] ? 'התשובה שלי' : 'התשובה הנכונה'; }
+    }
+    if (btn) { btn.textContent = 'המשך'; btn.disabled = false; }
+    return;
+  }
+
+  /* ניסיון שגוי שאינו אחרון. */
+  input.classList.add('error');
+  fb.classList.remove('collapsed', 'is-correct');
+  fb.classList.add('is-wrong', 'visible');
+  /* אותו פרדיקט שבו viqOnInput משתמש — בלעדיו הכפתור היה מושבת לנצח. */
+  if (btn) btn.disabled = !input.value.trim();
+}
+
+/* מסך 17 — גרירה בכתב יד. ההצבה עצמה כבר הוחזרה ב-applyResumeDom. */
+function restoreS17UI() {
+  if (!s17Done && s17Attempts === 0 && !s17HintShown) return;
+  var checkBtn = document.getElementById('s17-check');
+  var hintBtn = document.getElementById('s17-hint');
+  var revealBtn = document.getElementById('s17-reveal-btn');
+
+  if (s17Done) {
+    if (s17Passed) {
+      s17ShowFeedback('correct', true);
+    } else {
+      s17ShowFeedback(s17Revealed ? 'wrong2' : 'pending', false);
+      if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = s17Revealed ? 'התשובה שלי' : 'התשובה הנכונה'; }
+    }
+    if (checkBtn) { checkBtn.textContent = 'המשך'; checkBtn.disabled = false; checkBtn.onclick = function () { goTo(18); }; }
+    if (hintBtn) hintBtn.hidden = true;
+    return;
+  }
+
+  s17ShowFeedback('wrong1', false);
+  if (s17HintShown && hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+  /* אותו פרדיקט שבו s17Drop/s17ItemClick משתמשים. */
+  s17UpdateCheckBtn();
+}
 
 /* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
    נתונים בלבד. השכבה המשותפת ב-../unit-js/ קוראת אותם בזמן call. */
