@@ -1,0 +1,74 @@
+{
+  "id": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-06/",
+  "title": "שאלת שיא מועד ב",
+  "learningUnitId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/",
+  "componentPurpose": "practice",
+  "isAssessment": true,
+  "manufacture": "methodica",
+  "recommendedAfterFail": [],
+  "isRequired": true,
+  "relativeDifficulty": 5,
+  "masteryLevel": "intermediate",
+  "order": 6,
+  "depthLevel": "basic-curriculum-core",
+  "cognitiveLevel": "evaluating-and-justifying",
+  "languages": ["Hebrew"],
+  "skills": [],
+  "estimatedTimeInMinutes": 6,
+  "createdAt": "2026-07-29T00:00:00.000Z",
+  "updatedAt": "2026-07-29T00:00:00.000Z",
+  "subContent": [
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-06/methodica-science-mass-measure-03-06-001/",
+      "title": "שאלת שיא (מועד ב): מכרז בית המטבע המלכותי - אייזק ניוטון (3 סעיפים)",
+      "informationToBot": "מטרת הפריט: שאלת השיא החלופית (מועד ב) - הערכת אמינות מדעית של 3 חברות המתמודדות על מכרז מדידה (בית המטבע המלכותי, 1699, אייזק ניוטון). מה התלמיד אמור להבין/לתרגל: מסת מטבע זהב תקני: 4.990-5.010 גרם. 'שקילה פלוס' (מאזני מטבח, דיוק 1 גרם): 3 מדידות זהות (5,5,5) - דיוק נמוך מדי, לא מספק ראיה משכנעת. 'המדייקים' (מאזני מעבדה, דיוק 0.01 גרם): מדידות עקביות בטווח (4.99, 5.00, 5.01) - כלי מתאים ותוצאות עקביות. 'מאזניי המרכז' (מאזניים אנליטיים, דיוק 0.001 גרם): מדידות מפוזרות יותר (4.975, 5.026, 5.001) - דיוק גבוה אך פחות עקביות. סעיף א - 'המדייקים' צפויה לזכות. סעיף ב - הנימוק: כלי מתאים + תוצאות עקביות (לא רק קרבה למספר עגול, לא רק דיוק המכשיר לבדו). סעיף ג - השלמת ההמלצה: 'המדייקים' השתמשה בכלי המתאים לדרישות התקן וקיבלה תוצאות עקביות; חזרות וחישוב ממוצע צמצמו את אי-הוודאות; הראיות מספקות את רמת הדיוק הנדרשת. כיווני חשיבה ואסטרטגיות: הבנה ששילוב של כלי מתאים (לא בהכרח המדויק ביותר) יחד עם עקביות בין מדידות חוזרות הוא הראיה המדעית החזקה ביותר - לא דיוק קיצוני בלבד וגם לא כלי גס מדי. טעויות נפוצות: בחירת 'מאזניי המרכז' רק בגלל שהמכשיר המדויק ביותר, בהתעלם מחוסר העקביות בתוצאותיה; בחירת 'שקילה פלוס' כי התוצאה 'נראית עגולה ונוחה'. מידע נוסף: התסריט מציין 4 סעיפים (להצליח בלפחות 3), אך רק 3 שלבים לתויים בפועל (א/ב/ג) נמצאו בתוכן - סעיף ג כולל 6 השלמות מילים בתוך שאלה אחת. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "content-interactive",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-06/methodica-science-mass-measure-03-06-001/q1",
+          "questionType": "choice",
+          "questionText": "מסתו של מטבע זהב תקני היא בין 4.990 גרם ל-5.010 גרם. שלוש חברות בדקו מטבע לדוגמה: 'שקילה פלוס' (מאזני מטבח, 1 גרם): 5, 5, 5. 'המדייקים' (מאזני מעבדה, 0.01 גרם): 4.99, 5.00, 5.01. 'מאזניי המרכז' (מאזניים אנליטיים, 0.001 גרם): 4.975, 5.026, 5.001. סעיף א: איזו חברה צפויה לזכות במכרז?",
+          "answers": ["שקילה פלוס", "המדייקים", "מאזניי המרכז", "אין מספיק מידע"],
+          "correctAnswers": ["המדייקים"]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-06/methodica-science-mass-measure-03-06-001/q2",
+          "questionType": "choice",
+          "questionText": "סעיף ב: מהו הנימוק הטוב ביותר לבחירתכם?",
+          "answers": [
+            "החברה קיבלה את המדידה הקרובה ביותר ל-5 גרם.",
+            "החברה השתמשה במאזניים המדויקים ביותר.",
+            "החברה השתמשה בכלי מתאים וקיבלה תוצאות עקביות.",
+            "החברה ביצעה שלוש מדידות נפרדות."
+          ],
+          "correctAnswers": ["החברה השתמשה בכלי מתאים וקיבלה תוצאות עקביות."]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-06/methodica-science-mass-measure-03-06-001/q3",
+          "questionType": "matching",
+          "questionText": "סעיף ג: השלימו את המלצתו של אייזק ניוטון: לאחר בחינת הנתונים, אני ממליץ לבחור ב-___. החברה השתמשה בכלי מדידה המתאים לדרישות ה-___ וקיבלה תוצאות עקביות. ביצוע ___ וחישוב ___ איפשרו לצמצם את השפעת ה-___ ולהגדיל את הביטחון בתוצאות. לכן, הראיות שהציגה החברה מספקות את רמת ה-___ הנדרשת.",
+          "answers": {
+            "source": [
+              "שם החברה המומלצת",
+              "מה מתאים לו כלי המדידה",
+              "מה בוצע מספר פעמים",
+              "מה חושבו מתוך התוצאות",
+              "מה צומצם בעקבות כך",
+              "רמת מה מסופקת בסוף"
+            ],
+            "target": ["המדייקים", "תקן", "ממוצע", "חזרות", "דיוק", "אי הודאות"]
+          },
+          "correctAnswers": [
+            {"source": "שם החברה המומלצת", "target": "המדייקים"},
+            {"source": "מה מתאים לו כלי המדידה", "target": "תקן"},
+            {"source": "מה בוצע מספר פעמים", "target": "חזרות"},
+            {"source": "מה חושבו מתוך התוצאות", "target": "ממוצע"},
+            {"source": "מה צומצם בעקבות כך", "target": "אי הודאות"},
+            {"source": "רמת מה מסופקת בסוף", "target": "דיוק"}
+          ]
+        }
+      ]
+    }
+  ]
+}

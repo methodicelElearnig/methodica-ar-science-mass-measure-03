@@ -1,0 +1,27 @@
+{
+  "id": "methodica-science-mass-measure-03",
+  "title": "שימושי מדידת מסה בבית ובתעשייה",
+  "subTopic": "MOE.SCI.G7.CHEM.BODY-MAT-PROP.MASS-VOL",
+  "learningObjective": "MOE.SCI.G7.CHEM.BODY-MAT-PROP.MASS-VOL.HOME-INDUSTRY",
+  "targetSector": [
+    "state-general",
+    "religious-state",
+    "orthodox",
+    "arab-sector",
+    "druze-sector",
+    "bedouin-sector",
+    "education-special"
+  ],
+  "targetAudience": [
+    "general",
+    "excellent",
+    "populations-disadvantaged",
+    "immigrants-new",
+    "needs-special-with-students",
+    "gaps-language-with-students",
+    "at-risk-students"
+  ],
+  "prerequisiteLearningObjective": [
+    "MOE.SCI.G7.CHEM.BODY-MAT-PROP.MASS-VOL.GROSS-NET"
+  ]
+}

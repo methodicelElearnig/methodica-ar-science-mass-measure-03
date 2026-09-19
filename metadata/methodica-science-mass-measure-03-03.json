@@ -1,0 +1,44 @@
+{
+  "id": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-03/",
+  "title": "משימת כיתה",
+  "learningUnitId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/",
+  "componentPurpose": "practice",
+  "isAssessment": false,
+  "manufacture": "methodica",
+  "recommendedAfterFail": [],
+  "isRequired": true,
+  "relativeDifficulty": 3,
+  "masteryLevel": "intermediate",
+  "order": 3,
+  "depthLevel": "basic-curriculum-core",
+  "cognitiveLevel": "applying-a-model-or-procedure",
+  "languages": ["Hebrew"],
+  "skills": [],
+  "estimatedTimeInMinutes": 2,
+  "createdAt": "2026-07-29T00:00:00.000Z",
+  "updatedAt": "2026-07-29T00:00:00.000Z",
+  "subContent": [
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-03/methodica-science-mass-measure-03-03-001/",
+      "title": "משימת כיתה - שקילה חוזרת וחישוב ממוצע וטווח",
+      "informationToBot": "מטרת הפריט: יישום מציאותי ומעשי (שקילה בשטח) של עקרונות חזרות וממוצע. מה התלמיד אמור להבין/לתרגל: התלמיד בוחר חפץ (תפוח/מחק/טלפון/בקבוק מים/ספר), שוקל אותו 3 פעמים, מחשב ממוצע, ומחשב את ההפרש בין המדידה הגבוהה לנמוכה. עונה במחברת על שאלות פתוחות (האם המדידות זהות, מה גרם להבדלים, האם מדידה אחת הייתה מספיקה, ובאיזה תרחיש - שקית תפוחי אדמה/טבעת זהב/תרופה - היה צריך יותר מ-3 חזרות). בסיום, שאלת סיכום מוערכת: ככל שערך החומר הנמדד גבוה יותר או שההשלכות של טעות גדולות יותר, כך נדרש דיוק גבוה יותר ולעיתים גם יותר חזרות של המדידה. כיווני חשיבה ואסטרטגיות: חיבור בין ההתנסות האישית (מדידה ביתית) לעיקרון הכללי שנלמד ביחידה. טעויות נפוצות: המדידה עצמה תלויה בחפץ שנבחר בפועל - אין תשובה 'נכונה' קבועה מראש לחלק המעשי; שאלת הסיכום (דיוק/חזרות) כן מוערכת עם תשובה קבועה. מידע נוסף: ניתן לבצע לבד או בזוגות. צילום מסך: לא צורף.",
+      "contentType": "task-inquiry-or-project",
+      "mediaFormat": "text",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-03/methodica-science-mass-measure-03-03-001/q1",
+          "questionType": "matching",
+          "questionText": "השלימו את המסקנה בעזרת המילים הנכונות: ככל שהערך של החומר הנמדד גבוה יותר, או שההשלכות של טעות במדידה גדולות יותר, כך נדרש ___ גבוה יותר ולעיתים גם יותר ___ של המדידה.",
+          "answers": {
+            "source": ["רמת ___ (המכשיר)", "מספר ___ (של המדידה)"],
+            "target": ["מאזניים", "דיוק", "חזרות", "טעויות"]
+          },
+          "correctAnswers": [
+            {"source": "רמת ___ (המכשיר)", "target": "דיוק"},
+            {"source": "מספר ___ (של המדידה)", "target": "חזרות"}
+          ]
+        }
+      ]
+    }
+  ]
+}
