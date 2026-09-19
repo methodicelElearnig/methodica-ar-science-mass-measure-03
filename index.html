@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>שימושי מדידת מסה בבית ובתעשייה — לומדה | תכנית 720</title>
+  <script>
+    /* נקודת הכניסה היחידה ליחידה. הפלטפורמה משגרת לכאן עם ?slxapi (ו-?registration),
+       ולכן ההפניה חייבת לגרור את window.location.search — בלעדיו הגדרת ה-LRS אובדת
+       וכל הסינים מדווחים כלום. */
+    function toFirstComponent(){
+      window.location.replace('./methodica-science-mass-measure-03-01/index.html' + window.location.search);
+    }
+
+    toFirstComponent();
+  </script>
+</head>
+<body>
+  <p>
+    מעבירים אותך ללומדה… <br />
+    <span onclick="toFirstComponent();" style="text-decoration: underline; color: blue; cursor: pointer;">לחצו כאן אם הדף לא נטען</span>
+  </p>
+</body>
+</html>

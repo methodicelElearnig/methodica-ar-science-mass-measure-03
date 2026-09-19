@@ -1,0 +1,183 @@
+#Requires -Version 7.0
+<#
+.SYNOPSIS
+    THE ALLOWLIST: the single definition of what a deployment package contains.
+
+.DESCRIPTION
+    Dot-sourced by build-package.ps1 and verify-package.ps1. It is not runnable on
+    its own and produces no output.
+
+    ⚠️ This is an ALLOWLIST and must never become a denylist. docs-and-tools/ holds
+    kata-api-key.txt — a live key — so a denylist with one missing entry publishes it.
+    A file ships only if a rule here says it does.
+
+    That is not hypothetical here. Every package before 2026-09-07 was cut by hand from
+    a denylist written in prose inside DEPLOY.md, and the 2026-09-01 DEPLOY.md records
+    that denylist being patched *after* a new root-level document appeared:
+    "the packaging rules previously excluded only README.md, so the build was extended
+    to exclude it". An allowlist cannot fail that way — a new file at the root simply
+    does not match $RootFiles.
+
+    ⚠️ EDIT THIS FILE AND NOTHING ELSE when what ships changes. The builder and the
+    verifier both read it, which is what stops a package from being built to one
+    definition and checked against another.
+
+        build-package.ps1   — copies exactly the files Test-Ships accepts
+        verify-package.ps1  — asserts the package IS exactly those files
+
+    This file never ships: docs-and-tools/ is excluded wholesale, and *.ps1 twice over.
+
+.NOTES
+    Adapted from the methodica-math-ratio-01/-02 copy, which is byte-identical between
+    those two. build-package.ps1 and verify-package.ps1 ARE byte-identical here too —
+    only this file differs, and only in three places. Keep it that way.
+
+    THE THREE DIFFERENCES FROM THE RATIO COPY, all forced by this unit's shape:
+
+      1. $ComponentGlob is subject-locked. The ratio value 'methodica-math-*-[0-9][0-9]'
+         matches nothing here, and the package would silently contain no components at all.
+      2. $ComponentSubApps. Component 05 embeds a self-contained site loaded by <iframe>;
+         the ratio rule allows depth >= 3 only under assets/, so it would drop all 31 of
+         its files and 404 on screen 05.
+      3. $ExcludeDirSegment / $ExcludeRelPaths. This unit carries source material and
+         superseded files inside otherwise-shipping assets/ trees.
+
+    This unit also has NO unit-assets/ before the 2026-09-07 hoist; the key below is
+    harmless while the directory does not exist.
+#>
+
+# ── Directories that never contribute a single file, whatever is inside them ──
+$ExcludeTopLevel = @('_test', 'docs-and-tools', 'metadata-from', '.git')
+
+# ── File names that never ship, wherever they appear ──
+#    ARCHITECTURE.md / PROJECT_BRIEF.md / HOWTO-720-REPORTING.md are already refused by
+#    the $ComponentFiles and $RootFiles rules below; naming them is defence in depth and
+#    documents the intent for whoever adds the next document.
+$ExcludeNames = @('index_dev.html', 'README.md', '.gitignore', '.gitattributes', '.DS_Store',
+                  'ARCHITECTURE.md', 'PROJECT_BRIEF.md', 'HOWTO-720-REPORTING.md')
+
+# ── Extensions that never ship ──
+$ExcludeExt = @('.ps1', '.log')
+
+# ── Any path segment starting with an underscore is a SOURCE, not a deliverable. ──
+$ExcludeUnderscoreSegment = $true
+
+# ── Directory names that are source material wherever they appear, even inside assets/ ──
+#    originals-backup/ holds the pre-edit copies of the simulation's plane images: 8 files,
+#    16.3 MB, referenced by nothing.
+$ExcludeDirSegment = @('originals-backup')
+
+# ── Individual files that look shippable and are not ─────────────────────────
+#    Every one verified by grep across all html/js/css in the unit. This is safe to assert
+#    because neither the sub-app nor the components build these particular names
+#    dynamically: PLANE_IMAGES (plane-mass-simulation/script.js:17-24) is a static literal
+#    map, and the components' preloader builds only '-come-in.mp4' / '-questioning.mp4' /
+#    '-clapping-hands.mp4' — never the .png twins listed here.
+#
+#    ⚠️ Do NOT extend this list by eye. An asset that merely looks unused may be built at
+#    runtime from a colour or a screen number; a missing image costs more than its bytes.
+$ExcludeRelPaths = @(
+    # unused font — no @font-face and no font-family names it anywhere (2 identical copies)
+    'methodica-science-mass-measure-02-05/assets/fonts/GeistPixel-Regular-VariableFont_ELSH.ttf',
+    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/fonts/GeistPixel-Regular-VariableFont_ELSH.ttf',
+    # pre-crop originals, superseded by their -cropped twins, which are what the sim loads
+    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/fuel-card.png',
+    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/luggage-card.png',
+    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/passengers-card.png',
+    'methodica-science-mass-measure-02-05/plane-mass-simulation/assets/images/original-plane-empty.png',
+    # avatar poster stills: the videos are used, these PNGs are not, in either component
+    'methodica-science-mass-measure-02-01/assets/images/avatar-green-come-in.png',
+    'methodica-science-mass-measure-02-02/assets/images/avatar-green-come-in.png',
+    'methodica-science-mass-measure-02-01/assets/images/avatar-orange-come-in.png',
+    'methodica-science-mass-measure-02-02/assets/images/avatar-orange-come-in.png',
+    'methodica-science-mass-measure-02-01/assets/images/avatar-green-clapping-hands.png',
+    'methodica-science-mass-measure-02-02/assets/images/avatar-green-clapping-hands.png',
+    'methodica-science-mass-measure-02-01/assets/images/avatar-orange-clapping-hands.png',
+    'methodica-science-mass-measure-02-02/assets/images/avatar-orange-clapping-hands.png'
+)
+
+# ── What each shipped area contributes ──
+$RootFiles = @('index.html')             # the redirect into component 01
+
+$UnitDirs = @{
+    'metadata'    = '*.json'             # unit + per-component catalogue records
+    'unit-js'     = '*.js'               # the shared layer (its README.md excluded above)
+    'unit-css'    = '*.css'              # 25-report.css, the shared issue-report modal
+    'unit-assets' = '*'                  # fonts/images/video shared by more than one component
+}
+
+# Inside a component folder: these files, plus everything under assets/.
+$ComponentFiles = @('index.html', 'script.js', 'styles.css')
+$ComponentGlob  = 'methodica-science-mass-measure-02-[0-9][0-9]'
+
+# ── Sub-apps: a self-contained site inside a component, loaded by <iframe> ───
+#    methodica-science-mass-measure-02-05/index.html lines 101, 143 and 219 each carry
+#    <iframe src="plane-mass-simulation/index.html">. It has its own document, so its
+#    relative paths resolve from ITS directory, not the component's.
+#    Note style.css is SINGULAR here — the components use styles.css.
+$ComponentSubApps = @('plane-mass-simulation')
+$SubAppFiles      = @('index.html', 'script.js', 'style.css')
+
+# ── Hygiene: if any of these turn up INSIDE a package, it is unsafe to upload ──
+$SecretPatterns = @('*key*', '*.ps1', '*.log', 'index_dev.html', 'README.md', '.git*', '_*')
+
+# ── Files a package may contain that are NOT copied from the tree ──
+$PackageOnlyFiles = @('DEPLOY.md')
+
+<#
+.SYNOPSIS
+    Does this repo-relative path (forward slashes) belong in a deployment package?
+#>
+function Test-Ships([string] $rel) {
+    $segs = $rel.Split('/')
+    if ($rel -in $ExcludeRelPaths)                     { return $false }
+    if ($segs[0] -in $ExcludeTopLevel)                 { return $false }
+    if ($segs[-1] -in $ExcludeNames)                   { return $false }
+    if ([IO.Path]::GetExtension($rel) -in $ExcludeExt) { return $false }
+    if ($ExcludeUnderscoreSegment -and ($segs | Where-Object { $_.StartsWith('_') })) { return $false }
+    if ($segs | Where-Object { $_ -in $ExcludeDirSegment }) { return $false }
+
+    if ($segs.Count -eq 1) { return $segs[0] -in $RootFiles }
+
+    if ($UnitDirs.ContainsKey($segs[0])) {
+        $glob = $UnitDirs[$segs[0]]
+        if ($glob -eq '*') { return $true }              # unit-assets/: everything, at any depth
+        return ($segs.Count -eq 2 -and $segs[1] -like $glob)
+    }
+
+    if ($segs[0] -like $ComponentGlob) {
+        if ($segs.Count -eq 2) { return $segs[1] -in $ComponentFiles }
+        if ($segs[1] -eq 'assets') { return $true }      # assets/ at any depth
+        if ($segs[1] -in $ComponentSubApps) {
+            if ($segs.Count -eq 3) { return $segs[2] -in $SubAppFiles }
+            return ($segs[2] -eq 'assets')               # the sub-app's own assets/, any depth
+        }
+        return $false
+    }
+    return $false
+}
+
+<#
+.SYNOPSIS
+    Every repo-relative path in $root that ships, sorted.
+#>
+function Get-ShippableFiles([string] $root) {
+    Get-ChildItem -LiteralPath $root -Recurse -File -Force |
+        ForEach-Object { [IO.Path]::GetRelativePath($root, $_.FullName).Replace('\', '/') } |
+        Where-Object { Test-Ships $_ } |
+        Sort-Object
+}
+
+<#
+.SYNOPSIS
+    Secret/dev files present in a package. Anything returned makes it unsafe to upload.
+#>
+function Get-HygieneHits([string[]] $rels) {
+    $hits = @()
+    foreach ($pat in $SecretPatterns) {
+        $hits += @($rels | Where-Object {
+            $_.Split('/')[-1] -like $pat -or ($_.Split('/') | Where-Object { $_ -like $pat })
+        })
+    }
+    @($hits | Sort-Object -Unique | Where-Object { $_ -notin $PackageOnlyFiles })
+}

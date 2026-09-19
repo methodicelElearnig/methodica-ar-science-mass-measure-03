@@ -4,9 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>לומדה 720 | מדעים יעד 3 | סיין 5 (משימת שיא — מועד א)</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=1">
+<!-- מודאל "מצאתם בעיה?" — עותק אחד לכל הסינים. נטען אחרי styles.css במכוון. -->
+<link rel="stylesheet" href="../unit-css/25-report.css?v=1">
 </head>
 <body>
+<!-- ═══ כיסוי האתחול ═══
+     מסתיר את החלון שבו מסך 0 כבר גלוי (class="screen active" מקובע ב-markup
+     כאן למטה) אבל מסמך ה-state עוד לא נקרא. בלעדיו לומד שממשיך ממחשב אחר
+     רואה אווטאר בצבע הלא-נכון ואז החלפה — בדיוק ההבהוב שכלל 1 ב-CLAUDE.md
+     אוסר, כי הדמות נקראת מהמסמך ולא מ-localStorage מ-v4 והלאה.
+
+     אח של #app ולא בן שלו: scaleApp() מזיז ומקטין את #app, ובן היה יורש
+     את ה-transform. הסגנון inline ולא ב-styles.css במכוון — הכיסוי חייב
+     להיצבע בפריים הראשון, ו-inline הוא היחיד שלא תלוי בקאש של CSS.
+
+     ⚠️ הסקריפט שאחריו הוא רשת הביטחון, ואין לו שום תלות בקובץ JS: גם אם
+     40-resume.js או 50-loader.js נכשלים בטעינה, הכיסוי נופל אחרי 800ms.
+     ההסרה בנתיב הרגיל היא dropBootCover() מ-50-loader.js, שרצה מוקדם יותר
+     מזה ברוב הטעינות.
+     אם bootXAPI הספיק להדליק את window.__resumeInFlight (כלומר resume פעיל
+     והשחזור בדרך), הרשת ממתינה לו במקום לחשוף את מסך 0 באמצע — עד תקרה
+     קשיחה של 6 שניות, שאחריה היא חושפת בכל מקרה. הדגל נקרא הגנתית, ולכן
+     50-loader.js שנכשל בטעינה מחזיר בדיוק את התנהגות ה-800ms. -->
+<div id="boot-cover" style="position:fixed;inset:0;z-index:9999;background:#fff"></div>
+<script>
+(function () {
+  var t0 = Date.now();
+  function tick() {
+    var c = document.getElementById('boot-cover');
+    if (!c || !c.parentNode) return;
+    if (window.__resumeInFlight && Date.now() - t0 < 6000) { setTimeout(tick, 100); return; }
+    c.parentNode.removeChild(c);
+  }
+  setTimeout(tick, 800);
+})();
+</script>
 <div id="app">
 
   <!-- ============ מסך 1 — מעבר: הקדמה למשימת השיא ============
@@ -525,7 +558,103 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════════
+       "מצאתם בעיה?" — שלושה דיאלוגים.
+       יושבים בתוך #app ומחוץ לכל .screen: ‎.report-modal-overlay הוא
+       position:absolute; inset:0, ו-#app הוא האב הממוקם שלו — מחוץ ל-#app
+       הכיסוי לא היה מתיישר לקנבס המוקטן.
+       ההתנהגות כולה ב-../unit-js/25-report.js, העיצוב ב-../unit-css/25-report.css.
+       כפתור ה-.flag-btn עצמו כבר קיים בכל סין ומחווט ב-delegation.
+  ════════════════════════════════════════════════════════════════ -->
+  <div id="report-modal"
+       class="report-modal-overlay"
+       hidden
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="report-modal-title">
+    <div class="report-modal-box">
+      <button class="report-close-btn" type="button" onclick="tryCloseReportModal()" aria-label="סגירה">&#10005;</button>
+      <h2 class="report-modal-title" id="report-modal-title">דיווח על בעיה</h2>
+      <p class="report-modal-body">משהו לא ברור או לא עובד כמו שצריך?<br>ספרו לנו מה קרה כדי שנטפל.</p>
+
+      <div class="report-field">
+        <label class="report-label" for="report-type"><span class="required-star">*</span> מה סוג הבעיה</label>
+        <div class="report-custom-select" id="report-type-wrapper">
+          <button class="report-select-btn is-placeholder" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="report-select-value">בחרו סוג בעיה</span>
+          </button>
+          <ul class="report-select-list" role="listbox" hidden>
+            <li class="report-select-option" data-value="technical" role="option">תקלה טכנית או שמשהו לא עובד</li>
+            <li class="report-select-option" data-value="unclear" role="option">משהו לא ברור לי</li>
+            <li class="report-select-option" data-value="other" role="option">אחר</li>
+          </ul>
+          <input type="hidden" id="report-type" value="">
+        </div>
+        <span class="report-field-error" id="report-type-error" hidden>בחרו את סוג הבעיה</span>
+      </div>
+
+      <div class="report-field">
+        <label class="report-label" for="report-text"><span class="required-star">*</span> מה קרה?</label>
+        <textarea class="report-textarea" id="report-text" maxlength="250" rows="4" placeholder="פרטו מה קרה כדי שנוכל להבין את הבעיה" onblur="reportTextBlur()"></textarea>
+        <span class="report-field-error" id="report-text-error" hidden>כתבו מה קרה</span>
+        <span class="report-char-count" id="report-char-count">0 / 250</span>
+      </div>
+
+      <div class="report-actions">
+        <button class="report-cancel-btn" type="button" onclick="tryCloseReportModal()">ביטול</button>
+        <button class="report-submit-btn" type="button" onclick="submitReport()" disabled>שליחת דיווח</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- מצב "הדיווח נשלח". דיאלוג נפרד מדיאלוג הנטישה שמתחתיו — אין לאחד ביניהם. -->
+  <div id="report-thanks-modal"
+       class="report-modal-overlay"
+       hidden
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="report-thanks-title">
+    <div class="report-modal-box report-confirm-box">
+      <h2 class="report-modal-title" id="report-thanks-title">הדיווח נשלח, תודה!</h2>
+      <p class="report-modal-body">קיבלנו את הדיווח שלכם ונטפל בו בהקדם.</p>
+      <div class="report-actions">
+        <button class="report-submit-btn" type="button" onclick="closeReportThanks()">סגירה</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- אישור נטישה: נפתח רק כשיש קלט שלא נשלח. -->
+  <div id="report-confirm-modal"
+       class="report-modal-overlay"
+       hidden
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="report-confirm-title">
+    <div class="report-modal-box report-confirm-box">
+      <h2 class="report-modal-title" id="report-confirm-title">בטוח לסגור את החלון?</h2>
+      <p class="report-modal-body">בלחיצה על סגירה לא יישלח דיווח</p>
+      <div class="report-actions">
+        <button class="report-cancel-btn" type="button" onclick="forceCloseReportModal()">סגור חלון</button>
+        <button class="report-submit-btn" type="button" onclick="backToReportForm()">אני רוצה לדווח</button>
+      </div>
+    </div>
+  </div>
+
 </div>
-<script src="script.js"></script>
+<!-- ═══ השכבה המשותפת ═══
+     עותק אחד לכל חמשת הסינים, ב-../unit-js/. כל הקבצים כאן הם definition-only:
+     הצד-אפקטים היחידים יוצאים מ-90-boot.js.
+     ⚠️ ה-?v= חייב להיות זהה בכל חמשת ה-index.html לכל קובץ. אי-התאמה גורמת
+     לסין אחד להביא עותק שני תחת URL אחר, ושני סינים יכולים להריץ גרסאות
+     שונות של אותה לוגיקה בתוך סשן אחד של לומד. -->
+<script src="../unit-js/10-identity.js?v=1"></script>
+<script src="../unit-js/20-xapi.js?v=1"></script>
+<script src="../unit-js/25-report.js?v=1"></script>
+<script src="../unit-js/40-resume.js?v=1"></script>
+<script src="../unit-js/50-loader.js?v=1"></script>
+<script src="script.js?v=1"></script>
+<!-- ה-side-effects היחידים. חייב להיות אחרון, ובתג נפרד: זריקה ברמת
+     top-level ב-script.js לא מפילה תג script אחר. ראו unit-js/90-boot.js. -->
+<script src="../unit-js/90-boot.js?v=1"></script>
 </body>
 </html>
