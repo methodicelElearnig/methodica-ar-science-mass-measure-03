@@ -103,6 +103,9 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
+     עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
+  try { xapiOnScreen(n); } catch (e) {}
   requestAnimationFrame(function () {
     target.querySelectorAll('.tbl-content').forEach(initFakeScrollbar);
   });
@@ -528,6 +531,8 @@ function s2Check() {
   if (!s2Selected || s2Done) return;
   s2Attempts++;
   const optEl = s2OptEl(s2Selected);
+  xapiAnswered('001', 'q1', s2Selected === S2.correctId,
+    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, xapiAnswerText(optEl));
 
   if (s2Selected === S2.correctId) {
     optEl.classList.add('correct');
@@ -580,6 +585,8 @@ function s2UnlockOptions() {
 
 function s2OpenHint() {
   if (s2Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('001', 'q1');
   document.getElementById('s2-hint-overlay').hidden = false;
 }
 function s2CloseHint() { document.getElementById('s2-hint-overlay').hidden = true; }
@@ -684,6 +691,8 @@ function s3Check() {
   if (!s3Selected || s3Done) return;
   s3Attempts++;
   const optEl = s3OptEl(s3Selected);
+  xapiAnswered('001', 'q2', s3Selected === S3.correctId,
+    s3Selected === S3.correctId || s3Attempts >= S3.maxAttempts, xapiAnswerText(optEl));
 
   if (s3Selected === S3.correctId) {
     optEl.classList.add('correct');
@@ -736,6 +745,8 @@ function s3UnlockOptions() {
 
 function s3OpenHint() {
   if (s3Done) return;
+  /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
+  xapiRequestedHint('001', 'q2');
   document.getElementById('s3-hint-overlay').hidden = false;
 }
 function s3CloseHint() { document.getElementById('s3-hint-overlay').hidden = true; }
@@ -1097,6 +1108,21 @@ function makeDragQuestion(cfg) {
 
     render();
 
+    /* xAPI: **אחרי** לולאת האזורים, כי allCorrect סופי רק בסופה, ולפני
+       ההסתעפות כדי שירוץ פעם אחת בכל מסלול.
+       ⚠️ xapiZoneAnswer לא מתאים: העוזר בונה מזהי אזור בתבנית
+       <prefix>-zone-<id>, בעוד היעדים כאן הם s4-target-N. */
+    if (cfg.xapiItem) {
+      const _ans = targetIds.map(function (tId) {
+        let placed = null;
+        dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+        return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
+      }).join(' | ');
+      (cfg.xapiQuestions || ['q1']).forEach(function (q) {
+        xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
+      });
+    }
+
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
@@ -1133,6 +1159,8 @@ function makeDragQuestion(cfg) {
     if (!cfg.hintBtnId) return;
     const hintBtn = document.getElementById(cfg.hintBtnId);
     if (hintBtn) hintBtn.disabled = true;
+    /* xAPI: אחרי הגארד ומיד לפני שהרמז נחשף בפועל. */
+    if (cfg.xapiItem) xapiRequestedHint(cfg.xapiItem, (cfg.xapiQuestions || ['q1'])[0]);
     document.getElementById(cfg.hintOverlayId).hidden = false;
   }
   function closeHint() {
@@ -1220,15 +1248,32 @@ function makeDragQuestion(cfg) {
   return { reset: reset };
 }
 
+/* תוצאת הרכיב: שלושת הסעיפים א/ב/ג (חלקים 2/3/4), בדיוק מה שמסך 0 מבטיח —
+   "יש בה 3 סעיפים. עליכם להצליח בכולם".
+   חלק 1 (הסימולציה) מוחרג במכוון: s1FinishWeighing כותב תמיד 'pass', ולכן
+   אינו נושא מידע. */
+function moedAComponentResult() {
+  let _n = 0;
+  try {
+    _n = ['lomda_moedA_part2_result', 'lomda_moedA_part3_result', 'lomda_moedA_part4_result']
+      .filter(function (k) { return localStorage.getItem(k) === 'pass'; }).length;
+  } catch (e) {}
+  return { success: moedAFullyPassed(), score: { scaled: _n / 3 } };
+}
+
 function s4SectionGDecision() {
   if (moedAFullyPassed()) {
     goTo(5);
   } else {
-    /* לא עברו בהצלחה מלאה את מועד א -> קישור בין סינים לסיין 6 ("מועד ב",
-       נתיב יחסי, אותה מוסכמה בדיוק כמו בפרויקט הקודם, Methodica-science
-       -mass-measure-02-linked). אם כן עברו (branch למעלה) — אין צורך
-       במועד ב כלל, s5Finish() נשאר נקודת הסיום האמיתית (לא מקושר הלאה). */
-    window.location.href = '../methodica-science-mass-measure-03-06/index.html';
+    /* לא עברו בהצלחה מלאה את מועד א -> מועד ב (סיין 6).
+       ⚠️ הדיווח במסלול הכשל אינו אופציונלי — זו הלחיצה האחרונה של הלומד
+       ברכיב הזה, והוא לעולם לא יגיע למסך 5.
+       ⚠️ ובמכוון **לא** לפני ההסתעפות: Kata מסירה את הרכיב מהמסך ברגע
+       שה-completed מגיע (הנחיות 2.7 עמ' 23), ולכן דיווח מוקדם היה מונע
+       ממי שהצליח לראות את מסך 5 בכלל. כל מסלול מדווח בנפרד, בנקודת
+       הסיום האמיתית שלו. */
+    xapiEndComponent(moedAComponentResult(), document.getElementById('s4-check'));
+    if (DEV_NAV) window.location.href = '../methodica-science-mass-measure-03-06/index.html';
   }
 }
 
@@ -1261,6 +1306,9 @@ const dqSectionG = makeDragQuestion({
   revealBtnId: 's4-reveal-btn',
   wordBankId: 's4-word-bank',
   resultKey: 'lomda_moedA_part4_result',
+  /* xAPI: סעיף ג הוא השאלה השלישית של פריט 001. */
+  xapiItem: '001',
+  xapiQuestions: ['q3'],
   onContinue: s4SectionGDecision,
   labels: {
     's4-drag-4': '4',
@@ -1305,10 +1353,10 @@ function resetScreenState5() {
   resolveCharBubbleVideo('s5-avatar-video', S5_AVATAR_ASSETS);
 }
 
+/* נקודת הסיום של מסלול ההצלחה — הלחיצה האחרונה של הלומד במסך 5.
+   המקבילה למסלול הכשל היא s4SectionGDecision, שמדווח שם בנפרד. */
 function s5Finish() {
-  /* TODO: לחבר לפעולת סיום הלומדה/היחידה כשתיבנה (LMS) — זהה למוסכמה
-     בפרויקט הקודם (s4Finish/s13Finish/s14Finish ב-Methodica-02-05/06). */
-  console.log('TODO: כפתור "סיימתי" — לחבר לפעולת סיום הלומדה כשתיבנה.');
+  xapiEndComponent(moedAComponentResult(), document.getElementById('s5-finish'));
 }
 
 /* ---------- Dev postMessage bridge (index_dev.html free nav) ---------- */
@@ -1429,6 +1477,30 @@ scaleApp();
 scqFbMakeDraggable('s2-feedbox');
 scqFbMakeDraggable('s3-feedbox');
 scqFbMakeDraggable('s4-feedbox');
+
+/* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
+   נתונים בלבד. השכבה המשותפת ב-../unit-js/ קוראת אותם בזמן call. */
+
+/* ⚠️ חייב להחזיק בדיוק TOTAL_SCREENS מפתחות (6), 0..5, בלי חורים.
+   כל משימת השיא היא פריט קטלוגי אחד (001) שנושא שלוש שאלות — סעיפים
+   א/ב/ג — ולכן מסכים 1..4 חולקים סיומת אחת ולא נשלח ביניהם statement.
+   מסך 5 הוא null, ולכן הכניסה אליו סוגרת את הפריט. */
+var SCREEN_TO_SUBCONTENT = {
+  0: null,          /* מעבר: הקדמה למשימת השיא */
+  1: ['001', 1],    /* סימולציית שקילה + טבלת מדידות (איסוף הנתונים) */
+  2: ['001', 2],    /* סעיף א — q1 */
+  3: ['001', 3],    /* סעיף ב — q2 */
+  4: ['001', 4],    /* סעיף ג — q3 (גרירה) */
+  5: null           /* "השלמת את היחידה בהצלחה" — מסך סיום, בלי פריט */
+};
+
+var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-05';
+var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
+
+var XAPI_EVAL_ITEMS = { '001': 1 };
+
+var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-05.json';
+
 /* קישור בין סינים — חזרה: אם הגענו לכאן עם #screen=N (מכפתור "חזרה"
    בסיין הבא), קופצים ישר למסך הזה במקום למסך הראשון. */
 (function () {
