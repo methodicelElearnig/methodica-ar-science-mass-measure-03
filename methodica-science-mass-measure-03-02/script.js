@@ -111,9 +111,12 @@ function goTo(n) {
   currentScreen = n;
   resetScreenState(n);
   target.classList.add('active');
+  /* resume: לצייר מסך שכבר נענה — בכל ניווט, לא רק בנחיתת השחזור. */
+  try { repaintScreen(n); } catch (e) { console.error('[resume] repaint', e); }
   /* xAPI: אחרי classList.add('active') במכוון — קריאת רשת לא מעכבת ציור.
      עטוף בנפרד כדי שדיווח שנכשל לעולם לא ישבור ניווט. */
   try { xapiOnScreen(n); } catch (e) {}
+  try { scheduleResumeSave(); } catch (e) {}
   requestAnimationFrame(function () {
     target.querySelectorAll('.s7-content').forEach(initFakeScrollbar);
   });
@@ -325,6 +328,7 @@ function s1Check() {
     stationProgress.q1 = 'success';
     updateQuestionNav('s1');
     s1SetBarDone('המשך', function () { goTo(2); });
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -360,6 +364,7 @@ function s1Check() {
     updateQuestionNav('s1');
     s1SetBarDone('המשך', function () { goTo(2); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s1LockOptions() {
@@ -496,6 +501,7 @@ function s2Check() {
     stationProgress.q2 = 'success';
     updateQuestionNav('s2');
     s2SetBarDone('המשך', function () { goTo(3); });
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -522,6 +528,7 @@ function s2Check() {
     updateQuestionNav('s2');
     s2SetBarDone('המשך', function () { goTo(3); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s2LockOptions() {
@@ -670,6 +677,7 @@ function s3Check() {
        בפועל, ההערה/callback הריק נשארו מזמן שהמסך הזה היה אכן האחרון
        שנבנה. תוקן ל-goTo(4) בפועל. */
     s3SetBarDone('המשך', function () { goTo(4); });
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -699,6 +707,7 @@ function s3Check() {
        שנבנה. תוקן ל-goTo(4) בפועל. */
     s3SetBarDone('המשך', function () { goTo(4); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s3LockOptions() {
@@ -924,6 +933,7 @@ function s6Check() {
     q1SectionDone('a', 'success');
     updateQuestionNav2('s6');
     s6SetBarDone('המשך', function () { goTo(7); });
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -950,6 +960,7 @@ function s6Check() {
     updateQuestionNav2('s6');
     s6SetBarDone('המשך', function () { goTo(7); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s6LockOptions() {
@@ -1030,6 +1041,9 @@ let s7Attempts = 0;
 let s7Done = false;
 let s7AnswerSnapshot = null; // הערך שהלומד הזין בפועל בניסיון האחרון (לא הערך הנכון)
 let s7Revealed = false;
+/* resume: נשמר במפורש. אחרי reveal אין ב-DOM שום דבר שמבדיל בין
+   "ענה נכון" לבין "חשף את הפתרון", ואין כאן משתנה phase. */
+let s7Passed = false;
 let s7ScrollGestureShown = false;
 
 function s7OnInput() {
@@ -1065,6 +1079,7 @@ function s7Check() {
     input.classList.add('correct');
     input.disabled = true;
     s7Done = true;
+    s7Passed = true;
     s7ShowFeedback('correct', true);
     q1SectionDone('b', 'success');
     updateQuestionNav2('s7');
@@ -1073,6 +1088,7 @@ function s7Check() {
     btn.disabled = false;
     btn.onclick = function () { goTo(8); };
     document.getElementById('s7-hint').hidden = true;
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -1090,6 +1106,7 @@ function s7Check() {
     input.classList.add('wrong'); // מוצג כרגע: ערך הלומד עצמו (שגוי)
     input.disabled = true;
     s7Done = true;
+    s7Passed = false;
     s7ShowFeedback('pending', false);
     const revealBtn = document.getElementById('s7-reveal-btn');
     if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = 'התשובה הנכונה'; }
@@ -1101,6 +1118,7 @@ function s7Check() {
     btn.onclick = function () { goTo(8); };
     document.getElementById('s7-hint').hidden = true;
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s7ToggleReveal() {
@@ -1263,6 +1281,7 @@ function s8Check() {
     q1SectionDone('c', 'success');
     updateQuestionNav2('s8');
     s8SetBarDone('המשך', function () { goTo(9); });
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -1289,6 +1308,7 @@ function s8Check() {
     updateQuestionNav2('s8');
     s8SetBarDone('המשך', function () { goTo(9); });
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s8LockButtons() {
@@ -1422,6 +1442,7 @@ function s9Check() {
        מדלג עליו ישירות לסיין 4 — אותו יעד שסיין 3 עצמו הפנה אליו לפני
        ההוצאה מהרצף. goTo(10) היה no-op (TOTAL_SCREENS=10). */
     s9SetBarDone('המשך', s9Finish);
+    try { flushResumeSave(); } catch (e) {}
     return;
   }
 
@@ -1453,6 +1474,7 @@ function s9Check() {
        ההוצאה מהרצף. goTo(10) היה no-op (TOTAL_SCREENS=10). */
     s9SetBarDone('המשך', s9Finish);
   }
+  try { flushResumeSave(); } catch (e) {}
 }
 
 function s9LockOptions() {
@@ -1641,6 +1663,277 @@ scqFbMakeDraggable('s6-feedbox');
 scqFbMakeDraggable('s7-feedbox');
 scqFbMakeDraggable('s8-feedbox');
 scqFbMakeDraggable('s9-feedbox');
+
+/* ═══════════════════ resume — ארבעת ה-hooks של הסין ═══════════════════ */
+
+/* ⚠️ מפת צד לסימוני הטעות של מסך 1. s1Check מאפס s1Selected = [] בכל ניסיון
+   שגוי, ומאותו רגע הבחירות של הלומד קיימות **רק** כ-class‏ wrong על ה-DOM.
+   ראו גם applyResumeDom, שחייב להחזיר אותן ל-DOM ולא רק למשתנה. */
+var __s1Wrong = [];
+
+function captureWrongMarks(screenSel) {
+  var out = [];
+  document.querySelectorAll(screenSel + ' .scq-opt').forEach(function (el) {
+    if (el.classList.contains('wrong') && el.dataset.id) out.push(el.dataset.id);
+  });
+  return out;
+}
+
+function capturePartPayload() {
+  var st = { currentScreen: currentScreen };
+  st.qResults = Object.assign({}, XAPI_Q_RESULTS);
+  st.stations = Object.assign({}, stationProgress);    /* מסכים 1-3 */
+  st.stations2 = Object.assign({}, stationProgress2);  /* מסכים 6-9 */
+  /* שאלה 1 של תחנה ב פרושה על ארבעה מסכים, ו-q1SectionDone קובעת את
+     stationProgress2.q1 רק כששלמו כל הארבעה. בלי המפה הזאת, ריענון באמצע
+     היה גורם לשאלה לא להיספר כלל. */
+  st.q1Sections = Object.assign({}, q1SectionResults);
+
+  st.s1 = {
+    sel: s1Selected.slice(), att: s1Attempts, done: s1Done, phase: s1Phase,
+    /* נקרא מה-DOM דווקא, מהסיבה שלמעלה. */
+    wrong: captureWrongMarks('#s1')
+  };
+  st.scq = {
+    s2: { sel: s2Selected, att: s2Attempts, done: s2Done, phase: s2Phase },
+    s3: { sel: s3Selected, att: s3Attempts, done: s3Done, phase: s3Phase },
+    s6: { sel: s6Selected, att: s6Attempts, done: s6Done, phase: s6Phase },
+    s9: { sel: s9Selected, att: s9Attempts, done: s9Done, phase: s9Phase }
+  };
+  /* מסך 8 הוא שורת נכון/לא-נכון: הסימונים הם btn-correct/btn-wrong על
+     כפתורים, לא classes על ‎.scq-opt — אותם שדות, צייר אחר. */
+  st.s8 = { sel: s8Selected, att: s8Attempts, done: s8Done, phase: s8Phase };
+
+  /* מסך 7 — קלט מספרי עם מתג "התשובה הנכונה". שלושת הערכים יחד:
+     val = מה שמוצג עכשיו (אולי הפתרון), snap = מה שהלומד הזין,
+     revealed = מי מהשניים על המסך. בלי שלושתם שחזור היה מקבע את הפתרון
+     כאילו הלומד כתב אותו. */
+  var s7i = document.getElementById('s7-input');
+  st.s7 = {
+    att: s7Attempts, done: s7Done, revealed: s7Revealed,
+    snap: s7AnswerSnapshot, val: s7i ? s7i.value : '', passed: s7Passed
+  };
+  return st;
+}
+
+function applyResumeVars(st) {
+  if (!st) return;
+  if (st.qResults) Object.keys(st.qResults).forEach(function (k) { XAPI_Q_RESULTS[k] = st.qResults[k]; });
+  if (st.stations) Object.keys(st.stations).forEach(function (k) { stationProgress[k] = st.stations[k]; });
+  if (st.stations2) Object.keys(st.stations2).forEach(function (k) { stationProgress2[k] = st.stations2[k]; });
+  if (st.q1Sections) Object.keys(st.q1Sections).forEach(function (k) { q1SectionResults[k] = st.q1Sections[k]; });
+
+  if (st.s1) {
+    s1Selected = (st.s1.sel || []).slice();
+    s1Attempts = st.s1.att || 0; s1Done = !!st.s1.done; s1Phase = st.s1.phase || 'before';
+    __s1Wrong = (st.s1.wrong || []).slice();
+  }
+  if (st.scq) {
+    ['s2', 's3', 's6', 's9'].forEach(function (k) {
+      var v = st.scq[k]; if (!v) return;
+      if (k === 's2') { s2Selected = v.sel || null; s2Attempts = v.att || 0; s2Done = !!v.done; s2Phase = v.phase || 'before'; }
+      if (k === 's3') { s3Selected = v.sel || null; s3Attempts = v.att || 0; s3Done = !!v.done; s3Phase = v.phase || 'before'; }
+      if (k === 's6') { s6Selected = v.sel || null; s6Attempts = v.att || 0; s6Done = !!v.done; s6Phase = v.phase || 'before'; }
+      if (k === 's9') { s9Selected = v.sel || null; s9Attempts = v.att || 0; s9Done = !!v.done; s9Phase = v.phase || 'before'; }
+    });
+  }
+  if (st.s8) { s8Selected = st.s8.sel || null; s8Attempts = st.s8.att || 0; s8Done = !!st.s8.done; s8Phase = st.s8.phase || 'before'; }
+  if (st.s7) {
+    s7Attempts = st.s7.att || 0; s7Done = !!st.s7.done; s7Revealed = !!st.s7.revealed;
+    s7AnswerSnapshot = (typeof st.s7.snap === 'string') ? st.s7.snap : null;
+    s7Passed = !!st.s7.passed;
+  }
+}
+
+function applyResumeDom(st) {
+  if (!st) return;
+  /* ⚠️ חייב לחזור ל-DOM ולא רק ל-__s1Wrong: capturePartPayload קורא את
+     הסימונים מה-DOM, ולכן השמירה הבאה הייתה כותבת wrong: [] ומוחקת את
+     הרשומה לתמיד — גם למסכים שהלומד לא חזר אליהם. */
+  if (st.s1 && Array.isArray(st.s1.wrong)) {
+    st.s1.wrong.forEach(function (id) {
+      var el = document.querySelector('#s1 .scq-opt[data-id="' + id + '"]');
+      if (el) el.classList.add('wrong');
+    });
+  }
+  /* ערך הקלט של מסך 7 חי רק ב-DOM. מוצב כאן, לפני הצייר שמשבית את השדה. */
+  if (st.s7 && typeof st.s7.val === 'string') {
+    var el = document.getElementById('s7-input');
+    if (el) el.value = st.s7.val;
+  }
+}
+
+function restoreScreenUI(n) {
+  try {
+    if (n === 1) restoreMcqUI();
+    if (n === 2) restoreScqUI({ screenSel: '#s2', cfg: S2, selected: s2Selected, attempts: s2Attempts,
+      done: s2Done, phase: s2Phase, optEl: s2OptEl, lock: s2LockOptions, showFeedback: s2ShowFeedback,
+      setBarDone: s2SetBarDone, check: s2Check, checkBtnId: 's2-check', hintBtnId: 's2-hint',
+      onContinue: function () { goTo(3); } });
+    if (n === 3) restoreScqUI({ screenSel: '#s3', cfg: S3, selected: s3Selected, attempts: s3Attempts,
+      done: s3Done, phase: s3Phase, optEl: s3OptEl, lock: s3LockOptions, showFeedback: s3ShowFeedback,
+      setBarDone: s3SetBarDone, check: s3Check, checkBtnId: 's3-check', hintBtnId: 's3-hint',
+      onContinue: function () { goTo(4); } });
+    if (n === 6) restoreScqUI({ screenSel: '#s6', cfg: S6, selected: s6Selected, attempts: s6Attempts,
+      done: s6Done, phase: s6Phase, optEl: s6OptEl, lock: s6LockOptions, showFeedback: s6ShowFeedback,
+      setBarDone: s6SetBarDone, check: s6Check, checkBtnId: 's6-check', hintBtnId: 's6-hint',
+      onContinue: function () { goTo(7); } });
+    if (n === 7) restoreS7UI();
+    if (n === 8) restoreTfRowUI();
+    if (n === 9) restoreScqUI({ screenSel: '#s9', cfg: S9, selected: s9Selected, attempts: s9Attempts,
+      done: s9Done, phase: s9Phase, optEl: s9OptEl, lock: s9LockOptions, showFeedback: s9ShowFeedback,
+      setBarDone: s9SetBarDone, check: s9Check, checkBtnId: 's9-check', hintBtnId: 's9-hint',
+      onContinue: s9Finish });
+  } catch (e) { console.error('[resume] restoreScreenUI', e); }
+}
+
+/* צייר חד-ברירה — זהה לזה שבסיין 4. ⚠️ ה-cfg כפרמטר, לעולם לא גלובל לפי שם. */
+function restoreScqUI(o) {
+  if (!o.done && o.attempts === 0 && !o.selected) return;
+  if (o.done) {
+    if (o.phase === 'correct') {
+      var okEl = o.optEl(o.selected);
+      if (okEl) { okEl.classList.add('correct'); okEl.classList.remove('selected'); }
+      o.showFeedback('correct', true);
+    } else {
+      var badEl = o.optEl(o.selected);
+      if (badEl && o.selected !== o.cfg.correctId) { badEl.classList.add('wrong'); badEl.classList.remove('selected'); }
+      var corrEl = o.optEl(o.cfg.correctId);
+      if (corrEl) corrEl.classList.add('correct');
+      o.showFeedback('wrong2', false);
+    }
+    o.lock();
+    o.setBarDone('המשך', o.onContinue);
+    return;
+  }
+  var checkBtn = document.getElementById(o.checkBtnId);
+  if (o.phase === 'wrong1') {
+    var wEl = o.optEl(o.selected);
+    if (wEl) { wEl.classList.add('wrong'); wEl.classList.remove('selected'); }
+    o.showFeedback('wrong1', false);
+    var hintBtn = document.getElementById(o.hintBtnId);
+    if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
+    return;
+  }
+  var selEl = o.optEl(o.selected);
+  if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = !o.selected; }
+}
+
+/* מסך 1 — רב-ברירה. צייר נפרד, כי בענף הטעות s1Selected ריק והסימונים
+   מגיעים מ-__s1Wrong. */
+function restoreMcqUI() {
+  if (!s1Done && s1Attempts === 0 && s1Selected.length === 0 && __s1Wrong.length === 0) return;
+
+  if (s1Done) {
+    if (s1Phase === 'correct') {
+      MCQ_S1.correctIds.forEach(function (cid) {
+        var el = s1OptEl(cid);
+        if (el) { el.classList.remove('selected'); el.classList.add('correct'); }
+      });
+      s1ShowFeedback('correct', true);
+    } else {
+      /* אותו סדר כמו ב-s1Check: קודם הטעויות, ואז הנכונות דורסות חפיפה. */
+      __s1Wrong.forEach(function (id) {
+        var el = s1OptEl(id);
+        if (el) { el.classList.remove('selected'); el.classList.add('wrong'); }
+      });
+      MCQ_S1.correctIds.forEach(function (cid) {
+        var el = s1OptEl(cid);
+        if (el) { el.classList.remove('wrong', 'selected'); el.classList.add('correct'); }
+      });
+      s1ShowFeedback('wrong2', false);
+    }
+    s1LockOptions();
+    s1SetBarDone('המשך', function () { goTo(2); });
+    return;
+  }
+
+  var checkBtn = document.getElementById('s1-check');
+  if (s1Phase === 'wrong1') {
+    __s1Wrong.forEach(function (id) {
+      var el = s1OptEl(id);
+      if (el) { el.classList.remove('selected'); el.classList.add('wrong'); }
+    });
+    s1ShowFeedback('wrong1', false);
+    var hintBtn = document.getElementById('s1-hint');
+    if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s1Check; checkBtn.disabled = true; }
+    return;
+  }
+  s1Selected.forEach(function (id) {
+    var el = s1OptEl(id);
+    if (el) { el.classList.add('selected'); el.setAttribute('aria-checked', 'true'); }
+  });
+  /* אותו פרדיקט שבו s1Toggle משתמש. */
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s1Check; checkBtn.disabled = s1Selected.length === 0; }
+}
+
+/* מסך 7 — קלט מספרי עם מתג חשיפה. הערך עצמו הוחזר כבר ב-applyResumeDom. */
+function restoreS7UI() {
+  if (!s7Done && s7Attempts === 0) return;
+  var input = document.getElementById('s7-input');
+  var btn = document.getElementById('s7-check');
+
+  if (s7Done) {
+    input.disabled = true;
+    if (s7Passed) {
+      input.classList.add('correct');
+      s7ShowFeedback('correct', true);
+    } else {
+      /* המתג קובע הכול: מה שעל המסך עכשיו הוא הפתרון או תשובת הלומד. */
+      input.classList.add(s7Revealed ? 'correct' : 'wrong');
+      s7ShowFeedback(s7Revealed ? 'wrong2' : 'pending', false);
+      var revealBtn = document.getElementById('s7-reveal-btn');
+      if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = s7Revealed ? 'התשובה שלי' : 'התשובה הנכונה'; }
+    }
+    if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = function () { goTo(8); }; }
+    document.getElementById('s7-hint').hidden = true;
+    return;
+  }
+
+  /* ניסיון שגוי שאינו אחרון. */
+  input.classList.add('error');
+  s7ShowFeedback('wrong1', false);
+  var hintBtn = document.getElementById('s7-hint');
+  if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+  /* אותו פרדיקט שבו s7OnInput משתמש — בלעדיו הכפתור היה מושבת לנצח. */
+  if (btn) { btn.disabled = !input.value.trim(); }
+}
+
+/* מסך 8 — שורת נכון/לא-נכון. הסימונים הם btn-correct/btn-wrong על כפתורים. */
+function restoreTfRowUI() {
+  if (!s8Done && s8Attempts === 0 && !s8Selected) return;
+  var selBtn = s8BtnEl(s8Selected);
+
+  if (s8Done) {
+    if (s8Phase === 'correct') {
+      if (selBtn) { selBtn.classList.add('btn-correct'); selBtn.classList.remove('selected'); }
+      s8ShowFeedback('correct', true);
+    } else {
+      if (selBtn) { selBtn.classList.add('btn-wrong'); selBtn.classList.remove('selected'); }
+      var okBtn = s8BtnEl(S8.correctVal);
+      if (okBtn) okBtn.classList.add('btn-correct');
+      s8ShowFeedback('wrong2', false);
+    }
+    s8LockButtons();
+    s8SetBarDone('המשך', function () { goTo(9); });
+    return;
+  }
+
+  var checkBtn = document.getElementById('s8-check');
+  if (s8Phase === 'wrong1') {
+    if (selBtn) { selBtn.classList.add('btn-wrong'); selBtn.classList.remove('selected'); }
+    s8ShowFeedback('wrong1', false);
+    var hintBtn = document.getElementById('s8-hint');
+    if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
+    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s8Check; checkBtn.disabled = true; }
+    return;
+  }
+  if (selBtn) selBtn.classList.add('selected');
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s8Check; checkBtn.disabled = !s8Selected; }
+}
 
 /* כמה מהשאלות נענו נכון, בשתי התחנות שהלומד הובטח להן:
    מסך 0 — "3 שאלות ... ענו נכון על 2 ומעלה" (תחנה א, stationProgress),
