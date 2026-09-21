@@ -1604,6 +1604,10 @@ function makeDragQuestion(cfg) {
 
   function saveResult(passed) {
     if (!cfg.resultKey) return;
+    /* setUnitResult קודם, כמו בסיין 5 ו-6. אין כאן היום קונפיג עם
+       resultKey, אבל כתיבה ל-localStorage בלבד היא בדיוק D-12 — אין טעם
+       להשאיר את המוקש טמון לקונפיג הבא. */
+    if (typeof setUnitResult === 'function') { setUnitResult(cfg.resultKey, passed ? 'pass' : 'fail'); return; }
     try { localStorage.setItem(cfg.resultKey, passed ? 'pass' : 'fail'); } catch (e) {}
   }
 
@@ -1666,8 +1670,6 @@ function makeDragQuestion(cfg) {
       });
     }
 
-    try { flushResumeSave(); } catch (e) {}
-
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
@@ -1702,6 +1704,12 @@ function makeDragQuestion(cfg) {
       if (hintBtn) hintBtn.hidden = false;
       if (btn) { btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
     }
+
+    /* ⚠️ אחרי כל שרשרת ההסתעפות, לא לפניה. done/passed ו-saveResult נקבעים
+       בתוך הענפים; flush שרץ לפניהם שמר את השאלה כ"לא נענתה",
+       ובטעינה הבאה הכפתור חזר ל"צדקתי?" והלומד דיווח answered.last
+       שני על אותה שאלה. (D-13, קמפיין 2026-09-21.) */
+    try { flushResumeSave(); } catch (e) {}
   }
 
   function openHint() {

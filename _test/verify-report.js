@@ -268,6 +268,61 @@ for (const c of COMPONENTS) {
          'a flush only at the tail is skipped by the branch that returns');
     }
   }
+
+  /* D-13, campaign 2026-09-21. The drag factory's check() is NOT matched by
+     `commits` above, so nothing here covered it — and its flush ran BEFORE
+     done/passed were assigned. Every drag question therefore saved itself as
+     unanswered: after a reload the button returned to 'צדקתי?' and the learner
+     sent a second answered.last for a question already answered. Verified live
+     on 03-06. The ORDER is the assertion; presence is not enough. */
+  const facStart = js.indexOf('function makeDragQuestion');
+  if (facStart > -1) {
+    const ci = js.indexOf('function check()', facStart);
+    let d = 0, k = js.indexOf('{', ci), cend = k;
+    for (; k < js.length; k++) {
+      if (js[k] === '{') d++;
+      else if (js[k] === '}') { d--; if (d === 0) { cend = k; break; } }
+    }
+    const cbody = js.slice(ci, cend);
+    const lastDone = cbody.lastIndexOf('done = true');
+    const lastSave = cbody.lastIndexOf('saveResult(');
+    const flush = cbody.lastIndexOf('flushResumeSave');
+    ok(c, 'drag factory check() flushes AFTER done/passed and saveResult',
+       flush > -1 && lastDone > -1 && flush > lastDone && flush > lastSave,
+       'D-13: a flush before the branch chain persists done:false for a question the learner just answered');
+    ok(c, 'drag factory check() flushes exactly once',
+       (cbody.match(/flushResumeSave/g) || []).length === 1,
+       'two flushes means one of them runs at the wrong moment');
+  }
+
+  /* D-12, campaign 2026-09-21. A RESULT_KEY written straight to localStorage
+     never reaches the state document, and localStorage does not travel between
+     devices. In 03-06 that made an isAssessment+isRequired component report
+     success:false / scaled:0 for a learner who had answered all three sections
+     correctly. Every result write must prefer setUnitResult; every result read
+     must prefer getUnitResult. */
+  const srcLines = js.split('\n');
+  srcLines.forEach(function (ln, idx) {
+    const near = (srcLines[idx - 1] || '') + ' ' + (srcLines[idx - 2] || '');
+    if (ln.includes('localStorage.setItem(') && ln.includes("'pass' : 'fail'")) {
+      ok(c, 'result write at line ' + (idx + 1) + ' prefers setUnitResult',
+         near.includes('setUnitResult'),
+         'D-12: this value never reaches the state document, so a second device reads null');
+    }
+  });
+  for (const m of js.matchAll(/function ((?:read|get)Moed\w*)\s*\(/g)) {
+    const fnName = m[1];
+    let d2 = 0, q = js.indexOf('{', m.index), fend = q;
+    for (; q < js.length; q++) {
+      if (js[q] === '{') d2++;
+      else if (js[q] === '}') { d2--; if (d2 === 0) { fend = q; break; } }
+    }
+    const fbody = js.slice(m.index, fend);
+    const readsRaw = fbody.includes('localStorage.getItem(');
+    ok(c, fnName + '() reads the state document, not just localStorage',
+       fbody.includes('getUnitResult') || !readsRaw || /read[A-Z]\w*Result\(/.test(fbody),
+       'D-12: a result read that only consults localStorage returns null on a second device');
+  }
 }
 
 /* ═══════════════════ 5. the archived component stays archived ═══════════════════ */

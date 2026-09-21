@@ -81,8 +81,17 @@ function resolveCharBubbleVideo(videoId, assetMap) {
    ומעקב moedBFullyPassed() שניתב אליהם הוסרו — סעיף ג הוא פשוט סוף
    הלומדה. saveMoedBResult נשאר (מעקב תוצאה לכל סעיף, ללא ניתוב). */
 
+/* ⚠️ עובר דרך setUnitResult ולא ישירות ל-localStorage, כמו saveMoedAResult
+   בסיין 5. getMoedBScore גוזר מהמפתחות האלה את success ואת
+   score.scaled של הרכיב, ו-localStorage אינו עובר בין מכשירים — לומד
+   שממשיך את אותו registration במחשב אחר (או אחרי ניקוי אחסון) היה
+   מדווח success:false ו-scaled:0 למרות שענה נכון על הכול.
+   setUnitResult כותב לשניהם: למסמך ה-state ולקאש המקומי.
+   (D-12, קמפיין 2026-09-21.) */
 function saveMoedBResult(part, passed) {
-  try { localStorage.setItem('lomda_moedB_part' + part + '_result', passed ? 'pass' : 'fail'); } catch (e) {}
+  var key = 'lomda_moedB_part' + part + '_result';
+  if (typeof setUnitResult === 'function') { setUnitResult(key, passed ? 'pass' : 'fail'); return; }
+  try { localStorage.setItem(key, passed ? 'pass' : 'fail'); } catch (e) {}
 }
 
 /* =========================================================
@@ -663,8 +672,12 @@ function makeDragQuestion(cfg) {
     render();
   }
 
+  /* ⚠️ setUnitResult קודם — זהה לפקטורי של סיין 5. סעיף ג כותב כאן
+     את lomda_moedB_part3_result, ו-getMoedBScore גוזר ממנו את תוצאת
+     הרכיב. כתיבה ל-localStorage בלבד הייתה אובדת במעבר מכשיר. (D-12.) */
   function saveResult(passed) {
     if (!cfg.resultKey) return;
+    if (typeof setUnitResult === 'function') { setUnitResult(cfg.resultKey, passed ? 'pass' : 'fail'); return; }
     try { localStorage.setItem(cfg.resultKey, passed ? 'pass' : 'fail'); } catch (e) {}
   }
 
@@ -726,8 +739,6 @@ function makeDragQuestion(cfg) {
       });
     }
 
-    try { flushResumeSave(); } catch (e) {}
-
     const btn = document.getElementById(cfg.checkBtnId);
     if (allCorrect) {
       done = true;
@@ -758,6 +769,12 @@ function makeDragQuestion(cfg) {
       if (hintBtn) hintBtn.hidden = false;
       if (btn) { btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
     }
+
+    /* ⚠️ אחרי כל שרשרת ההסתעפות, לא לפניה. done/passed ו-saveResult נקבעים
+       בתוך הענפים; flush שרץ לפניהם שמר את השאלה כ"לא נענתה",
+       ובטעינה הבאה הכפתור חזר ל"צדקתי?" והלומד דיווח answered.last
+       שני על אותה שאלה. (D-13, קמפיין 2026-09-21.) */
+    try { flushResumeSave(); } catch (e) {}
   }
 
   function openHint() {
@@ -1162,15 +1179,19 @@ function restoreNoPhaseScqUI(o) {
   o.sync();
 }
 
-/* כמה משלושת הסעיפים של מועד ב נפתרו נכון. נקרא מ-localStorage ולא ממשתנה
-   בזיכרון, כי שלושת הסעיפים כותבים דרך saveMoedBResult / cfg.resultKey. */
+/* קריאה תואמה ל-saveMoedBResult: מסמך קודם, קאש מקומי כ-fallback. */
+function readMoedBResult(part) {
+  var key = 'lomda_moedB_part' + part + '_result';
+  if (typeof getUnitResult === 'function') return getUnitResult(key);
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+
+/* כמה משלושת הסעיפים של מועד ב נפתרו נכון.
+   ⚠️ דרך readMoedBResult — זה מה שקובע את success ואת score.scaled של
+   הרכיב ב-s6cFinish, ולכן הוא חייב לקרוא מהמסמך ולא מ-localStorage.
+   (D-12, קמפיין 2026-09-21.) */
 function getMoedBScore() {
-  let n = 0;
-  try {
-    n = ['lomda_moedB_part1_result', 'lomda_moedB_part2_result', 'lomda_moedB_part3_result']
-      .filter(function (k) { return localStorage.getItem(k) === 'pass'; }).length;
-  } catch (e) {}
-  return n;
+  return [1, 2, 3].filter(function (p) { return readMoedBResult(p) === 'pass'; }).length;
 }
 
 /* סוף הרכיב — הלחיצה האחרונה של הלומד, בכפתור "סיימתי" של סעיף ג, אחרי
