@@ -304,6 +304,14 @@ function resolveCharBubbleImg(imgId, assetMap) {
    נוצרים פעם אחת ב-onYouTubeIframeAPIReady (לא בכל resetScreenStateN —
    resetScreenStateN רץ מחדש בכל כניסה למסך, ויצירת YT.Player חוזרת
    הייתה יוצרת iframe כפול).
+
+   ⚠️ ה-iframe נבנה כאן בקוד ו-YT.Player מתחבר לאלמנט קיים — הוא לא
+   מקבל videoId ולכן לא בונה את ה-src בעצמו. כש-YT.Player בונה את ה-iframe
+   הוא מוסיף ל-src את הפרמטר forigin, הנגזר מ-window.location.href — כלומר
+   כל ה-query string של הדף נשלח ל-Google. בהרצת Kata ה-query הזה נושא את
+   מעטפת slxapi ואת טוקן הדיווח (Bearer). אין playerVar שמבטל את forigin,
+   ולכן הדרך היחידה היא לא לתת ל-API לבנות את ה-src. זהו תיקון D-1 מקמפיין
+   2026-09-20, כפי שבוצע ב-mass-measure-01 וב-scale-01.
    ========================================================= */
 const VIDEO_INTRO_PLAYERS = [
   { containerId: 's1-yt-player', videoId: 'g0lcVHET3tI', continueBtnId: 's1-continue' },
@@ -320,13 +328,51 @@ function onVideoIntroStateChange(continueBtnId) {
   };
 }
 
+/* בונים את ה-src בעצמנו. origin נגזר מ-window.location.origin — שאין בו
+   query string — ולא מ-href, ורק מעל http(s): מעל file:// הערך של
+   location.origin הוא המחרוזת "null", ש-YouTube דוחה עם player error 153.
+   enablejsapi=1 חובה כאן: בלעדיו onStateChange לא יירה, ושער הסרטון
+   (כפתור "המשך") לא ייפתח לעולם. rel ו-modestbranding הם אותם ערכים
+   שהיו ב-playerVars קודם — הפרמטרים לא שונו, רק מי שבונה את ה-src.
+   youtube-nocookie.com = privacy-enhanced mode; עובד גם כשהדפדפן חוסם
+   עוגיות של YouTube. */
+function ytEmbedSrc(videoId) {
+  const p = ['enablejsapi=1', 'rel=0', 'modestbranding=1'];
+  if (/^https?:$/.test(window.location.protocol)) {
+    p.push('origin=' + encodeURIComponent(window.location.origin));
+  }
+  return 'https://www.youtube-nocookie.com/embed/' + videoId + '?' + p.join('&');
+}
+
+/* מחליף את ה-div המציין-מקום ב-iframe אמיתי ומחזיר אותו כדי ש-YT.Player
+   יתחבר אליו. ה-iframe שומר על ה-id של ה-div, כך שכל CSS שמכוון אליו
+   ימשיך לחול. width/height נקבעים כאן במפורש (646×363) — קודם הם הועברו
+   כאפשרויות ל-YT.Player, ובלעדיהם ה-iframe היה נופל לברירת המחדל
+   300×150 בתוך .video-player-wrap. אידמפוטנטי: קריאה שנייה מוצאת את
+   ה-iframe כבר במקום ומחזירה אותו. */
+function ytMountIframe(id, videoId, title, w, h) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  if (el.tagName === 'IFRAME') return el;
+  const f = document.createElement('iframe');
+  f.id = id;
+  f.src = ytEmbedSrc(videoId);
+  f.width = w;
+  f.height = h;
+  f.title = title || 'סרטון הסבר';
+  f.setAttribute('frameborder', '0');
+  f.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+  f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+  f.setAttribute('allowfullscreen', '');
+  el.parentNode.replaceChild(f, el);
+  return f;
+}
+
 window.onYouTubeIframeAPIReady = function () {
   VIDEO_INTRO_PLAYERS.forEach(function (cfg) {
-    new YT.Player(cfg.containerId, {
-      videoId: cfg.videoId,
-      width: '646',
-      height: '363',
-      playerVars: { rel: 0, modestbranding: 1, origin: window.location.origin },
+    const el = ytMountIframe(cfg.containerId, cfg.videoId, 'סרטון הסבר', '646', '363');
+    if (!el) return;
+    new YT.Player(el, {
       events: { onStateChange: onVideoIntroStateChange(cfg.continueBtnId) }
     });
   });
