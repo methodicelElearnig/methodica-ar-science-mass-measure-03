@@ -1,0 +1,40 @@
+# Line endings, pinned so every clone agrees.
+#
+# Without this file the repo's line endings depend on each machine's core.autocrlf,
+# which is a per-installation setting nobody sets deliberately — on Windows Git it
+# defaults to true, on macOS to input. Two people can then commit the same file and
+# see a whole-file diff.
+#
+# This records the state that already holds rather than changing it: every text blob
+# committed here is already LF. Verified with `git ls-files --eol` — 91 text files
+# (89 LF, 2 single-line files with no line ending at all), zero i/crlf, zero i/mixed.
+# So adding this renormalises nothing.
+#
+# `eol=lf` additionally pins the WORKING TREE to LF on Windows, where core.autocrlf=true
+# would otherwise check out CRLF. That matters here because deployments are assembled by
+# hand-copying the working tree: with this, the copied files are byte-identical no matter
+# whose machine they came from.
+#
+# The working tree was already drifting when this was added: 63 files CRLF, 26 LF, for
+# no reason other than which of them git had last re-materialised. In mass-measure-01
+# and -02 that exact split made a package unreproducible from its own commit and turned
+# verify-package.ps1 red on packages that were in fact correct and live.
+
+* text=auto eol=lf
+
+# Explicit binary, so auto-detection is never the only thing standing between a font
+# file and corruption. These match what git already infers today.
+*.png   binary
+*.jpg   binary
+*.mp4   binary
+*.woff2 binary
+
+# The production storyboard. `.gitignore` lists *.pptx, but this file was committed
+# before that rule existed and .gitignore does not apply to tracked files — so it is
+# still in the tree and still needs protecting from eol conversion.
+*.pptx  binary
+
+# SVG is XML — text, not an image format, as far as git is concerned. Stated explicitly
+# because it is a large group here (28 files) and because "*.svg binary" is a common
+# and silently damaging mistake: it would kill diffs and merges on the illustrations.
+*.svg  text eol=lf
