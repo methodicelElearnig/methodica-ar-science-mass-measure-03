@@ -109,7 +109,7 @@ diff). The rule, all of it configurable in the CONFIG block:
 
 - an empty array is `[]`; an empty object is `{}`
 - an array of primitives goes on one line while its compact form is ≤ `$InlineArrayMaxChars`
-  (8) — so `answers`, `correctAnswers`, `targetSector`, `skills` and
+  (96) — so `answers`, `correctAnswers`, `targetSector`, `skills` and
   `recommendedAfterFail` get one element per line, and each element shows up as its own
   line in a diff
 - arrays under `languages` / `source` / `target` (`$InlineArrayKeys`) are short tuples and
@@ -117,9 +117,9 @@ diff). The rule, all of it configurable in the CONFIG block:
 - a flat object of at most `$InlineObjectMaxProps` (3) primitive values goes on one line —
   that's how the `matching` questions' `correctAnswers` pairs are stored
 
-**Fidelity.** ⚠️ The two array budgets (8 / 62) were fitted against a **different unit's**
+**Fidelity.** ⚠️ The two array budgets (96 / 62) were fitted against a **different unit's**
 metadata — they came in with this script and have **not** been re-measured against this
-repo's 7 files. They are a reasonable starting point, not a verified fit here. Before
+repo's 6 files. They are a reasonable starting point, not a verified fit here. Before
 trusting a `metadata` vs `metadata-from` diff to be noise-free, re-measure: parse each
 `metadata/*.json` and re-emit it through this formatter, then compare byte for byte and
 adjust `$InlineArrayMaxChars` / `$InlineTupleMaxChars` if the residuals are formatting
@@ -127,6 +127,13 @@ rather than content.
 
 ## First run against this unit
 
-Not yet performed — `methodica-science-mass-measure-02` has not been pushed to the
-catalog. Once it has, record here which fields genuinely drift between the catalog and
+`methodica-science-mass-measure-03` was created in the catalog on 2026-09-19
+(`send-metadata.log`: `created=26 updated=1 failed=0`) and updated on 2026-09-22 with the
+re-extracted metadata. Record here which fields genuinely drift between the catalog and
 the repo, so later diffs can be read quickly.
+
+Known blind spots in `-FailOnDrift`, worth knowing before you trust an exit code of 0:
+the audit compares `uniqueKey`, `hostedContentRef` and every `questions[]` entry, and
+**nothing else**. `masteryLevel`, `order`, `isRequired`, `depthLevel`, `cognitiveLevels`,
+titles, `contentType` and the unit's `targetSectors` are emitted into `metadata-from/`
+but never compared — so a drift in any of them shows up only in the text diff.

@@ -121,14 +121,18 @@ $TitleLangKey = 'Hebrew'
 # from free text to the ministry's supplier number. This unit's metadata is
 # v2.5-shaped: no component carries the field, and the unit carries
 # `manufacturer`. Forcing a component-level `manufacture` here would therefore
-# add a spurious key to all seven retrieved components and put seven fake lines
+# add a spurious key to all five retrieved components and put five fake lines
 # into every diff. $null passes KATA's own value through instead.
 $Manufacture = $null
 # Fallback URL prefix for rebuilding `id` fields, used ONLY when no component
 # carries a hostedContentRef to derive the real prefix from (override with -IdBase).
-# ⚠️ CHANGED FOR percent-02 — this is the prefix every id in metadata/ is built
-# from; verified against metadata/*.json, trailing slash included.
-if (-not $IdBase) { $IdBase = 'https://lomdot.education.gov.il/metodica/720active/math/percent/02' }
+# ⚠️ SET FOR THIS UNIT — this is the prefix every id in metadata/ is built from;
+# verified against metadata/*.json. Note 720active/ (identifiers), not 720/ (content):
+# the same split send-metadata.ps1 keeps between $ContentBaseUrl and the IRIs.
+# It arrived here pointing at math/percent/02, which is where this script was copied
+# from. In practice it is the THIRD fallback and is not reached while components carry
+# an IRI uniqueKey, so the wrong value never surfaced — which is exactly why it sat.
+if (-not $IdBase) { $IdBase = 'https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03' }
 # The authored metadata/ that KATA is audited against (override with -MetadataDir,
 # or pass '' to skip). Not bound to $OutDir: the point is to compare the catalogue
 # with what we MEANT to publish, not with a previous retrieval of itself.
