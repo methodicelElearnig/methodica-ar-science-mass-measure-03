@@ -161,7 +161,7 @@ function resetScreenState(n) {
 /* כמה משאלות תחנה ב נענו נכון.
    ⚠️ המכנה הוא 5, לא 6: stationBProgress מוגדר עם שישה תאים והניווט מצייר
    שישה, אבל רק חמש שאלות נבנו בפועל (תא 6 לעולם אינו מתמלא), והקטלוג מסכים —
-   פריטים 007..011 הם חמישה. טקסט מסך 12 תוקן ל"5 שאלות" בהתאם. */
+   פריטים 009..013 הם חמישה. טקסט מסך 12 תוקן ל"5 שאלות" בהתאם. */
 function getStationBScore() {
   return [1, 2, 3, 4, 5].filter(function (i) {
     return stationBProgress[i] === 'success';
@@ -506,7 +506,7 @@ const VIQ_SCREENS = {
 };
 /* xAPI: מסך → סיומת הפריט. שני המסכים הם שני מסלולים חלופיים (בחירה במסך 4),
    והלומד עובר באחד בלבד — הפריט השני פשוט לא מדווח אצלו. */
-const VIQ_XAPI_ITEM = { 5: '002', 6: '003' };
+const VIQ_XAPI_ITEM = { 5: '004', 6: '005' };
 const viqAttempts = {};
 const viqDone = {};
 const viqAnswerSnapshot = {}; // הערך שהלומד הזין בפועל בניסיון השני הכושל, לפני כל reveal
@@ -986,7 +986,7 @@ function s8Check() {
   if (!s8Selected || s8Done) return;
   s8Attempts++;
   const optEl = s8OptEl(s8Selected);
-  xapiAnswered('004', 'q1', s8Selected === S8.correctId,
+  xapiAnswered('006', 'q1', s8Selected === S8.correctId,
     s8Selected === S8.correctId || s8Attempts >= S8.maxAttempts, xapiAnswerText(optEl));
 
   if (s8Selected === S8.correctId) {
@@ -1042,7 +1042,7 @@ function s8UnlockOptions() {
 function s8OpenHint() {
   if (s8Done) return;
   /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
-  xapiRequestedHint('004', 'q1');
+  xapiRequestedHint('006', 'q1');
   document.getElementById('s8-hint-overlay').hidden = false;
 }
 
@@ -1240,7 +1240,7 @@ function s10Check() {
   if (!s10Selected || s10Done) return;
   s10Attempts++;
   const optEl = s10OptEl(s10Selected);
-  xapiAnswered('005', 'q1', s10Selected === S10.correctId,
+  xapiAnswered('007', 'q1', s10Selected === S10.correctId,
     s10Selected === S10.correctId || s10Attempts >= S10.maxAttempts, xapiAnswerText(optEl));
 
   if (s10Selected === S10.correctId) {
@@ -1301,7 +1301,7 @@ function s10UnlockOptions() {
 function s10OpenHint() {
   if (s10Done) return;
   /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
-  xapiRequestedHint('005', 'q1');
+  xapiRequestedHint('007', 'q1');
   document.getElementById('s10-hint-overlay').hidden = false;
 }
 
@@ -1910,8 +1910,8 @@ const TEXTS_S11_DQ = {
 };
 
 const dq11 = makeDragQuestion({
-  /* xAPI: פריט 006 — השלמת משפט על חזרות וממוצע. */
-  xapiItem: '006',
+  /* xAPI: פריט 008 — השלמת משפט על חזרות וממוצע. */
+  xapiItem: '008',
   prefix: 's11',
   screenSelector: '#s11',
   panelId: 's11-question-panel',
@@ -2121,7 +2121,7 @@ function s14Check() {
   if (!s14Selected || s14Done) return;
   s14Attempts++;
   const optEl = s14OptEl(s14Selected);
-  xapiAnswered('007', 'q1', s14Selected === S14.correctId,
+  xapiAnswered('009', 'q1', s14Selected === S14.correctId,
     s14Selected === S14.correctId || s14Attempts >= S14.maxAttempts, xapiAnswerText(optEl));
 
   if (s14Selected === S14.correctId) {
@@ -2180,7 +2180,7 @@ function s14UnlockOptions() {
 function s14OpenHint() {
   if (s14Done) return;
   /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
-  xapiRequestedHint('007', 'q1');
+  xapiRequestedHint('009', 'q1');
   document.getElementById('s14-hint-overlay').hidden = false;
 }
 
@@ -2304,7 +2304,7 @@ function s15Check() {
   if (!s15Selected || s15Done) return;
   s15Attempts++;
   const optEl = s15OptEl(s15Selected);
-  xapiAnswered('007', 'q2', s15Selected === S15.correctId,
+  xapiAnswered('009', 'q2', s15Selected === S15.correctId,
     s15Selected === S15.correctId || s15Attempts >= S15.maxAttempts, xapiAnswerText(optEl));
 
   if (s15Selected === S15.correctId) {
@@ -2365,7 +2365,7 @@ function s15UnlockOptions() {
 function s15OpenHint() {
   if (s15Done) return;
   /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
-  xapiRequestedHint('007', 'q2');
+  xapiRequestedHint('009', 'q2');
   document.getElementById('s15-hint-overlay').hidden = false;
 }
 
@@ -2435,8 +2435,8 @@ const TEXTS_S16_DQ = {
 };
 
 const dq16 = makeDragQuestion({
-  /* xAPI: פריט 008 — זיהוי מדידה חריגה וחישוב ממוצע. */
-  xapiItem: '008',
+  /* xAPI: פריט 010 — זיהוי מדידה חריגה וחישוב ממוצע. */
+  xapiItem: '010',
   prefix: 's16',
   screenSelector: '#s16',
   panelId: 's16-question-panel',
@@ -2697,7 +2697,7 @@ function s17Check() {
   /* xAPI: **אחרי** לולאת האזורים, כי allCorrect סופי רק בסופה.
      כאן — ורק כאן בפרויקט — האזורים באמת בתבנית s17-zone-<id> והפריטים
      נושאים class המכיל "drag-item", ולכן xapiZoneAnswer מתאים כמות שהוא. */
-  xapiAnswered('009', 'q1', allCorrect, allCorrect || s17Attempts >= 2,
+  xapiAnswered('011', 'q1', allCorrect, allCorrect || s17Attempts >= 2,
     xapiZoneAnswer('s17', S17_ZONE_IDS));
 
   const checkBtn = document.getElementById('s17-check');
@@ -2743,7 +2743,7 @@ function s17Check() {
 function s17OpenHint() {
   if (s17Done) return;
   /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
-  xapiRequestedHint('009', 'q1');
+  xapiRequestedHint('011', 'q1');
   document.getElementById('s17-hint-overlay').hidden = false;
 }
 
@@ -2890,7 +2890,7 @@ function s19Check() {
   if (!s19Selected || s19Done) return;
   s19Attempts++;
   const optEl = s19OptEl(s19Selected);
-  xapiAnswered('010', 'q1', s19Selected === S19.correctId,
+  xapiAnswered('012', 'q1', s19Selected === S19.correctId,
     s19Selected === S19.correctId || s19Attempts >= S19.maxAttempts, xapiAnswerText(optEl));
 
   if (s19Selected === S19.correctId) {
@@ -2953,7 +2953,7 @@ function s19UnlockOptions() {
 function s19OpenHint() {
   if (s19Done) return;
   /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
-  xapiRequestedHint('010', 'q1');
+  xapiRequestedHint('012', 'q1');
   document.getElementById('s19-hint-overlay').hidden = false;
 }
 
@@ -3086,7 +3086,7 @@ function s21Check() {
   if (!s21Selected || s21Done) return;
   s21Attempts++;
   const optEl = s21OptEl(s21Selected);
-  xapiAnswered('011', 'q1', s21Selected === S21.correctId,
+  xapiAnswered('013', 'q1', s21Selected === S21.correctId,
     s21Selected === S21.correctId || s21Attempts >= S21.maxAttempts, xapiAnswerText(optEl));
 
   if (s21Selected === S21.correctId) {
@@ -3155,7 +3155,7 @@ function s21UnlockOptions() {
 function s21OpenHint() {
   if (s21Done) return;
   /* xAPI: requested.1 — אחרי כל הגארדים ומיד לפני שהרמז נחשף בפועל. */
-  xapiRequestedHint('011', 'q1');
+  xapiRequestedHint('013', 'q1');
   document.getElementById('s21-hint-overlay').hidden = false;
 }
 
@@ -3605,39 +3605,41 @@ function restoreS17UI() {
 /* ⚠️ חייב להחזיק בדיוק TOTAL_SCREENS מפתחות (22), 0..21, בלי חורים.
    מפתח חסר אינו ניתן להבחנה מ-null, כלומר מסך שלא מדווח בשקט. */
 var SCREEN_TO_SUBCONTENT = {
-  0: null,          /* בחירת דמות מלווה — כרום של היחידה, לא פריט */
-  1: ['001', 1],    /* וידאו פודקאסט 1 — "3 גרם טונה ששווים 12 מיליון דולר?" */
-  2: ['001', 2],    /* שאלת דעה (בלי בדיקה ובלי משוב) */
-  3: ['001', 3],    /* וידאו פודקאסט 2 — התשובה; סוגר את אותו הוק נרטיבי */
-  4: null,          /* בחירת מסלול: תרופה / זהב */
-  5: ['002', 1],    /* מסלול זהב — סימולציה + קלט מספרי */
-  6: ['003', 1],    /* מסלול תרופה — סימולציה + קלט מספרי */
-  7: ['004', 1],    /* וידאו: המסלולים מתכנסים — מכין את שאלת מסך 8 */
-  8: ['004', 2],    /* צמצום שגיאת מדידה אקראית */
+  0: ['001', 1],    /* בחירת דמות מלווה — פריט motivational בלי שאלה */
+  1: ['002', 1],    /* וידאו פודקאסט 1 — "3 גרם טונה ששווים 12 מיליון דולר?" */
+  2: ['002', 2],    /* שאלת דעה (בלי בדיקה ובלי משוב) */
+  3: ['002', 3],    /* וידאו פודקאסט 2 — התשובה; סוגר את אותו הוק נרטיבי */
+  4: ['003', 1],    /* בחירת מסלול: תרופה / זהב — פריט motivational בלי שאלה */
+  5: ['004', 1],    /* מסלול זהב — סימולציה + קלט מספרי */
+  6: ['005', 1],    /* מסלול תרופה — סימולציה + קלט מספרי */
+  7: ['006', 1],    /* וידאו: המסלולים מתכנסים — מכין את שאלת מסך 8 */
+  8: ['006', 2],    /* צמצום שגיאת מדידה אקראית */
   9: null,          /* מעבר נרטיבי */
-  10: ['005', 1],   /* היומן של גברת פיקל */
-  11: ['006', 1],   /* גרירה: השלמת משפט חזרות/ממוצע */
+  10: ['007', 1],   /* היומן של גברת פיקל */
+  11: ['008', 1],   /* גרירה: השלמת משפט חזרות/ממוצע */
   12: null,         /* מעבר: "5 שאלות" */
-  13: ['007', 1],   /* הסבר: שלושה סוגי מאזניים (מחקר האורז) */
-  14: ['007', 2],   /* שאלה 1, סעיף א — q1 */
-  15: ['007', 3],   /* שאלה 1, סעיף ב — q2 */
-  16: ['008', 1],   /* שאלה 2 — זיהוי מדידה חריגה */
-  17: ['009', 1],   /* שאלה 3 — גרירת מוצר למאזניים */
-  18: ['010', 1],   /* הקדמה: יורם ואדיר מתווכחים */
-  19: ['010', 2],   /* שאלה 4 — מי זקוק למאזניים מדויקים יותר */
-  20: ['011', 1],   /* הקדמה: שרשרת הזהב והמנורה של דן */
-  21: ['011', 2]    /* שאלה 5 — אצל מי הטעות קריטית יותר */
+  13: ['009', 1],   /* הסבר: שלושה סוגי מאזניים (מחקר האורז) */
+  14: ['009', 2],   /* שאלה 1, סעיף א — q1 */
+  15: ['009', 3],   /* שאלה 1, סעיף ב — q2 */
+  16: ['010', 1],   /* שאלה 2 — זיהוי מדידה חריגה */
+  17: ['011', 1],   /* שאלה 3 — גרירת מוצר למאזניים */
+  18: ['012', 1],   /* הקדמה: יורם ואדיר מתווכחים */
+  19: ['012', 2],   /* שאלה 4 — מי זקוק למאזניים מדויקים יותר */
+  20: ['013', 1],   /* הקדמה: שרשרת הזהב והמנורה של דן */
+  21: ['013', 2]    /* שאלה 5 — אצל מי הטעות קריטית יותר */
 };
 
 var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-01';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
 /* פריטים שנושאים שאלה **מדורגת בקוד**.
-   ⚠️ 001 מוחרג במכוון: שאלת הדעה במסך 2 היא ללא בדיקה, ללא ניסיונות וללא
-   משוב — s2Select רק מאפשר את "המשך". S2.correctId הוא תיעוד בלבד. */
+   ⚠️ 002 מוחרג במכוון: שאלת הדעה במסך 2 היא ללא בדיקה, ללא ניסיונות וללא
+   משוב — s2Select רק מאפשר את "המשך". S2.correctId הוא תיעוד בלבד.
+   001 ו-003 מוחרגים גם הם: מסכי בחירה (דמות מלווה, מסלול) — פריטים
+   בקטלוג שאינם נושאים שאלה כלל. */
 var XAPI_EVAL_ITEMS = {
-  '002': 1, '003': 1, '004': 1, '005': 1, '006': 1,
-  '007': 1, '008': 1, '009': 1, '010': 1, '011': 1
+  '004': 1, '005': 1, '006': 1, '007': 1, '008': 1,
+  '009': 1, '010': 1, '011': 1, '012': 1, '013': 1
 };
 
 var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-01.json';
