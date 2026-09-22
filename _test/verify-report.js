@@ -295,6 +295,33 @@ for (const c of COMPONENTS) {
        'two flushes means one of them runs at the wrong moment');
   }
 
+  /* D-3, campaign 2026-09-21. A watch gate that lives only as btn.disabled=false
+     is erased by any reload: the DOM is rebuilt from markup, where the button is
+     disabled, and there is nothing to re-derive it from. Verified live on 03-01,
+     where a learner who had watched all 49 seconds was made to watch again.
+     A gate must be STATE, persisted, and repainted. */
+  const gateMap = js.indexOf('VIDEO_INTRO_SCREEN_BTN');
+  if (gateMap > -1) {
+    const screens = [...js.matchAll(/(\d+)\s*:\s*'s\d+-continue'/g)].map((m) => Number(m[1]));
+    ok(c, 'video gate is tracked as state, not only as btn.disabled',
+       /videoIntroEnded\[\s*continueBtnId\s*\]\s*=\s*true/.test(js),
+       'D-3: without a variable a reload cannot re-derive the gate');
+    ok(c, 'video gate is persisted by capturePartPayload',
+       /st\.videoIntro\s*=/.test(js), 'D-3: an unsaved gate is lost on reload');
+    ok(c, 'video gate is restored by applyResumeVars',
+       /st\.videoIntro\b[\s\S]{0,120}videoIntroEnded\[/.test(js),
+       'D-3: a saved gate that is never read back is still lost');
+    ok(c, 'video gate flushes synchronously when the video ends',
+       /videoIntroEnded\[\s*continueBtnId\s*\][\s\S]{0,400}flushResumeSave/.test(js),
+       'D-3: a learner who finishes the clip and closes the tab must not lose it');
+    const rsu = js.slice(js.indexOf('function restoreScreenUI'));
+    for (const n of screens) {
+      ok(c, 'restoreScreenUI repaints video-gate screen ' + n,
+         rsu.includes('n === ' + n + ') resetScreenState' + n + '()'),
+         'D-3: the gate screen has no painter, so a resume onto it shows a dead button');
+    }
+  }
+
   /* D-12, campaign 2026-09-21. A RESULT_KEY written straight to localStorage
      never reaches the state document, and localStorage does not travel between
      devices. In 03-06 that made an isAssessment+isRequired component report

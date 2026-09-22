@@ -319,11 +319,34 @@ const VIDEO_INTRO_PLAYERS = [
   { containerId: 's7-yt-player', videoId: 'ev-yCBqIF7k', continueBtnId: 's7-continue' }
 ];
 
+/* איזה שער-וידאו כבר נפתח. ⚠️ חייב להיות **מצב** ולא רק
+   btn.disabled=false: טעינה מחדש בונה את ה-DOM מחדש מהמרקאפ, שבו
+   הכפתור disabled, ובלי משתנה אין ממה לגזור מחדש — הלומד נאלץ
+   לצפות בסרטון השלם שוב. (D-3, קמפיין 2026-09-21.) */
+const videoIntroEnded = {};                 /* continueBtnId -> true */
+
+/* מסך → כפתור ההמשך שלו. אותו מיפוי משמש את השער ואת הצייר. */
+const VIDEO_INTRO_SCREEN_BTN = { 1: 's1-continue', 3: 's3-continue', 7: 's7-continue' };
+
+/* צייר אידמפוטנטי, בדיוק כמו מסכים 2 ו-4: קורא את המשתנה
+   ומחשב ממנו את מצב הכפתור. נקרא מ-resetScreenState (כל כניסה
+   למסך) ומ-restoreScreenUI (אחרי שחזור). */
+function videoIntroSync(n) {
+  const btnId = VIDEO_INTRO_SCREEN_BTN[n];
+  if (!btnId) return;
+  const btn = document.getElementById(btnId);
+  if (btn) btn.disabled = !videoIntroEnded[btnId];
+}
+
 function onVideoIntroStateChange(continueBtnId) {
   return function (event) {
     if (event.data === YT.PlayerState.ENDED) {
+      videoIntroEnded[continueBtnId] = true;
       const btn = document.getElementById(continueBtnId);
       if (btn) btn.disabled = false;
+      /* שמירה סינכרונית מיד: לומד שסיים לצפות וסגר את הלשונית
+         בלי לנווט הוא בדיוק המקרה ש-D-3 פוגע בו. */
+      try { flushResumeSave(); } catch (e) {}
     }
   };
 }
@@ -386,10 +409,12 @@ window.onYouTubeIframeAPIReady = function () {
 
 function resetScreenState1() {
   resolveCharBubbleImg('s1-char-img', CHAR_BUBBLE_ASSETS_S1);
+  videoIntroSync(1);
 }
 
 function resetScreenState3() {
   resolveCharBubbleImg('s3-char-img', CHAR_BUBBLE_ASSETS_S3);
+  videoIntroSync(3);
 }
 
 /* =========================================================
@@ -878,7 +903,7 @@ const s6MedicineSim = makeScaleSimulation({
    resetScreenStateN העקבית לכל מסך.
    ========================================================= */
 
-function resetScreenState7() {}
+function resetScreenState7() { videoIntroSync(7); }
 
 /* =========================================================
    מסך 9 — שאלת בחירה יחידה עם תמונה (SingleChoiceQuestion), הועתק 1:1
@@ -3300,6 +3325,8 @@ scqFbMakeDraggable('s21-feedbox');
 function capturePartPayload() {
   var st = { currentScreen: currentScreen };
   st.qResults = Object.assign({}, XAPI_Q_RESULTS);
+  /* שערי הווידאו (מסכים 1/3/7). בלי זה הלומד צופה מחדש. (D-3.) */
+  st.videoIntro = Object.assign({}, videoIntroEnded);
 
   /* שתי התחנות. מפות פר-סין שאינן נגישות מהשכבה המשותפת. */
   st.stations = Object.assign({}, stationProgress);     /* מסכים 10, 11 */
@@ -3357,6 +3384,7 @@ function capturePartPayload() {
 function applyResumeVars(st) {
   if (!st) return;
   if (st.qResults) Object.keys(st.qResults).forEach(function (k) { XAPI_Q_RESULTS[k] = st.qResults[k]; });
+  if (st.videoIntro) Object.keys(st.videoIntro).forEach(function (k) { videoIntroEnded[k] = !!st.videoIntro[k]; });
   if (st.stations) Object.keys(st.stations).forEach(function (k) { stationProgress[k] = st.stations[k]; });
   if (st.stationsB) Object.keys(st.stationsB).forEach(function (k) { stationBProgress[k] = st.stationsB[k]; });
   if (typeof st.stationBNum === 'number') stationBQuestionNum = st.stationBNum;
@@ -3436,8 +3464,11 @@ function restoreScreenUI(n) {
   try {
     /* מסכים 2 ו-4 הם שערי "המשך" בלבד, ו-resetScreenState שלהם הוא כבר
        צייר אידמפוטנטי שקורא את המשתנה ומחשב את הכפתור — אין צורך בצייר. */
+    if (n === 1) resetScreenState1();
     if (n === 2) resetScreenState2();
+    if (n === 3) resetScreenState3();
     if (n === 4) resetScreenState4();
+    if (n === 7) resetScreenState7();
     if (n === 5) restoreViqUI(5);
     if (n === 6) restoreViqUI(6);
     if (n === 8)  restoreScqUI({ cfg: S8,  selected: s8Selected,  attempts: s8Attempts,  done: s8Done,  phase: s8Phase,
