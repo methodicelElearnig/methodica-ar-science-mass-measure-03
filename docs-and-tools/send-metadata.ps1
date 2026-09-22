@@ -487,7 +487,9 @@ function New-ComponentBody {
     $purpose = Map-Enum $Comp.componentPurpose $ComponentPurposeMap $ValidComponentPurpose 'componentPurpose' $slug
 
     # masteryLevel: optional in the metadata, but when present it must reach the catalog — this
-    # field used to be silently dropped. Absent stays absent rather than being defaulted.
+    # field used to be silently dropped. Absent stays absent rather than being defaulted; an
+    # explicit null is a request to CLEAR it — see the note at the payload below.
+    $masteryPresent = ($Comp.PSObject.Properties.Name -contains 'masteryLevel')
     $mastery = $null
     if ($null -ne $Comp.masteryLevel -and "$($Comp.masteryLevel)".Trim() -ne '') {
         $mastery = $ValidMasteryLevel | Where-Object { $_ -ieq $Comp.masteryLevel } | Select-Object -First 1
@@ -523,7 +525,13 @@ function New-ComponentBody {
         # dropping the file name (retrieve-metadata.ps1 Get-ContentId does exactly that).
         hostedContentRef       = $ContentBaseUrl.TrimEnd('/') + '/' + $slug + '/index.html'
     }
-    if ($mastery) { $body.masteryLevel = $mastery }
+    # Keyed on PRESENCE, not truthiness. `"masteryLevel": null` in the metadata is a
+    # deliberate instruction to clear the field, and a PATCH that omits the key leaves
+    # whatever Kata holds — which is how five components went on serving stale
+    # basic/intermediate/advanced values after the metadata dropped them.
+    # ComponentUpdate.masteryLevel is anyOf [MasteryLevel, null], so an explicit null is
+    # legal. An ABSENT key still means "leave it alone", which is the older behaviour.
+    if ($masteryPresent) { $body.masteryLevel = $mastery }
     return $body
 }
 
@@ -564,7 +572,12 @@ function New-ItemBody {
         # A newly POSTed item simply has none.
         order            = $Order
     }
-    if ($null -ne $Item.questions -and @($Item.questions).Count -gt 0) {
+    # Keyed on PRESENCE, not emptiness — same reason as masteryLevel in New-ComponentBody.
+    # An item carrying "questions": [] has had its questions REMOVED (a screen reclassified
+    # motivational, say), and omitting the key would leave Kata serving them forever: there
+    # is no per-question delete endpoint, only ItemUpdate.questions. An item with no
+    # `questions` key at all is still left untouched.
+    if ($Item.PSObject.Properties.Name -contains 'questions') {
         $body.questions = @($Item.questions)
     }
     return $body

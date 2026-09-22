@@ -84,7 +84,11 @@ leftover **pre-v2.3** spellings (`ClassroomTask`, `Assessment`, `Analyzing`, …
 current metadata no longer contains. Any value outside the API enums makes the script
 **stop with an error** naming the offender rather than send bad data.
 
-### `cognitiveLevel` — 8 of the 12 science levels are live (parts 04 and 05 still blocked)
+### `cognitiveLevel` — all 12 science levels are live
+
+> Updated 2026-09-22. The four levels this section used to list as blocked (`analyzing` among them)
+> have been released: `$PendingCognitiveLevel` is empty, and the 2026-09-19 live run created
+> components 04, 05 and 06 with them. Treat the "still blocked" wording below as historical.
 
 KATA validates `cognitiveLevel` against a **per-discipline coded taxonomy**
 (`GET /api/v1/cognitive-levels`). Those codes turned out to be kebab-case slugs
@@ -134,6 +138,29 @@ Two mappings are best-guesses and isolated to single config points, so a first-c
   and one item.
 - In the Kata UI: **יחידות תוכן** (`/author`).
 - Re-run once — every entity should report `UPDATED` (not duplicated).
+
+## Clearing a field: `null` and `[]` mean "remove it", absent means "leave it"
+
+`masteryLevel` and an item's `questions` are keyed on **presence in the metadata**, not on
+whether they hold anything:
+
+| metadata                 | payload                  | effect on Kata              |
+|--------------------------|--------------------------|-----------------------------|
+| `"masteryLevel": "basic"`| `"masteryLevel": "basic"`| set to `basic`              |
+| `"masteryLevel": null`   | `"masteryLevel": null`   | **cleared**                 |
+| key absent               | key omitted              | left at whatever Kata holds |
+
+The same three rows apply to an item's `questions`, with `[]` in place of `null`.
+
+Both fields used to be keyed on truthiness, so `null` and `[]` were indistinguishable from an
+absent key and the PATCH quietly left the old value in place. That is how five components in
+mass-measure-03 went on serving `basic`/`intermediate`/`advanced` after the metadata had
+dropped them. It matters for `questions` in particular because **there is no per-question
+delete endpoint** - `ItemUpdate.questions` is the only way to remove a question from an item
+short of deleting the whole item.
+
+Practical consequence: an item you no longer want graded needs `"questions": []` written into
+the metadata explicitly. Removing the `questions` key does nothing.
 
 ## Trap: removing an item from a component makes every later item 409
 
