@@ -1,0 +1,32 @@
+=== send-metadata LIVE ===
+[INFO] Base URL     : https://kata.cet.ac.il
+[INFO] Metadata dir : C:\Users\Vadim\OneDrive - methodic.co.il\Projects_ACTIVE\MOE\720\2026\methodica-science-mass-measure-03\git-repo\methodica-science-mass-measure-03\metadata
+[INFO] Mode         : LIVE
+[INFO] CREATED unit methodica-science-mass-measure-03 (HTTP 201)
+[INFO] CREATED component methodica-science-mass-measure-03-01 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-001 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-002 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-003 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-004 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-005 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-006 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-007 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-008 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-009 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-010 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-01-011 (HTTP 201)
+[INFO] CREATED component methodica-science-mass-measure-03-02 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-02-001 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-02-002 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-02-003 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-02-004 (HTTP 201)
+[INFO] CREATED component methodica-science-mass-measure-03-04 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-04-001 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-04-002 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-04-003 (HTTP 201)
+[INFO] CREATED component methodica-science-mass-measure-03-05 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-05-001 (HTTP 201)
+[INFO] CREATED component methodica-science-mass-measure-03-06 (HTTP 201)
+[INFO] CREATED item methodica-science-mass-measure-03-06-001 (HTTP 201)
+[INFO] LINKED  component methodica-science-mass-measure-03-02 recommendedAfterFail -> [methodica-science-mass-measure-03-01] (HTTP 200)
+[INFO] Done. created=26 updated=1 failed=0

@@ -139,6 +139,33 @@ Two mappings are best-guesses and isolated to single config points, so a first-c
 - In the Kata UI: **יחידות תוכן** (`/author`).
 - Re-run once — every entity should report `UPDATED` (not duplicated).
 
+## The log is overwritten on every run — archive one before you care about it
+
+`send-metadata.log` at the repo root is rewritten by `Set-Content` at the top of **every** run,
+**including `-DryRun`** (the write happens before the mode branch). It is also git-ignored by
+name. So a single dry run silently destroys the record of whatever ran last, and there is no
+second copy anywhere.
+
+Archive the run you care about before the next one, under a name `.gitignore` does not list:
+
+```bash
+cp send-metadata.log docs-and-tools/send-metadata-$(date +%Y-%m-%d)-<what-it-did>.log
+```
+
+`docs-and-tools/` is excluded wholesale from packages and `.log` is excluded by extension
+(`package-allowlist.ps1`), so an archived log can never leak into a release.
+
+Archived so far:
+
+| file | what it records |
+|---|---|
+| `send-metadata-2026-09-19-create.log` | the unit's **birth** in Kata — `created=26 updated=1 failed=0`: 1 unit, 5 components (01, 02, 04, 05, 06 — 03 was archived before the push) and 20 items, plus the `02 → 01` `recommendedAfterFail` link. This is the only evidence of what the catalogue rows were originally created as, and it predates the 2026-09-22 update that renumbered the part 01 items. |
+
+Note the log carries **no per-line timestamps** — only `[INFO]`/`[ERROR]` prefixes — so the
+date belongs in the filename. A stale `docs-and-tools/send-metadata.log` also survives from an
+older layout in which the log sat next to the script; it is a 4-line dry-run stub, it is
+git-ignored, and nothing writes to it any more.
+
 ## Clearing a field: `null` and `[]` mean "remove it", absent means "leave it"
 
 `masteryLevel` and an item's `questions` are keyed on **presence in the metadata**, not on
