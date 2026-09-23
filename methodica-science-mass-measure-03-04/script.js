@@ -233,6 +233,9 @@ let s1Selected = null;
 let s1Attempts = 0;
 let s1Done = false;
 let s1Phase = 'before';
+/* Retry gate (720 spec; דיווח MOE 23.09.26): התשובה שסומנה שגויה בניסיון
+   שאינו אחרון. כל עוד הבחירה הנוכחית זהה לה — "צדקתי?" מושבת. */
+let s1LastWrong = null;
 
 function s1OptEl(id) { return document.querySelector('#s1 .scq-opt[data-id="' + id + '"]'); }
 
@@ -251,7 +254,8 @@ function s1Select(id) {
   if (wasWrong1) document.getElementById('s1-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s1-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  /* Retry gate: אותה תשובה שכבר סומנה שגויה אינה ניתנת להגשה שוב. */
+  checkBtn.disabled = (s1Selected === s1LastWrong);
   checkBtn.onclick = s1Check;
 }
 
@@ -288,6 +292,7 @@ function s1Check() {
     optEl.classList.remove('selected');
     s1Phase = 'correct';
     s1Done = true;
+    s1LastWrong = null;
     s1LockOptions();
     s1ShowFeedback('correct', true);
     stationProgress.q1 = 'success';
@@ -304,6 +309,7 @@ function s1Check() {
 
   if (s1Attempts < S1.maxAttempts) {
     s1Phase = 'wrong1';
+    s1LastWrong = s1Selected; /* Retry gate */
     s1ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s1-check');
     checkBtn.textContent = 'צדקתי?';
@@ -316,6 +322,7 @@ function s1Check() {
     s1OptEl(S1.correctId).classList.add('correct');
     s1Phase = 'wrong-final';
     s1Done = true;
+    s1LastWrong = null;
     s1LockOptions();
     s1ShowFeedback('wrong2', false);
     stationProgress.q1 = 'fail';
@@ -356,6 +363,7 @@ function resetScreenState1() {
   s1Selected = null;
   s1Attempts = 0;
   s1Phase = 'before';
+  s1LastWrong = null; /* איפוס טרי בלבד — כניסה חוזרת לשאלה פתוחה נעצרת בגארד ושומרת אותו */
   s1UnlockOptions();
   document.querySelectorAll('#s1 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
@@ -426,6 +434,8 @@ let s2Selected = null;
 let s2Attempts = 0;
 let s2Done = false;
 let s2Phase = 'before';
+/* Retry gate (720 spec; דיווח MOE 23.09.26) — ראו s1LastWrong. */
+let s2LastWrong = null;
 
 function s2OptEl(id) { return document.querySelector('#s2 .scq-opt[data-id="' + id + '"]'); }
 
@@ -444,7 +454,8 @@ function s2Select(id) {
   if (wasWrong1) document.getElementById('s2-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s2-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  /* Retry gate: אותה תשובה שכבר סומנה שגויה אינה ניתנת להגשה שוב. */
+  checkBtn.disabled = (s2Selected === s2LastWrong);
   checkBtn.onclick = s2Check;
 }
 
@@ -479,6 +490,7 @@ function s2Check() {
     optEl.classList.remove('selected');
     s2Phase = 'correct';
     s2Done = true;
+    s2LastWrong = null;
     s2LockOptions();
     s2ShowFeedback('correct', true);
     stationProgress.q2 = 'success';
@@ -495,6 +507,7 @@ function s2Check() {
 
   if (s2Attempts < S2.maxAttempts) {
     s2Phase = 'wrong1';
+    s2LastWrong = s2Selected; /* Retry gate */
     s2ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s2-check');
     checkBtn.textContent = 'צדקתי?';
@@ -507,6 +520,7 @@ function s2Check() {
     s2OptEl(S2.correctId).classList.add('correct');
     s2Phase = 'wrong-final';
     s2Done = true;
+    s2LastWrong = null;
     s2LockOptions();
     s2ShowFeedback('wrong2', false);
     stationProgress.q2 = 'fail';
@@ -550,6 +564,7 @@ function resetScreenState2() {
   s2Selected = null;
   s2Attempts = 0;
   s2Phase = 'before';
+  s2LastWrong = null; /* איפוס טרי בלבד */
   s2UnlockOptions();
   document.querySelectorAll('#s2 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
@@ -600,10 +615,20 @@ let s3Selected = { r1: null, r2: null, r3: null, r4: null };
 let s3Attempts = 0;
 let s3Done = false;
 let s3Phase = 'before';
+/* Retry gate (720 spec; דיווח MOE 23.09.26): חתימת הטבלה שסומנה שגויה
+   בניסיון שאינו אחרון. s3Selected נשמר אחרי טעות, ולכן בלי השער הזה
+   הלומד יכול להגיש את אותה טבלה בדיוק כניסיון שני. */
+let s3LastWrong = null;
 
 function s3AllSelected() {
   return s3Selected.r1 !== null && s3Selected.r2 !== null &&
          s3Selected.r3 !== null && s3Selected.r4 !== null;
+}
+
+/* חתימה בסדר מפתחות קבוע — לא JSON.stringify(s3Selected) ישירות, כי
+   applyResumeVars ממלא את האובייקט לפי סדר המפתחות במטען השמור. */
+function s3Sig() {
+  return JSON.stringify([s3Selected.r1, s3Selected.r2, s3Selected.r3, s3Selected.r4]);
 }
 
 function s3Select(rowNum, val) {
@@ -629,7 +654,8 @@ function s3Select(rowNum, val) {
   const activeBtn = document.getElementById('s3-r' + rowNum + '-' + val);
   if (activeBtn) activeBtn.classList.add('selected');
   const checkBtn = document.getElementById('s3-check');
-  checkBtn.disabled = !s3AllSelected();
+  /* Retry gate: השוואה חיה בכל שינוי — חזרה לטבלה השגויה משביתה שוב. */
+  checkBtn.disabled = !s3AllSelected() || s3Sig() === s3LastWrong;
 }
 
 function s3ShowFeedback(kind, isCorrect) {
@@ -694,6 +720,7 @@ function s3Check() {
   if (allCorrect) {
     s3Phase = 'correct';
     s3Done = true;
+    s3LastWrong = null;
     s3LockRows(false);
     s3ShowFeedback('correct', true);
     stationProgress.q3 = 'success';
@@ -707,6 +734,7 @@ function s3Check() {
 
   if (s3Attempts < S3.maxAttempts) {
     s3Phase = 'wrong1';
+    s3LastWrong = s3Sig(); /* Retry gate */
     ['r1', 'r2', 'r3', 'r4'].forEach(function (r, idx) {
       const rowNum = idx + 1;
       const selectedVal = s3Selected[r];
@@ -728,6 +756,7 @@ function s3Check() {
   } else {
     s3Phase = 'wrong-final';
     s3Done = true;
+    s3LastWrong = null;
     s3LockRows(true);
     s3ShowFeedback('wrong2', false);
     stationProgress.q3 = 'fail';
@@ -775,6 +804,7 @@ function resetScreenState3() {
   s3Selected = { r1: null, r2: null, r3: null, r4: null };
   s3Attempts = 0;
   s3Phase = 'before';
+  s3LastWrong = null; /* איפוס טרי בלבד */
   [1, 2, 3, 4].forEach(function (n) {
     const row = document.getElementById('s3-row-' + n);
     if (row) row.classList.remove('row-locked', 'row-wrong');
@@ -923,13 +953,14 @@ function capturePartPayload() {
   st.qResults = Object.assign({}, XAPI_Q_RESULTS);
   st.stations = Object.assign({}, stationProgress);
   st.scq = {
-    s1: { sel: s1Selected, att: s1Attempts, done: s1Done, phase: s1Phase },
-    s2: { sel: s2Selected, att: s2Attempts, done: s2Done, phase: s2Phase }
+    /* lw = Retry gate (התשובה שסומנה שגויה) — בלעדיו חידוש היה פותח אותה מחדש. */
+    s1: { sel: s1Selected, att: s1Attempts, done: s1Done, phase: s1Phase, lw: s1LastWrong },
+    s2: { sel: s2Selected, att: s2Attempts, done: s2Done, phase: s2Phase, lw: s2LastWrong }
   };
   /* טבלת נכון/לא-נכון. כל סימון שהצייר מצייר נגזר מהמפה הזאת מול
      TF_S3_CORRECT — s3Select לעולם לא מאפס אותה, ולכן (בניגוד לרב-ברירה
      בסיין 2) אין כאן שום ערך שיושב רק ב-DOM. */
-  st.s3 = { sel: Object.assign({}, s3Selected), att: s3Attempts, done: s3Done, phase: s3Phase };
+  st.s3 = { sel: Object.assign({}, s3Selected), att: s3Attempts, done: s3Done, phase: s3Phase, lw: s3LastWrong };
   return st;
 }
 
@@ -943,15 +974,20 @@ function applyResumeVars(st) {
     if (st.scq.s1) {
       s1Selected = st.scq.s1.sel || null; s1Attempts = st.scq.s1.att || 0;
       s1Done = !!st.scq.s1.done; s1Phase = st.scq.s1.phase || 'before';
+      s1LastWrong = st.scq.s1.lw || null;
     }
     if (st.scq.s2) {
       s2Selected = st.scq.s2.sel || null; s2Attempts = st.scq.s2.att || 0;
       s2Done = !!st.scq.s2.done; s2Phase = st.scq.s2.phase || 'before';
+      s2LastWrong = st.scq.s2.lw || null;
     }
   }
   if (st.s3) {
     if (st.s3.sel) Object.keys(st.s3.sel).forEach(function (k) { s3Selected[k] = st.s3.sel[k]; });
     s3Attempts = st.s3.att || 0; s3Done = !!st.s3.done; s3Phase = st.s3.phase || 'before';
+    /* מסמך ישן בלי lw (נשמר לפני תיקון ה-retry gate): גוזרים מהתשובה השמורה, כדי
+       שהכפתור לא ייפתח על אותה תשובה שגויה. */
+    s3LastWrong = st.s3.lw || ((s3Attempts > 0 && !s3Done) ? s3Sig() : null);
   }
 }
 
@@ -961,14 +997,14 @@ function applyResumeDom(st) {}
 function restoreScreenUI(n) {
   try {
     if (n === 1) restoreScqUI({
-      screenSel: '#s1', cfg: S1, selected: s1Selected, attempts: s1Attempts,
+      screenSel: '#s1', cfg: S1, selected: s1Selected, attempts: s1Attempts, lastWrong: s1LastWrong,
       done: s1Done, phase: s1Phase, optEl: s1OptEl, lock: s1LockOptions,
       showFeedback: s1ShowFeedback, setBarDone: s1SetBarDone, check: s1Check,
       checkBtnId: 's1-check', hintBtnId: 's1-hint',
       onContinue: function () { goTo(2); }
     });
     if (n === 2) restoreScqUI({
-      screenSel: '#s2', cfg: S2, selected: s2Selected, attempts: s2Attempts,
+      screenSel: '#s2', cfg: S2, selected: s2Selected, attempts: s2Attempts, lastWrong: s2LastWrong,
       done: s2Done, phase: s2Phase, optEl: s2OptEl, lock: s2LockOptions,
       showFeedback: s2ShowFeedback, setBarDone: s2SetBarDone, check: s2Check,
       checkBtnId: 's2-check', hintBtnId: 's2-hint',
@@ -1022,7 +1058,12 @@ function restoreScqUI(o) {
      משתמש — בלי זה מסך משוחזר עם בחירה היה מציג כפתור מושבת לנצח. */
   var selEl = o.optEl(o.selected);
   if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
-  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = !o.selected; }
+  /* Retry gate (720 spec; דיווח MOE 23.09.26): הצייר רץ בכל goTo — בלי
+     ההשוואה ל-lastWrong הוא היה פותח מחדש את התשובה שכבר סומנה שגויה. */
+  if (checkBtn) {
+    checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check;
+    checkBtn.disabled = !o.selected || o.selected === o.lastWrong;
+  }
 }
 
 /* טבלת נכון/לא-נכון (מסך 3). מחקה את כתיבות ה-DOM של s3Check בלבד. */
@@ -1064,9 +1105,13 @@ function restoreTfTableUI() {
     var hintBtn = document.getElementById('s3-hint');
     if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
   }
-  /* אותו פרדיקט שבו s3Select משתמש. */
+  /* אותו פרדיקט שבו s3Select משתמש, כולל Retry gate (720 spec; דיווח MOE
+     23.09.26) — הצייר רץ בכל goTo ובלעדיו היה פותח מחדש את הטבלה השגויה. */
   var checkBtn = document.getElementById('s3-check');
-  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s3Check; checkBtn.disabled = !s3AllSelected(); }
+  if (checkBtn) {
+    checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s3Check;
+    checkBtn.disabled = !s3AllSelected() || s3Sig() === s3LastWrong;
+  }
 }
 
 /* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════

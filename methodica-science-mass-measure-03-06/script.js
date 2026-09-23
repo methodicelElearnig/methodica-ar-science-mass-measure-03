@@ -142,6 +142,10 @@ const S6A = {
 let s6aSelected = null;
 let s6aAttempts = 0;
 let s6aDone = false;
+/* Retry gate (720 spec; דיווח MOE 23.09.26): התשובה שסומנה שגויה בניסיון
+   שאינו אחרון. הבחירה נשמרת אחרי טעות, ולכן בלי השער הזה "צדקתי?" נשאר
+   פעיל ואפשר להגיש את אותה תשובה בדיוק כניסיון שני. */
+let s6aLastWrong = null;
 
 function s6aOptEl(id) { return document.querySelector('#s2 .scq-opt[data-id="' + id + '"]'); }
 
@@ -191,6 +195,7 @@ function s6aCheck() {
     optEl.classList.add('correct');
     optEl.classList.remove('selected');
     s6aDone = true;
+    s6aLastWrong = null;
     s6aLockOptions();
     s6aShowFeedback('correct', true);
     saveMoedBResult(1, true);
@@ -199,6 +204,7 @@ function s6aCheck() {
     optEl.classList.remove('selected');
     s6aOptEl(S6A.correctId).classList.add('correct');
     s6aDone = true;
+    s6aLastWrong = null;
     s6aLockOptions();
     s6aShowFeedback('wrong2', false);
     saveMoedBResult(1, false);
@@ -206,6 +212,8 @@ function s6aCheck() {
     optEl.classList.add('wrong');
     optEl.classList.remove('selected');
     s6aShowFeedback('wrong1', false);
+    /* Retry gate: s6aSyncBar שמיד אחרי משבית כל עוד הבחירה זהה לזו. */
+    s6aLastWrong = s6aSelected;
   }
   s6aSyncBar();
   /* resume: סנכרוני. כאן, בניגוד לשאר הסינים, הזנב משותף לשלושת הענפים
@@ -238,7 +246,8 @@ function s6aSyncBar() {
     hintBtn.hidden = true;
   } else {
     checkBtn.textContent = 'צדקתי?';
-    checkBtn.disabled = !s6aSelected;
+    /* Retry gate: השוואה חיה — גם בחירה, גם בדיקה, גם צייר ה-resume עוברים כאן. */
+    checkBtn.disabled = !s6aSelected || s6aSelected === s6aLastWrong;
     checkBtn.onclick = s6aCheck;
     hintBtn.hidden = (s6aAttempts === 0);
     hintBtn.disabled = false;
@@ -254,6 +263,7 @@ function resetScreenState2() {
   if (s6aDone || s6aAttempts > 0 || s6aSelected) { s6aSyncBar(); return; }
   s6aSelected = null;
   s6aAttempts = 0;
+  s6aLastWrong = null; /* איפוס טרי בלבד */
   document.querySelectorAll('#s2 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
     el.setAttribute('aria-checked', 'false');
@@ -281,6 +291,8 @@ const S6B = {
 let s6bSelected = null;
 let s6bAttempts = 0;
 let s6bDone = false;
+/* Retry gate (720 spec; דיווח MOE 23.09.26) — ראו s6aLastWrong. */
+let s6bLastWrong = null;
 
 function s6bOptEl(id) { return document.querySelector('#s3 .scq-opt[data-id="' + id + '"]'); }
 
@@ -328,6 +340,7 @@ function s6bCheck() {
     optEl.classList.add('correct');
     optEl.classList.remove('selected');
     s6bDone = true;
+    s6bLastWrong = null;
     s6bLockOptions();
     s6bShowFeedback('correct', true);
     saveMoedBResult(2, true);
@@ -336,6 +349,7 @@ function s6bCheck() {
     optEl.classList.remove('selected');
     s6bOptEl(S6B.correctId).classList.add('correct');
     s6bDone = true;
+    s6bLastWrong = null;
     s6bLockOptions();
     s6bShowFeedback('wrong2', false);
     saveMoedBResult(2, false);
@@ -343,6 +357,8 @@ function s6bCheck() {
     optEl.classList.add('wrong');
     optEl.classList.remove('selected');
     s6bShowFeedback('wrong1', false);
+    /* Retry gate: s6bSyncBar שמיד אחרי משבית כל עוד הבחירה זהה לזו. */
+    s6bLastWrong = s6bSelected;
   }
   s6bSyncBar();
   /* resume: סנכרוני. כאן, בניגוד לשאר הסינים, הזנב משותף לשלושת הענפים
@@ -372,7 +388,8 @@ function s6bSyncBar() {
     hintBtn.hidden = true;
   } else {
     checkBtn.textContent = 'צדקתי?';
-    checkBtn.disabled = !s6bSelected;
+    /* Retry gate: השוואה חיה — גם בחירה, גם בדיקה, גם צייר ה-resume עוברים כאן. */
+    checkBtn.disabled = !s6bSelected || s6bSelected === s6bLastWrong;
     checkBtn.onclick = s6bCheck;
     hintBtn.hidden = (s6bAttempts === 0);
     hintBtn.disabled = false;
@@ -388,6 +405,7 @@ function resetScreenState3() {
   if (s6bDone || s6bAttempts > 0 || s6bSelected) { s6bSyncBar(); return; }
   s6bSelected = null;
   s6bAttempts = 0;
+  s6bLastWrong = null; /* איפוס טרי בלבד */
   document.querySelectorAll('#s3 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
     el.setAttribute('aria-checked', 'false');
@@ -518,6 +536,32 @@ function makeDragQuestion(cfg) {
      דורס את placement בפתרון הנכון, ומאותו רגע הלוח "נראה" נכון בלי קשר
      למה שהלומד באמת עשה. */
   let passed = false;
+  /* Retry gate (720 spec; דיווח MOE 23.09.26): חתימת הלוח (יעד → תווית)
+     שסומנה שגויה בניסיון שאינו אחרון. כל עוד הלוח הנוכחי זהה לה —
+     "צדקתי?" מושבת. */
+  let lastWrong = null;
+
+  function allFilled() {
+    return targetIds.every(function (tId) {
+      return dragIds.some(function (dId) { return placement[dId] === tId; });
+    });
+  }
+
+  /* חתימה לפי **תווית** ולא לפי מזהה קלף — אותה מחרוזת בדיוק ש-check()
+     מדווח ל-xAPI. check() מתייחס לקלפים בעלי אותה תווית כשקולים, ולכן
+     החלפת שני קלפים זהים אינה "תשובה אחרת". */
+  function answerSig() {
+    return targetIds.map(function (tId) {
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
+    }).join(' | ');
+  }
+
+  /* Retry gate: הפרדיקט היחיד ל-disabled של "צדקתי?" — render ו-restoreUI. */
+  function checkBlocked() {
+    return !allFilled() || answerSig() === lastWrong;
+  }
 
   function render() {
     dragIds.forEach(function (dragId) {
@@ -567,11 +611,8 @@ function makeDragQuestion(cfg) {
       }
     });
 
-    const allFilled = targetIds.every(function (tId) {
-      return dragIds.some(function (dId) { return placement[dId] === tId; });
-    });
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn && !done) btn.disabled = !allFilled;
+    if (btn && !done) btn.disabled = checkBlocked();
   }
 
   function dragStart(e, dragId) {
@@ -729,11 +770,7 @@ function makeDragQuestion(cfg) {
        <prefix>-zone-<id>, בעוד היעדים של הפקטורי הזה הם s6c-target-N.
        לכן בונים את מחרוזת התשובה מקומית מתוך placement. */
     if (cfg.xapiItem) {
-      const _ans = targetIds.map(function (tId) {
-        let placed = null;
-        dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
-        return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
-      }).join(' | ');
+      const _ans = answerSig();
       (cfg.xapiQuestions || ['q1']).forEach(function (q) {
         xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
       });
@@ -743,12 +780,14 @@ function makeDragQuestion(cfg) {
     if (allCorrect) {
       done = true;
       passed = true;
+      lastWrong = null;
       saveResult(true);
       showFeedback('correct');
       if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else if (attempts >= maxAttempts) {
       done = true;
       passed = false;
+      lastWrong = null;
       saveResult(false);
       if (cfg.revealBtnId) {
         answerSnapshot = Object.assign({}, placement); // לפני כל reveal
@@ -762,6 +801,7 @@ function makeDragQuestion(cfg) {
       }
       if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else {
+      lastWrong = answerSig(); /* Retry gate — לפני render(), כדי שהשער יחול מיד */
       showFeedback('wrong1');
       checked = false;
       render();
@@ -795,6 +835,7 @@ function makeDragQuestion(cfg) {
   function resetInitial() {
     done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
     answerSnapshot = null; revealed = false; passed = false;
+    lastWrong = null; /* איפוס טרי בלבד — reset() קורא לכאן רק כשאין התקדמות */
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
     targetIds.forEach(function (tId) {
       const zone = document.getElementById(tId);
@@ -871,7 +912,9 @@ function makeDragQuestion(cfg) {
       revealed: revealed,
       /* התשובה של הלומד עצמו, כפי שהייתה לפני כל reveal. בלעדיה שחזור היה
          מקבע את הפתרון הנכון על המסך כאילו הוא זה שהגיש אותו. */
-      answerSnapshot: answerSnapshot ? Object.assign({}, answerSnapshot) : null
+      answerSnapshot: answerSnapshot ? Object.assign({}, answerSnapshot) : null,
+      /* Retry gate — בלעדיו חידוש היה פותח מחדש את הלוח שכבר סומן שגוי. */
+      lw: lastWrong
     };
   }
 
@@ -884,6 +927,9 @@ function makeDragQuestion(cfg) {
     passed = !!s.passed;
     revealed = !!s.revealed;
     answerSnapshot = s.answerSnapshot ? Object.assign({}, s.answerSnapshot) : null;
+    /* מסמך ישן בלי lw (נשמר לפני תיקון ה-retry gate): גוזרים מהתשובה השמורה, כדי
+       שהכפתור לא ייפתח על אותה תשובה שגויה. */
+    lastWrong = s.lw || ((attempts > 0 && !done) ? answerSig() : null);
     /* גרירה חיה — scratch, לעולם לא משוחזר: ערך ישן היה גורם ל-drop לפעול
        על קלף רפאים. */
     dragActive = null;
@@ -924,8 +970,11 @@ function makeDragQuestion(cfg) {
       const hintBtn = document.getElementById(cfg.hintBtnId);
       if (hintBtn) hintBtn.hidden = false;
     }
+    /* Retry gate (720 spec; דיווח MOE 23.09.26): לא disabled=true קבוע —
+       לומד ששינה את הלוח אחרי הטעות ועזב חוזר לכפתור פעיל; לוח זהה לשגוי
+       נשאר מושבת. */
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = checkBlocked(); btn.onclick = check; }
   }
 
   return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
@@ -1113,8 +1162,9 @@ function capturePartPayload() {
   /* ⚠️ אין בסין הזה משתנה phase. sNCheck מסמן done בשני הענפים המסיימים
      ומבדיל ביניהם רק לפי האפשרות שנבחרה — ולכן הצייר גוזר נכונות מתוך
      **הבחירה השמורה**, ולעולם לא ממספר הניסיונות. */
-  st.s6a = { sel: s6aSelected, att: s6aAttempts, done: s6aDone };
-  st.s6b = { sel: s6bSelected, att: s6bAttempts, done: s6bDone };
+  /* lw = Retry gate (התשובה שסומנה שגויה) — בלעדיו חידוש היה פותח אותה מחדש. */
+  st.s6a = { sel: s6aSelected, att: s6aAttempts, done: s6aDone, lw: s6aLastWrong };
+  st.s6b = { sel: s6bSelected, att: s6bAttempts, done: s6bDone, lw: s6bLastWrong };
   st.dqC = dqSectionC.getState();
   return st;
 }
@@ -1122,8 +1172,8 @@ function capturePartPayload() {
 function applyResumeVars(st) {
   if (!st) return;
   if (st.qResults) Object.keys(st.qResults).forEach(function (k) { XAPI_Q_RESULTS[k] = st.qResults[k]; });
-  if (st.s6a) { s6aSelected = st.s6a.sel || null; s6aAttempts = st.s6a.att || 0; s6aDone = !!st.s6a.done; }
-  if (st.s6b) { s6bSelected = st.s6b.sel || null; s6bAttempts = st.s6b.att || 0; s6bDone = !!st.s6b.done; }
+  if (st.s6a) { s6aSelected = st.s6a.sel || null; s6aAttempts = st.s6a.att || 0; s6aDone = !!st.s6a.done; s6aLastWrong = st.s6a.lw || null; }
+  if (st.s6b) { s6bSelected = st.s6b.sel || null; s6bAttempts = st.s6b.att || 0; s6bDone = !!st.s6b.done; s6bLastWrong = st.s6b.lw || null; }
   if (st.dqC) dqSectionC.setState(st.dqC);
 }
 

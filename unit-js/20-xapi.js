@@ -319,3 +319,41 @@ function xapiWireVideos() {
     v.addEventListener('play', function () { if (!pausedOnce) return; try { sendStatement720('played', 'question', null, Object.assign({ time: v.currentTime }, ctx)); } catch (e) {} });
   });
 }
+
+/* played/paused לסרטוני YouTube — onStateChange של IFrame Player API.
+   ── למה (23.09.26) ──
+   דווח ע"י בודק MOE: "אין בכלל דיווחים של played/paused על הסרטון". בסין 01 יש
+   שלושה סרטוני YouTube (מסכים s1/s3/s7), וה-handler שלהם האזין רק ל-ENDED כדי
+   לפתוח את כפתור "המשך". xapiWireVideos למעלה לא רואה אותם — iframe אינו <video>.
+   ── מכונת מצבים, לא latch ── (הועתק מ-mass-measure-01/unit-js/20-xapi.js)
+   דגל אחד לכל נגן: __xapiPlaying == "יש played פתוח שעוד לא נסגר ב-paused".
+   played נשלח רק כשהדגל כבוי, paused רק כשהוא דלוק. לכן:
+     - ה-played הראשון בכל צפייה נשלח (latch מסוג pausedOnce היה בולע אותו —
+       זה בדיוק הפגם ש-MOE דיווח ב-mass-measure-01 ב-17.09.26);
+     - paused יתום בלתי אפשרי מבנית;
+     - BUFFERING -> PLAYING באמצע ניגון (seek) שקט — PLAYING שני כשכבר מנגן.
+   ENDED מאפס את הדגל ולא מדווח כלום: כך ניגון חוזר ישלח played שוב, ו-paused
+   סינתטי בסוף הסרטון היה מדווח פעולת לומד שלא קרתה.
+   ── objectId ──
+   הפריט, כמו ב-xapiWireVideos: xapiItemId(item). ה-caller מעביר את סיומת הפריט
+   (s1/s3 -> 002, s7 -> 006; ראו SCREEN_TO_SUBCONTENT ב-01/script.js). הדגל יושב על
+   מופע הנגן ולא על הפריט — s1 ו-s3 חולקים את פריט 002, ודגל לפי פריט היה מתערבב. */
+function xapiYouTubeState(e, item) {
+  if (!window.XAPI_USING_G || typeof sendStatement720 !== 'function') return;
+  if (!item) { console.warn('[xAPI] youtube state with no item suffix -- not reporting'); return; }
+  var p = e && e.target;
+  if (!p) return;
+  var t = (typeof p.getCurrentTime === 'function') ? p.getCurrentTime() : undefined;
+  var ctx = { time: t, objectId: xapiItemId(item) };
+  if (e.data === YT.PlayerState.PLAYING) {
+    if (p.__xapiPlaying) return;          // seek באמצע ניגון — כבר פתוח
+    p.__xapiPlaying = true;
+    try { sendStatement720('played', 'question', null, ctx); } catch (_) {}
+  } else if (e.data === YT.PlayerState.PAUSED) {
+    if (!p.__xapiPlaying) return;         // אין played פתוח — לא שולחים יתום
+    p.__xapiPlaying = false;
+    try { sendStatement720('paused', 'question', null, ctx); } catch (_) {}
+  } else if (e.data === YT.PlayerState.ENDED) {
+    p.__xapiPlaying = false;              // re-arm לניגון חוזר; ENDED עצמו לא מדווח
+  }
+}

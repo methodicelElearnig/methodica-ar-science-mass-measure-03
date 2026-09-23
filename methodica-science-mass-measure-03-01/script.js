@@ -106,6 +106,10 @@ function initFakeScrollbar(el) {
 
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
+  /* עוצרים את סרטון ה-YouTube של המסך שיוצאים ממנו, כדי שהשמע לא ימשיך במסכים
+     אחרים (כמו ב-mass-measure-01). זו עצירה אמיתית, ולכן xapiYouTubeState ידווח
+     paused אם היה played פתוח — על סרטון שהסתיים היא שקטה. */
+  if (currentScreen !== n) videoIntroPause(currentScreen);
   document.querySelectorAll('.screen').forEach(function (el) {
     el.classList.remove('active');
   });
@@ -314,9 +318,9 @@ function resolveCharBubbleImg(imgId, assetMap) {
    2026-09-20, כפי שבוצע ב-mass-measure-01 וב-scale-01.
    ========================================================= */
 const VIDEO_INTRO_PLAYERS = [
-  { containerId: 's1-yt-player', videoId: 'g0lcVHET3tI', continueBtnId: 's1-continue' },
-  { containerId: 's3-yt-player', videoId: 'QObJvc8ae3k', continueBtnId: 's3-continue' },
-  { containerId: 's7-yt-player', videoId: 'ev-yCBqIF7k', continueBtnId: 's7-continue' }
+  { screen: 1, containerId: 's1-yt-player', videoId: 'g0lcVHET3tI', continueBtnId: 's1-continue', xapiItem: '002' },
+  { screen: 3, containerId: 's3-yt-player', videoId: 'QObJvc8ae3k', continueBtnId: 's3-continue', xapiItem: '002' },
+  { screen: 7, containerId: 's7-yt-player', videoId: 'ev-yCBqIF7k', continueBtnId: 's7-continue', xapiItem: '006' }
 ];
 
 /* איזה שער-וידאו כבר נפתח. ⚠️ חייב להיות **מצב** ולא רק
@@ -338,8 +342,19 @@ function videoIntroSync(n) {
   if (btn) btn.disabled = !videoIntroEnded[btnId];
 }
 
-function onVideoIntroStateChange(continueBtnId) {
+/* xapiItem = סיומת הפריט שהסרטון שייך לו (SCREEN_TO_SUBCONTENT): played/paused
+   יוצאים דרך xapiYouTubeState ב-unit-js/20-xapi.js (דיווח MOE, 23.09.26). */
+/* מסך -> מופע YT.Player, למילוי ב-onYouTubeIframeAPIReady. */
+const videoIntroYtPlayers = {};
+
+function videoIntroPause(n) {
+  const p = videoIntroYtPlayers[n];
+  if (p && typeof p.pauseVideo === 'function') p.pauseVideo();
+}
+
+function onVideoIntroStateChange(continueBtnId, xapiItem) {
   return function (event) {
+    try { xapiYouTubeState(event, xapiItem); } catch (e) {}
     if (event.data === YT.PlayerState.ENDED) {
       videoIntroEnded[continueBtnId] = true;
       const btn = document.getElementById(continueBtnId);
@@ -395,8 +410,8 @@ window.onYouTubeIframeAPIReady = function () {
   VIDEO_INTRO_PLAYERS.forEach(function (cfg) {
     const el = ytMountIframe(cfg.containerId, cfg.videoId, 'סרטון הסבר', '646', '363');
     if (!el) return;
-    new YT.Player(el, {
-      events: { onStateChange: onVideoIntroStateChange(cfg.continueBtnId) }
+    videoIntroYtPlayers[cfg.screen] = new YT.Player(el, {
+      events: { onStateChange: onVideoIntroStateChange(cfg.continueBtnId, cfg.xapiItem) }
     });
   });
 };
@@ -511,6 +526,15 @@ const viqAttempts = {};
 const viqDone = {};
 const viqAnswerSnapshot = {}; // הערך שהלומד הזין בפועל בניסיון השני הכושל, לפני כל reveal
 const viqRevealed = {};
+/* Retry gate (720 spec; דיווח MOE 23.09.26): חתימת הערך שסומן שגוי בניסיון
+   הראשון, לפי n. "צדקתי?" נעול כל עוד הערך הנוכחי שקול לו — השוואה חיה בכל
+   הקלדה. מנורמל מספרית כי הבדיקה היא Number(input.value): "0.10" ≡ "0.1". */
+const viqLastWrong = {};
+function viqSig(v) {
+  const t = String(v).trim();
+  const num = Number(t);
+  return t !== '' && isFinite(num) ? 'n:' + num : 's:' + t;
+}
 
 function resetScreenStateViq(n) {
   /* resume-state guard. ⚠️ לא רק Done: לומד שניסה פעם אחת, טעה ועזב הוא
@@ -531,6 +555,7 @@ function resetScreenStateViq(n) {
   if (fb) { fb.classList.remove('visible', 'is-correct', 'is-wrong', 'collapsed'); }
   if (revealBtn) { revealBtn.hidden = true; revealBtn.textContent = 'התשובה הנכונה'; }
   viqAttempts[n] = 0;
+  viqLastWrong[n] = null;
   viqAnswerSnapshot[n] = null;
   viqRevealed[n] = false;
 }
@@ -544,7 +569,7 @@ function viqOnInput(n) {
     const fb = document.getElementById(cfg.feedboxId);
     if (fb) fb.classList.remove('visible');
   }
-  if (btn) btn.disabled = !input.value.trim();
+  if (btn) btn.disabled = !input.value.trim() || viqSig(input.value) === viqLastWrong[n]; // retry gate
 }
 
 function viqCheck(n) {
@@ -579,6 +604,7 @@ function viqCheck(n) {
     fb.classList.add('is-wrong', 'visible');
     titleEl.textContent = 'התשובה אינה נכונה.';
     bodyEl.textContent = 'נסו שוב.';
+    viqLastWrong[n] = viqSig(input.value); // retry gate
     const btn = document.getElementById(cfg.checkBtnId);
     if (btn) btn.disabled = true; // נעול עד שהערך השגוי שהוזן משתנה (viqOnInput מפעיל מחדש)
   } else {
@@ -634,6 +660,7 @@ function viqToggleReveal(n) {
 
 function viqFinish(n) {
   viqDone[n] = true;
+  viqLastWrong[n] = null;
   const cfg = VIQ_SCREENS[n];
   const btn = document.getElementById(cfg.checkBtnId);
   if (btn) { btn.disabled = false; btn.textContent = 'המשך'; }
@@ -937,6 +964,9 @@ let s8Selected = null;
 let s8Attempts = 0;
 let s8Done = false;
 let s8Phase = 'before'; // 'before' | 'selected' | 'wrong1' | 'correct' | 'wrong-final'
+/* Retry gate (720 spec; דיווח MOE 23.09.26): התשובה שסומנה שגויה בניסיון
+   שאינו אחרון. "צדקתי?" נעול כל עוד הבחירה הנוכחית זהה לה — השוואה חיה. */
+let s8LastWrong = null;
 
 function s8OptEl(id) {
   return document.querySelector('#s8 .scq-opt[data-id="' + id + '"]');
@@ -959,7 +989,7 @@ function s8Select(id) {
   }
   const checkBtn = document.getElementById('s8-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  checkBtn.disabled = (id === s8LastWrong); // retry gate
   checkBtn.onclick = s8Check;
 }
 
@@ -993,6 +1023,7 @@ function s8Check() {
     optEl.classList.add('correct');
     optEl.classList.remove('selected');
     s8Phase = 'correct';
+    s8LastWrong = null;
     s8Done = true;
     s8LockOptions();
     s8ShowFeedback('correct', true);
@@ -1006,6 +1037,7 @@ function s8Check() {
 
   if (s8Attempts < S8.maxAttempts) {
     s8Phase = 'wrong1';
+    s8LastWrong = s8Selected; // retry gate
     s8ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s8-check');
     checkBtn.textContent = 'צדקתי?';
@@ -1017,6 +1049,7 @@ function s8Check() {
   } else {
     s8OptEl(S8.correctId).classList.add('correct');
     s8Phase = 'wrong-final';
+    s8LastWrong = null;
     s8Done = true;
     s8LockOptions();
     s8ShowFeedback('wrong2', false);
@@ -1064,6 +1097,7 @@ function resetScreenState8() {
   s8Selected = null;
   s8Attempts = 0;
   s8Phase = 'before';
+  s8LastWrong = null;
   s8UnlockOptions();
   document.querySelectorAll('#s8 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
@@ -1473,6 +1507,20 @@ function makeDragQuestion(cfg) {
   /* resume: ⚠️ נשמר במפורש ואינו נגזר בדיעבד — revealCorrect() דורס את
      placement בפתרון הנכון. */
   let passed = false;
+  /* Retry gate (720 spec; דיווח MOE 23.09.26): חתימת ההצבה שסומנה שגויה בניסיון
+     שאינו אחרון. "צדקתי?" נעול כל עוד ההצבה הנוכחית זהה לה — השוואה חיה בכל
+     render. ⚠️ נשמרת בכניסה חוזרת לשאלה שלא הסתיימה (reset() לא מאפס כשיש התקדמות). */
+  let lastWrong = null;
+
+  /* יעד → תווית הקלף (לא מזהה: check() משווה לפי תווית, ולכן שני קלפים עם אותה
+     תווית שקולים). משמש גם כתשובת ה-xAPI. */
+  function sig() {
+    return targetIds.map(function (tId) {
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
+    }).join(' | ');
+  }
 
   function render() {
     dragIds.forEach(function (dragId) {
@@ -1526,7 +1574,7 @@ function makeDragQuestion(cfg) {
       return dragIds.some(function (dId) { return placement[dId] === tId; });
     });
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn && !done) btn.disabled = !allFilled;
+    if (btn && !done) btn.disabled = !allFilled || sig() === lastWrong; // retry gate
   }
 
   function dragStart(e, dragId) {
@@ -1682,11 +1730,7 @@ function makeDragQuestion(cfg) {
        ⚠️ xapiZoneAnswer לא מתאים לפקטורי הזה: העוזר בונה מזהי אזור בתבנית
        <prefix>-zone-<id>, בעוד היעדים כאן הם <prefix>-target-N. */
     if (cfg.xapiItem) {
-      const _ans = targetIds.map(function (tId) {
-        let placed = null;
-        dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
-        return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
-      }).join(' | ');
+      const _ans = sig();
       (cfg.xapiQuestions || ['q1']).forEach(function (q) {
         /* ⚠️ 2 כמספר ולא maxAttempts: לעותק הזה של הפקטורי אין הקשירה
            הזאת — הוא בודק `attempts >= 2` ישירות. שם לא-מוגדר היה זורק
@@ -1699,6 +1743,7 @@ function makeDragQuestion(cfg) {
     if (allCorrect) {
       done = true;
       passed = true;
+      lastWrong = null;
       saveResult(true);
       showFeedback('correct');
       if (cfg.onResult) cfg.onResult('success');
@@ -1706,6 +1751,7 @@ function makeDragQuestion(cfg) {
     } else if (attempts >= 2) {
       done = true;
       passed = false;
+      lastWrong = null;
       saveResult(false);
       if (cfg.revealBtnId) {
         // לומד-יוזם: לא חושפים אוטומטית — שומרים snapshot של הפלייסמנט
@@ -1723,6 +1769,7 @@ function makeDragQuestion(cfg) {
       if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
     } else {
       showFeedback('wrong1');
+      lastWrong = sig(); // retry gate — לפני render(), שמחשב ממנו את הכפתור
       checked = false;
       render();
       const hintBtn = document.getElementById(cfg.hintBtnId);
@@ -1770,7 +1817,7 @@ function makeDragQuestion(cfg) {
 
   function resetInitial() {
     done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
-    answerSnapshot = null; revealed = false; passed = false;
+    answerSnapshot = null; revealed = false; passed = false; lastWrong = null;
     shuffleWordBank();
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
     targetIds.forEach(function (tId) {
@@ -1837,6 +1884,7 @@ function makeDragQuestion(cfg) {
       placement: Object.assign({}, placement),
       attempts: attempts, done: done, checked: checked, passed: passed, revealed: revealed,
       answerSnapshot: answerSnapshot ? Object.assign({}, answerSnapshot) : null,
+      lw: lastWrong,
       /* resetInitial() מערבב מחדש את המאגר, ולכן הסדר נשמר. */
       bankOrder: bankOrder
     };
@@ -1848,6 +1896,9 @@ function makeDragQuestion(cfg) {
     attempts = s.attempts || 0;
     done = !!s.done; checked = !!s.checked; passed = !!s.passed; revealed = !!s.revealed;
     answerSnapshot = s.answerSnapshot ? Object.assign({}, s.answerSnapshot) : null;
+    /* מסמך ישן בלי lw: restoreUI נעל כאן תמיד את הכפתור, ולכן גוזרים מההצבה
+       השמורה — אותה התנהגות עד שהלומד משנה משהו. */
+    lastWrong = s.lw || ((attempts > 0 && !done) ? sig() : null);
     if (s.bankOrder && cfg.wordBankId) {
       var bank = document.getElementById(cfg.wordBankId);
       if (bank) s.bankOrder.forEach(function (slotId) {
@@ -1884,7 +1935,14 @@ function makeDragQuestion(cfg) {
       if (hintBtn) hintBtn.hidden = false;
     }
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+    /* Retry gate: אותו פרדיקט של render() — נעול על ההצבה השגויה עצמה, פתוח
+       אם הלומד כבר שינה אותה לפני שיצא. */
+    if (btn) {
+      btn.hidden = false; btn.textContent = 'צדקתי?'; btn.onclick = check;
+      btn.disabled = !targetIds.every(function (tId) {
+        return dragIds.some(function (dId) { return placement[dId] === tId; });
+      }) || sig() === lastWrong;
+    }
   }
 
   return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
@@ -2072,6 +2130,9 @@ let s14Selected = null;
 let s14Attempts = 0;
 let s14Done = false;
 let s14Phase = 'before';
+/* Retry gate (720 spec; דיווח MOE 23.09.26): התשובה שסומנה שגויה בניסיון
+   שאינו אחרון. "צדקתי?" נעול כל עוד הבחירה הנוכחית זהה לה — השוואה חיה. */
+let s14LastWrong = null;
 
 function s14OptEl(id) {
   return document.querySelector('#s14 .scq-opt[data-id="' + id + '"]');
@@ -2094,7 +2155,7 @@ function s14Select(id) {
   }
   const checkBtn = document.getElementById('s14-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  checkBtn.disabled = (id === s14LastWrong); // retry gate
   checkBtn.onclick = s14Check;
 }
 
@@ -2128,6 +2189,7 @@ function s14Check() {
     optEl.classList.add('correct');
     optEl.classList.remove('selected');
     s14Phase = 'correct';
+    s14LastWrong = null;
     s14Done = true;
     s14LockOptions();
     s14ShowFeedback('correct', true);
@@ -2143,6 +2205,7 @@ function s14Check() {
 
   if (s14Attempts < S14.maxAttempts) {
     s14Phase = 'wrong1';
+    s14LastWrong = s14Selected; // retry gate
     s14ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s14-check');
     checkBtn.textContent = 'צדקתי?';
@@ -2154,6 +2217,7 @@ function s14Check() {
   } else {
     s14OptEl(S14.correctId).classList.add('correct');
     s14Phase = 'wrong-final';
+    s14LastWrong = null;
     s14Done = true;
     s14LockOptions();
     s14ShowFeedback('wrong2', false);
@@ -2198,6 +2262,7 @@ function resetScreenState14() {
   s14Selected = null;
   s14Attempts = 0;
   s14Phase = 'before';
+  s14LastWrong = null;
   s14UnlockOptions();
   document.querySelectorAll('#s14 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
@@ -2255,6 +2320,9 @@ let s15Selected = null;
 let s15Attempts = 0;
 let s15Done = false;
 let s15Phase = 'before';
+/* Retry gate (720 spec; דיווח MOE 23.09.26): התשובה שסומנה שגויה בניסיון
+   שאינו אחרון. "צדקתי?" נעול כל עוד הבחירה הנוכחית זהה לה — השוואה חיה. */
+let s15LastWrong = null;
 
 function s15OptEl(id) {
   return document.querySelector('#s15 .s15-card[data-id="' + id + '"]');
@@ -2277,7 +2345,7 @@ function s15Select(id) {
   }
   const checkBtn = document.getElementById('s15-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  checkBtn.disabled = (id === s15LastWrong); // retry gate
   checkBtn.onclick = s15Check;
 }
 
@@ -2311,6 +2379,7 @@ function s15Check() {
     optEl.classList.add('correct');
     optEl.classList.remove('selected');
     s15Phase = 'correct';
+    s15LastWrong = null;
     s15Done = true;
     s15LockOptions();
     s15ShowFeedback('correct', true);
@@ -2327,6 +2396,7 @@ function s15Check() {
 
   if (s15Attempts < S15.maxAttempts) {
     s15Phase = 'wrong1';
+    s15LastWrong = s15Selected; // retry gate
     s15ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s15-check');
     checkBtn.textContent = 'צדקתי?';
@@ -2338,6 +2408,7 @@ function s15Check() {
   } else {
     s15OptEl(S15.correctId).classList.add('correct');
     s15Phase = 'wrong-final';
+    s15LastWrong = null;
     s15Done = true;
     s15LockOptions();
     s15ShowFeedback('wrong2', false);
@@ -2383,6 +2454,7 @@ function resetScreenState15() {
   s15Selected = null;
   s15Attempts = 0;
   s15Phase = 'before';
+  s15LastWrong = null;
   s15UnlockOptions();
   document.querySelectorAll('#s15 .s15-card').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
@@ -2510,6 +2582,9 @@ let s17Revealed = false;
 /* resume: נשמר במפורש. אחרי reveal אין ב-DOM דבר שמבדיל בין "פתר נכון"
    לבין "חשף את הפתרון", ואין כאן משתנה phase. */
 let s17Passed = false;
+/* Retry gate (720 spec; דיווח MOE 23.09.26): JSON של ההצבה שסומנה שגויה בניסיון
+   הראשון. "צדקתי?" נעול כל עוד ההצבה הנוכחית זהה לה — השוואה חיה בכל שינוי. */
+let s17LastWrong = null;
 
 function s17AllPlaced() {
   return S17_ITEM_IDS.every(function (id) {
@@ -2519,7 +2594,8 @@ function s17AllPlaced() {
 }
 
 function s17UpdateCheckBtn() {
-  document.getElementById('s17-check').disabled = !s17AllPlaced();
+  document.getElementById('s17-check').disabled = !s17AllPlaced() ||
+    JSON.stringify(s17SnapshotPlacement()) === s17LastWrong; // retry gate
 }
 
 function s17ClearZoneStates() {
@@ -2704,6 +2780,7 @@ function s17Check() {
   if (allCorrect) {
     s17Done = true;
     s17Passed = true;
+    s17LastWrong = null;
     s17ShowFeedback('correct', true);
     checkBtn.textContent = 'המשך';
     checkBtn.disabled = false;
@@ -2715,6 +2792,7 @@ function s17Check() {
   } else if (s17Attempts >= 2) {
     s17Done = true;
     s17Passed = false;
+    s17LastWrong = null;
     s17AnswerSnapshot = s17SnapshotPlacement(); // לפני כל reveal
     s17Revealed = false;
     s17ShowFeedback('pending', false);
@@ -2729,6 +2807,7 @@ function s17Check() {
     updateQuestionNavB('s17');
   } else {
     s17ShowFeedback('wrong1', false);
+    s17LastWrong = JSON.stringify(s17SnapshotPlacement()); // retry gate
     checkBtn.disabled = true;
     if (!s17HintShown) {
       s17HintShown = true;
@@ -2765,6 +2844,7 @@ function resetScreenState17() {
 
   s17Attempts = 0;
   s17HintShown = false;
+  s17LastWrong = null;
   s17DragId = null;
   s17AnswerSnapshot = null;
   s17Revealed = false;
@@ -2841,6 +2921,9 @@ let s19Selected = null;
 let s19Attempts = 0;
 let s19Done = false;
 let s19Phase = 'before';
+/* Retry gate (720 spec; דיווח MOE 23.09.26): התשובה שסומנה שגויה בניסיון
+   שאינו אחרון. "צדקתי?" נעול כל עוד הבחירה הנוכחית זהה לה — השוואה חיה. */
+let s19LastWrong = null;
 
 function s19OptEl(id) {
   return document.querySelector('#s19 .scq-opt[data-id="' + id + '"]');
@@ -2863,7 +2946,7 @@ function s19Select(id) {
   }
   const checkBtn = document.getElementById('s19-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  checkBtn.disabled = (id === s19LastWrong); // retry gate
   checkBtn.onclick = s19Check;
 }
 
@@ -2897,6 +2980,7 @@ function s19Check() {
     optEl.classList.add('correct');
     optEl.classList.remove('selected');
     s19Phase = 'correct';
+    s19LastWrong = null;
     s19Done = true;
     s19LockOptions();
     s19ShowFeedback('correct', true);
@@ -2914,6 +2998,7 @@ function s19Check() {
 
   if (s19Attempts < S19.maxAttempts) {
     s19Phase = 'wrong1';
+    s19LastWrong = s19Selected; // retry gate
     s19ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s19-check');
     checkBtn.textContent = 'צדקתי?';
@@ -2925,6 +3010,7 @@ function s19Check() {
   } else {
     s19OptEl(S19.correctId).classList.add('correct');
     s19Phase = 'wrong-final';
+    s19LastWrong = null;
     s19Done = true;
     s19LockOptions();
     s19ShowFeedback('wrong2', false);
@@ -2971,6 +3057,7 @@ function resetScreenState19() {
   s19Selected = null;
   s19Attempts = 0;
   s19Phase = 'before';
+  s19LastWrong = null;
   s19UnlockOptions();
   document.querySelectorAll('#s19 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
@@ -3037,6 +3124,9 @@ let s21Selected = null;
 let s21Attempts = 0;
 let s21Done = false;
 let s21Phase = 'before';
+/* Retry gate (720 spec; דיווח MOE 23.09.26): התשובה שסומנה שגויה בניסיון
+   שאינו אחרון. "צדקתי?" נעול כל עוד הבחירה הנוכחית זהה לה — השוואה חיה. */
+let s21LastWrong = null;
 
 function s21OptEl(id) {
   return document.querySelector('#s21 .scq-opt[data-id="' + id + '"]');
@@ -3059,7 +3149,7 @@ function s21Select(id) {
   }
   const checkBtn = document.getElementById('s21-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  checkBtn.disabled = (id === s21LastWrong); // retry gate
   checkBtn.onclick = s21Check;
 }
 
@@ -3093,6 +3183,7 @@ function s21Check() {
     optEl.classList.add('correct');
     optEl.classList.remove('selected');
     s21Phase = 'correct';
+    s21LastWrong = null;
     s21Done = true;
     s21LockOptions();
     s21ShowFeedback('correct', true);
@@ -3113,6 +3204,7 @@ function s21Check() {
 
   if (s21Attempts < S21.maxAttempts) {
     s21Phase = 'wrong1';
+    s21LastWrong = s21Selected; // retry gate
     s21ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s21-check');
     checkBtn.textContent = 'צדקתי?';
@@ -3124,6 +3216,7 @@ function s21Check() {
   } else {
     s21OptEl(S21.correctId).classList.add('correct');
     s21Phase = 'wrong-final';
+    s21LastWrong = null;
     s21Done = true;
     s21LockOptions();
     s21ShowFeedback('wrong2', false);
@@ -3173,6 +3266,7 @@ function resetScreenState21() {
   s21Selected = null;
   s21Attempts = 0;
   s21Phase = 'before';
+  s21LastWrong = null;
   s21UnlockOptions();
   document.querySelectorAll('#s21 .scq-opt').forEach(function (el) {
     el.classList.remove('selected', 'wrong', 'correct');
@@ -3345,24 +3439,25 @@ function capturePartPayload() {
   /* מסכים 5/6 — קלט מספרי עם מתג חשיפה. שלושת הערכים יחד:
      vals = מה שמוצג עכשיו (אולי הפתרון), snap = תשובת הלומד,
      revealed = מי מהם על המסך. */
-  st.viq = { att: {}, done: {}, snap: {}, revealed: {}, vals: {} };
+  st.viq = { att: {}, done: {}, snap: {}, revealed: {}, vals: {}, lw: {} };
   [5, 6].forEach(function (n) {
     st.viq.att[n] = viqAttempts[n] || 0;
     st.viq.done[n] = !!viqDone[n];
     st.viq.snap[n] = (typeof viqAnswerSnapshot[n] === 'string') ? viqAnswerSnapshot[n] : null;
     st.viq.revealed[n] = !!viqRevealed[n];
+    st.viq.lw[n] = viqLastWrong[n] || null;
     var cfg = VIQ_SCREENS[n];
     var el = cfg && document.getElementById(cfg.inputId);
     st.viq.vals[n] = el ? el.value : '';
   });
 
   st.scq = {
-    s8:  { sel: s8Selected,  att: s8Attempts,  done: s8Done,  phase: s8Phase  },
+    s8:  { sel: s8Selected,  att: s8Attempts,  done: s8Done,  phase: s8Phase,  lw: s8LastWrong },
     s10: { sel: s10Selected, att: s10Attempts, done: s10Done, phase: s10Phase },
-    s14: { sel: s14Selected, att: s14Attempts, done: s14Done, phase: s14Phase },
-    s15: { sel: s15Selected, att: s15Attempts, done: s15Done, phase: s15Phase },
-    s19: { sel: s19Selected, att: s19Attempts, done: s19Done, phase: s19Phase },
-    s21: { sel: s21Selected, att: s21Attempts, done: s21Done, phase: s21Phase }
+    s14: { sel: s14Selected, att: s14Attempts, done: s14Done, phase: s14Phase, lw: s14LastWrong },
+    s15: { sel: s15Selected, att: s15Attempts, done: s15Done, phase: s15Phase, lw: s15LastWrong },
+    s19: { sel: s19Selected, att: s19Attempts, done: s19Done, phase: s19Phase, lw: s19LastWrong },
+    s21: { sel: s21Selected, att: s21Attempts, done: s21Done, phase: s21Phase, lw: s21LastWrong }
   };
 
   st.dq11 = dq11.getState();
@@ -3374,7 +3469,7 @@ function capturePartPayload() {
     place: s17SnapshotPlacement(),
     snap: s17AnswerSnapshot ? Object.assign({}, s17AnswerSnapshot) : null,
     revealed: s17Revealed, done: s17Done, att: s17Attempts,
-    hint: s17HintShown, passed: s17Passed
+    hint: s17HintShown, passed: s17Passed, lw: s17LastWrong
   };
   /* s17DragId לא נשמר במכוון: scratch של גרירה חיה, null בין גרירות, וערך
      ישן היה גורם ל-s17Drop לפעול על פריט רפאים. */
@@ -3398,16 +3493,17 @@ function applyResumeVars(st) {
     viqDone[n] = !!(st.viq.done && st.viq.done[n]);
     viqAnswerSnapshot[n] = (st.viq.snap && typeof st.viq.snap[n] === 'string') ? st.viq.snap[n] : null;
     viqRevealed[n] = !!(st.viq.revealed && st.viq.revealed[n]);
+    viqLastWrong[n] = (st.viq.lw && st.viq.lw[n]) || null;
   });
 
   if (st.scq) {
     var S = st.scq;
-    if (S.s8)  { s8Selected  = S.s8.sel  || null; s8Attempts  = S.s8.att  || 0; s8Done  = !!S.s8.done;  s8Phase  = S.s8.phase  || 'before'; }
+    if (S.s8)  { s8Selected  = S.s8.sel  || null; s8Attempts  = S.s8.att  || 0; s8Done  = !!S.s8.done;  s8Phase  = S.s8.phase  || 'before'; s8LastWrong = S.s8.lw || null; }
     if (S.s10) { s10Selected = S.s10.sel || null; s10Attempts = S.s10.att || 0; s10Done = !!S.s10.done; s10Phase = S.s10.phase || 'before'; }
-    if (S.s14) { s14Selected = S.s14.sel || null; s14Attempts = S.s14.att || 0; s14Done = !!S.s14.done; s14Phase = S.s14.phase || 'before'; }
-    if (S.s15) { s15Selected = S.s15.sel || null; s15Attempts = S.s15.att || 0; s15Done = !!S.s15.done; s15Phase = S.s15.phase || 'before'; }
-    if (S.s19) { s19Selected = S.s19.sel || null; s19Attempts = S.s19.att || 0; s19Done = !!S.s19.done; s19Phase = S.s19.phase || 'before'; }
-    if (S.s21) { s21Selected = S.s21.sel || null; s21Attempts = S.s21.att || 0; s21Done = !!S.s21.done; s21Phase = S.s21.phase || 'before'; }
+    if (S.s14) { s14Selected = S.s14.sel || null; s14Attempts = S.s14.att || 0; s14Done = !!S.s14.done; s14Phase = S.s14.phase || 'before'; s14LastWrong = S.s14.lw || null; }
+    if (S.s15) { s15Selected = S.s15.sel || null; s15Attempts = S.s15.att || 0; s15Done = !!S.s15.done; s15Phase = S.s15.phase || 'before'; s15LastWrong = S.s15.lw || null; }
+    if (S.s19) { s19Selected = S.s19.sel || null; s19Attempts = S.s19.att || 0; s19Done = !!S.s19.done; s19Phase = S.s19.phase || 'before'; s19LastWrong = S.s19.lw || null; }
+    if (S.s21) { s21Selected = S.s21.sel || null; s21Attempts = S.s21.att || 0; s21Done = !!S.s21.done; s21Phase = S.s21.phase || 'before'; s21LastWrong = S.s21.lw || null; }
   }
 
   /* ⚠️ לפני goTo: reset() של הפקטורי בודק hasProgress מתוך placement/attempts,
@@ -3422,6 +3518,9 @@ function applyResumeVars(st) {
     s17Revealed = !!st.s17.revealed;
     s17AnswerSnapshot = st.s17.snap ? Object.assign({}, st.s17.snap) : null;
     s17Passed = !!st.s17.passed;
+    /* מסמך ישן בלי lw (נשמר לפני תיקון ה-retry gate): גוזרים מהתשובה השמורה, כדי
+       שהכפתור לא ייפתח על אותה תשובה שגויה. */
+    s17LastWrong = st.s17.lw || ((s17Attempts > 0 && !s17Done && st.s17.place) ? JSON.stringify(st.s17.place) : null);
     s17DragId = null;
     __s17Place = st.s17.place || null;
   }
@@ -3471,25 +3570,25 @@ function restoreScreenUI(n) {
     if (n === 7) resetScreenState7();
     if (n === 5) restoreViqUI(5);
     if (n === 6) restoreViqUI(6);
-    if (n === 8)  restoreScqUI({ cfg: S8,  selected: s8Selected,  attempts: s8Attempts,  done: s8Done,  phase: s8Phase,
+    if (n === 8)  restoreScqUI({ cfg: S8,  selected: s8Selected,  attempts: s8Attempts,  done: s8Done,  phase: s8Phase, lastWrong: s8LastWrong,
       optEl: s8OptEl,  lock: s8LockOptions,  showFeedback: s8ShowFeedback,  setBarDone: s8SetBarDone,  check: s8Check,
       checkBtnId: 's8-check',  hintBtnId: 's8-hint',  onContinue: function () { goTo(9); } });
     if (n === 10) restoreScqUI({ cfg: S10, selected: s10Selected, attempts: s10Attempts, done: s10Done, phase: s10Phase,
       optEl: s10OptEl, lock: s10LockOptions, showFeedback: s10ShowFeedback, setBarDone: s10SetBarDone, check: s10Check,
       checkBtnId: 's10-check', hintBtnId: 's10-hint', onContinue: function () { goTo(11); } });
     if (n === 11) dq11.restoreUI();
-    if (n === 14) restoreScqUI({ cfg: S14, selected: s14Selected, attempts: s14Attempts, done: s14Done, phase: s14Phase,
+    if (n === 14) restoreScqUI({ cfg: S14, selected: s14Selected, attempts: s14Attempts, done: s14Done, phase: s14Phase, lastWrong: s14LastWrong,
       optEl: s14OptEl, lock: s14LockOptions, showFeedback: s14ShowFeedback, setBarDone: s14SetBarDone, check: s14Check,
       checkBtnId: 's14-check', hintBtnId: 's14-hint', onContinue: function () { goTo(15); } });
-    if (n === 15) restoreScqUI({ cfg: S15, selected: s15Selected, attempts: s15Attempts, done: s15Done, phase: s15Phase,
+    if (n === 15) restoreScqUI({ cfg: S15, selected: s15Selected, attempts: s15Attempts, done: s15Done, phase: s15Phase, lastWrong: s15LastWrong,
       optEl: s15OptEl, lock: s15LockOptions, showFeedback: s15ShowFeedback, setBarDone: s15SetBarDone, check: s15Check,
       checkBtnId: 's15-check', hintBtnId: 's15-hint', onContinue: function () { goTo(16); } });
     if (n === 16) dq16.restoreUI();
     if (n === 17) restoreS17UI();
-    if (n === 19) restoreScqUI({ cfg: S19, selected: s19Selected, attempts: s19Attempts, done: s19Done, phase: s19Phase,
+    if (n === 19) restoreScqUI({ cfg: S19, selected: s19Selected, attempts: s19Attempts, done: s19Done, phase: s19Phase, lastWrong: s19LastWrong,
       optEl: s19OptEl, lock: s19LockOptions, showFeedback: s19ShowFeedback, setBarDone: s19SetBarDone, check: s19Check,
       checkBtnId: 's19-check', hintBtnId: 's19-hint', onContinue: function () { goTo(20); } });
-    if (n === 21) restoreScqUI({ cfg: S21, selected: s21Selected, attempts: s21Attempts, done: s21Done, phase: s21Phase,
+    if (n === 21) restoreScqUI({ cfg: S21, selected: s21Selected, attempts: s21Attempts, done: s21Done, phase: s21Phase, lastWrong: s21LastWrong,
       optEl: s21OptEl, lock: s21LockOptions, showFeedback: s21ShowFeedback, setBarDone: s21SetBarDone, check: s21Check,
       checkBtnId: 's21-check', hintBtnId: 's21-hint', onContinue: s21Finish });
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
@@ -3529,7 +3628,9 @@ function restoreScqUI(o) {
   }
   var selEl = o.optEl(o.selected);
   if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
-  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = !o.selected; }
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check;
+    /* Retry gate: בלי זה ה-repaint בכל goTo היה משחרר את התשובה השגויה עצמה. */
+    checkBtn.disabled = !o.selected || o.selected === o.lastWrong; }
 }
 
 /* מסכים 5/6 — קלט מספרי עם מתג חשיפה. צייר אחד, נבדל רק ב-VIQ_SCREENS[n]. */
@@ -3570,8 +3671,9 @@ function restoreViqUI(n) {
   input.classList.add('error');
   fb.classList.remove('collapsed', 'is-correct');
   fb.classList.add('is-wrong', 'visible');
-  /* אותו פרדיקט שבו viqOnInput משתמש — בלעדיו הכפתור היה מושבת לנצח. */
-  if (btn) btn.disabled = !input.value.trim();
+  /* אותו פרדיקט שבו viqOnInput משתמש (כולל ה-retry gate) — בלעדיו הכפתור
+     היה מושבת לנצח, או משוחרר על הערך השגוי עצמו. */
+  if (btn) btn.disabled = !input.value.trim() || viqSig(input.value) === viqLastWrong[n];
 }
 
 /* מסך 17 — גרירה בכתב יד. ההצבה עצמה כבר הוחזרה ב-applyResumeDom. */
@@ -3595,7 +3697,7 @@ function restoreS17UI() {
 
   s17ShowFeedback('wrong1', false);
   if (s17HintShown && hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
-  /* אותו פרדיקט שבו s17Drop/s17ItemClick משתמשים. */
+  /* אותו פרדיקט שבו s17Drop/s17ItemClick משתמשים (כולל ה-retry gate). */
   s17UpdateCheckBtn();
 }
 

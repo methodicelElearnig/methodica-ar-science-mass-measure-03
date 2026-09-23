@@ -511,6 +511,9 @@ const S2 = {
 
 let s2Selected = null;
 let s2Attempts = 0;
+/* Retry gate (720 spec; דיווח MOE 23.09.26): מזהה התשובה שסומנה שגויה בניסיון
+   הלא-סופי האחרון. "צדקתי?" מושבת כל עוד הבחירה הנוכחית זהה לה. */
+let s2LastWrong = null;
 let s2Done = false;
 let s2Phase = 'before';
 
@@ -531,7 +534,8 @@ function s2Select(id) {
   if (wasWrong1) document.getElementById('s2-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s2-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  /* Retry gate: חזרה לתשובה שזה עתה סומנה שגויה → מושבת. */
+  checkBtn.disabled = (s2Selected === s2LastWrong);
   checkBtn.onclick = s2Check;
 }
 
@@ -566,6 +570,7 @@ function s2Check() {
     optEl.classList.remove('selected');
     s2Phase = 'correct';
     s2Done = true;
+    s2LastWrong = null;
     s2LockOptions();
     s2ShowFeedback('correct', true);
     saveMoedAResult(2, true);
@@ -579,6 +584,7 @@ function s2Check() {
 
   if (s2Attempts < S2.maxAttempts) {
     s2Phase = 'wrong1';
+    s2LastWrong = s2Selected; // Retry gate (720 spec; דיווח MOE 23.09.26)
     s2ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s2-check');
     checkBtn.textContent = 'צדקתי?';
@@ -591,6 +597,7 @@ function s2Check() {
     s2OptEl(S2.correctId).classList.add('correct');
     s2Phase = 'wrong-final';
     s2Done = true;
+    s2LastWrong = null;
     s2LockOptions();
     s2ShowFeedback('wrong2', false);
     saveMoedAResult(2, false);
@@ -627,6 +634,7 @@ function resetScreenState2() {
   if (s2Done || s2Attempts > 0 || s2Selected) return; // resume-state guard
   s2Selected = null;
   s2Attempts = 0;
+  s2LastWrong = null; // איפוס טרי בלבד — כניסה חוזרת לשאלה פתוחה נעצרת בגארד למעלה
   s2Phase = 'before';
   s2UnlockOptions();
   document.querySelectorAll('#s2 .scq-opt').forEach(function (el) {
@@ -670,6 +678,9 @@ const S3 = {
 
 let s3Selected = null;
 let s3Attempts = 0;
+/* Retry gate (720 spec; דיווח MOE 23.09.26): מזהה התשובה שסומנה שגויה בניסיון
+   הלא-סופי האחרון. "צדקתי?" מושבת כל עוד הבחירה הנוכחית זהה לה. */
+let s3LastWrong = null;
 let s3Done = false;
 let s3Phase = 'before';
 
@@ -690,7 +701,8 @@ function s3Select(id) {
   if (wasWrong1) document.getElementById('s3-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s3-check');
   checkBtn.textContent = 'צדקתי?';
-  checkBtn.disabled = false;
+  /* Retry gate: חזרה לתשובה שזה עתה סומנה שגויה → מושבת. */
+  checkBtn.disabled = (s3Selected === s3LastWrong);
   checkBtn.onclick = s3Check;
 }
 
@@ -728,6 +740,7 @@ function s3Check() {
     optEl.classList.remove('selected');
     s3Phase = 'correct';
     s3Done = true;
+    s3LastWrong = null;
     s3LockOptions();
     s3ShowFeedback('correct', true);
     saveMoedAResult(3, true);
@@ -741,6 +754,7 @@ function s3Check() {
 
   if (s3Attempts < S3.maxAttempts) {
     s3Phase = 'wrong1';
+    s3LastWrong = s3Selected; // Retry gate (720 spec; דיווח MOE 23.09.26)
     s3ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s3-check');
     checkBtn.textContent = 'צדקתי?';
@@ -753,6 +767,7 @@ function s3Check() {
     s3OptEl(S3.correctId).classList.add('correct');
     s3Phase = 'wrong-final';
     s3Done = true;
+    s3LastWrong = null;
     s3LockOptions();
     s3ShowFeedback('wrong2', false);
     saveMoedAResult(3, false);
@@ -789,6 +804,7 @@ function resetScreenState3() {
   if (s3Done || s3Attempts > 0 || s3Selected) return; // resume-state guard
   s3Selected = null;
   s3Attempts = 0;
+  s3LastWrong = null; // איפוס טרי בלבד — כניסה חוזרת לשאלה פתוחה נעצרת בגארד למעלה
   s3Phase = 'before';
   s3UnlockOptions();
   document.querySelectorAll('#s3 .scq-opt').forEach(function (el) {
@@ -935,12 +951,25 @@ function makeDragQuestion(cfg) {
   let dropHandled = false;
   let checked = false;
   let attempts = 0;
+  /* Retry gate (720 spec; דיווח MOE 23.09.26): חתימת התשובה שסומנה שגויה בניסיון
+     הלא-סופי האחרון. "צדקתי?" מושבת כל עוד החתימה הנוכחית זהה לה. */
+  let lastWrong = null;
   let done = false;
   let answerSnapshot = null; // הפלייסמנט של הלומד ברגע הניסיון האחרון הכושל, לפני revealCorrect()
   let revealed = false;
   /* resume: ⚠️ נשמר במפורש ואינו נגזר בדיעבד מ-placement — revealCorrect()
      דורס אותו בפתרון הנכון, ומאותו רגע הלוח "נראה" נכון תמיד. */
   let passed = false;
+
+  /* חתימת התשובה: יעד → תווית. כרטיסים בעלי אותה תווית שקולים (כמו ב-check()),
+     ולכן החלפה ביניהם אינה נחשבת תשובה חדשה. משמשת גם כמחרוזת ה-xAPI. */
+  function sig() {
+    return targetIds.map(function (tId) {
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
+    }).join(' | ');
+  }
 
   function render() {
     dragIds.forEach(function (dragId) {
@@ -994,7 +1023,8 @@ function makeDragQuestion(cfg) {
       return dragIds.some(function (dId) { return placement[dId] === tId; });
     });
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn && !done) btn.disabled = !allFilled;
+    /* Retry gate: השוואה חיה בכל שינוי — חזרה לתשובה השגויה משביתה שוב. */
+    if (btn && !done) btn.disabled = !allFilled || sig() === lastWrong;
   }
 
   function dragStart(e, dragId) {
@@ -1149,11 +1179,7 @@ function makeDragQuestion(cfg) {
        ⚠️ xapiZoneAnswer לא מתאים: העוזר בונה מזהי אזור בתבנית
        <prefix>-zone-<id>, בעוד היעדים כאן הם s4-target-N. */
     if (cfg.xapiItem) {
-      const _ans = targetIds.map(function (tId) {
-        let placed = null;
-        dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
-        return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
-      }).join(' | ');
+      const _ans = sig();
       (cfg.xapiQuestions || ['q1']).forEach(function (q) {
         xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
       });
@@ -1163,6 +1189,7 @@ function makeDragQuestion(cfg) {
     if (allCorrect) {
       done = true;
       passed = true;
+      lastWrong = null;
       saveResult(true);
       showFeedback('correct');
       if (cfg.onResult) cfg.onResult('success');
@@ -1170,6 +1197,7 @@ function makeDragQuestion(cfg) {
     } else if (attempts >= maxAttempts) {
       done = true;
       passed = false;
+      lastWrong = null;
       saveResult(false);
       if (cfg.revealBtnId) {
         answerSnapshot = Object.assign({}, placement); // לפני כל reveal
@@ -1186,6 +1214,7 @@ function makeDragQuestion(cfg) {
     } else {
       showFeedback('wrong1');
       checked = false;
+      lastWrong = sig(); // Retry gate (720 spec; דיווח MOE 23.09.26) — לפני render(), כדי שהכפתור יושבת
       render();
       const hintBtn = cfg.hintBtnId ? document.getElementById(cfg.hintBtnId) : null;
       if (hintBtn) hintBtn.hidden = false;
@@ -1234,6 +1263,7 @@ function makeDragQuestion(cfg) {
 
   function resetInitial() {
     done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
+    lastWrong = null; // איפוס טרי בלבד — reset() לא מגיע לכאן כשיש התקדמות
     answerSnapshot = null; revealed = false; passed = false;
     shuffleWordBank();
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
@@ -1299,6 +1329,7 @@ function makeDragQuestion(cfg) {
     return {
       placement: Object.assign({}, placement),
       attempts: attempts, done: done, checked: checked, passed: passed, revealed: revealed,
+      lw: lastWrong,
       answerSnapshot: answerSnapshot ? Object.assign({}, answerSnapshot) : null,
       /* resetInitial() מערבב מחדש את מאגר המילים, ולכן בלי שמירת הסדר
          הלומד היה חוזר ללוח מסודר אחרת. */
@@ -1310,6 +1341,9 @@ function makeDragQuestion(cfg) {
     if (!s) return;
     if (s.placement) dragIds.forEach(function (id) { placement[id] = s.placement[id] || 'source'; });
     attempts = s.attempts || 0;
+    /* מסמך ישן בלי lw (נשמר לפני תיקון ה-retry gate): גוזרים מהתשובה השמורה, כדי
+       שהכפתור לא ייפתח על אותה תשובה שגויה. */
+    lastWrong = s.lw || ((attempts > 0 && !s.done) ? sig() : null);
     done = !!s.done; checked = !!s.checked; passed = !!s.passed; revealed = !!s.revealed;
     answerSnapshot = s.answerSnapshot ? Object.assign({}, s.answerSnapshot) : null;
     if (s.bankOrder && cfg.wordBankId) {
@@ -1353,7 +1387,12 @@ function makeDragQuestion(cfg) {
       if (hintBtn) hintBtn.hidden = false;
     }
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+    /* Retry gate: render() כבר חישב את המצב (השער חי שם), אבל הכתיבה המפורשת
+       כאן רצה אחריו — ולכן גם היא עוברת דרך השער ולא נועלת לומד ששינה תשובה. */
+    const allFilled = targetIds.every(function (tId) {
+      return dragIds.some(function (dId) { return placement[dId] === tId; });
+    });
+    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = !allFilled || sig() === lastWrong; btn.onclick = check; }
   }
 
   return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
@@ -1604,8 +1643,8 @@ function capturePartPayload() {
   st.s1.sim = s1Sim.getState ? s1Sim.getState() : null;
 
   st.scq = {
-    s2: { sel: s2Selected, att: s2Attempts, done: s2Done, phase: s2Phase },
-    s3: { sel: s3Selected, att: s3Attempts, done: s3Done, phase: s3Phase }
+    s2: { sel: s2Selected, att: s2Attempts, done: s2Done, phase: s2Phase, lw: s2LastWrong },
+    s3: { sel: s3Selected, att: s3Attempts, done: s3Done, phase: s3Phase, lw: s3LastWrong }
   };
   st.dqG = dqSectionG.getState();
   return st;
@@ -1620,8 +1659,8 @@ function applyResumeVars(st) {
     if (st.s1.sim && s1Sim.setState) s1Sim.setState(st.s1.sim);
   }
   if (st.scq) {
-    if (st.scq.s2) { s2Selected = st.scq.s2.sel || null; s2Attempts = st.scq.s2.att || 0; s2Done = !!st.scq.s2.done; s2Phase = st.scq.s2.phase || 'before'; }
-    if (st.scq.s3) { s3Selected = st.scq.s3.sel || null; s3Attempts = st.scq.s3.att || 0; s3Done = !!st.scq.s3.done; s3Phase = st.scq.s3.phase || 'before'; }
+    if (st.scq.s2) { s2Selected = st.scq.s2.sel || null; s2Attempts = st.scq.s2.att || 0; s2Done = !!st.scq.s2.done; s2Phase = st.scq.s2.phase || 'before'; s2LastWrong = st.scq.s2.lw || null; }
+    if (st.scq.s3) { s3Selected = st.scq.s3.sel || null; s3Attempts = st.scq.s3.att || 0; s3Done = !!st.scq.s3.done; s3Phase = st.scq.s3.phase || 'before'; s3LastWrong = st.scq.s3.lw || null; }
   }
   if (st.dqG) dqSectionG.setState(st.dqG);
   /* הערכים של הטבלה נשמרים כאן ומוחלים ב-s1RestoreUI: אי אפשר לכתוב
@@ -1638,10 +1677,12 @@ function restoreScreenUI(n) {
   try {
     if (n === 1) s1RestoreUI();
     if (n === 2) restoreScqUI({ screenSel: '#s2', cfg: S2, selected: s2Selected, attempts: s2Attempts,
+      lastWrong: s2LastWrong,
       done: s2Done, phase: s2Phase, optEl: s2OptEl, lock: s2LockOptions, showFeedback: s2ShowFeedback,
       setBarDone: s2SetBarDone, check: s2Check, checkBtnId: 's2-check', hintBtnId: 's2-hint',
       onContinue: function () { goTo(3); } });
     if (n === 3) restoreScqUI({ screenSel: '#s3', cfg: S3, selected: s3Selected, attempts: s3Attempts,
+      lastWrong: s3LastWrong,
       done: s3Done, phase: s3Phase, optEl: s3OptEl, lock: s3LockOptions, showFeedback: s3ShowFeedback,
       /* ⚠️ s3SetBarDone מקבל ארגומנט אחד בלבד (היעד שלו קבוע), בניגוד לכל
          שאר sNSetBarDone בפרויקט — מתאם, אחרת המטפל היה נבלע. */
@@ -1683,7 +1724,10 @@ function restoreScqUI(o) {
   }
   var selEl = o.optEl(o.selected);
   if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
-  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = !o.selected; }
+  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check;
+    /* Retry gate (720 spec; דיווח MOE 23.09.26): הצייר רץ בכל goTo — בלי השער
+       הזה חזרה למסך הייתה משחררת את התשובה השגויה לניסיון שני. */
+    checkBtn.disabled = !o.selected || o.selected === o.lastWrong; }
 }
 
 /* מסך 1 — בונה מחדש את טבלת השקילה וממלא את הערכים שהוקלדו.
