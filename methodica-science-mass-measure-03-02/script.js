@@ -1942,9 +1942,13 @@ function restoreS7UI() {
     return;
   }
 
-  /* ניסיון שגוי שאינו אחרון. */
-  input.classList.add('error');
-  s7ShowFeedback('wrong1', false);
+  /* ניסיון שגוי שאינו אחרון. המסגרת האדומה והמשוב רק כשהערך בשדה הוא עדיין זה
+     שהוגש — s7OnInput מסיר אותם בהקלדה, וערך חדש לא צריך לחזור מסומן כשגוי
+     (בדיקת QA, 23.09.26). s7LastWrong חסר = מסמך ישן — ההתנהגות הקודמת. */
+  if (s7LastWrong == null || s7Sig(input.value) === s7LastWrong) {
+    input.classList.add('error');
+    s7ShowFeedback('wrong1', false);
+  }
   var hintBtn = document.getElementById('s7-hint');
   if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
   /* אותו פרדיקט שבו s7OnInput משתמש — בלעדיו הכפתור היה מושבת לנצח.

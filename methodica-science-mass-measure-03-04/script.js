@@ -1084,12 +1084,30 @@ function restoreTfTableUI() {
     return;
   }
 
+  /* אחרי ניסיון שגוי, הסימון והמשוב מצוירים רק כשהטבלה היא עדיין זו שהוגשה.
+     שינוי שורה בזמן אמת מנקה את כל הסימונים (s3Select), ולכן טבלה ששונתה חוזרת
+     כבחירה רגילה — אחרת יציאה וחזרה "בדקה" שורות שלא הוגשו (בדיקת QA, 23.09.26). */
+  var showMarks = s3Attempts > 0 && (s3LastWrong == null || s3Sig() === s3LastWrong);
+  /* הצייר רץ בכל goTo, ולכן מתחיל מלוח נקי — סימון שנשאר מציור קודם היה נשאר
+     גם על שורה ששונתה. ו-s3Phase חוזר ל-'wrong1' כשהסימונים מצוירים: לפיו
+     s3Select יודע לנקות אותם בשינוי הבא, בדיוק כמו אחרי s3Check. */
+  [1, 2, 3, 4].forEach(function (n) {
+    var row = document.getElementById('s3-row-' + n);
+    if (row) row.classList.remove('row-wrong');
+    ['true', 'false'].forEach(function (v) {
+      var b = document.getElementById('s3-r' + n + '-' + v);
+      if (b) b.classList.remove('btn-correct', 'btn-wrong', 'selected');
+    });
+  });
+  if (!showMarks) document.getElementById('s3-feedbox').classList.remove('visible');
+  if (s3Attempts > 0) s3Phase = showMarks ? 'wrong1' : 'before';
   [1, 2, 3, 4].forEach(function (rowNum) {
     var r = 'r' + rowNum;
     var val = s3Selected[r];
     if (!val) return;
     var btn = document.getElementById('s3-r' + rowNum + '-' + val);
-    if (s3Attempts === 0) { if (btn) btn.classList.add('selected'); return; }
+    if (btn) btn.classList.add('selected');
+    if (!showMarks) return;
     /* אחרי ניסיון שגוי: אותה לולאה בדיוק כמו ב-s3Check. */
     if (val === TF_S3_CORRECT[r]) {
       if (btn) btn.classList.add('btn-correct');
@@ -1101,7 +1119,7 @@ function restoreTfTableUI() {
   });
 
   if (s3Attempts > 0) {
-    s3ShowFeedback('wrong1', false);
+    if (showMarks) s3ShowFeedback('wrong1', false);
     var hintBtn = document.getElementById('s3-hint');
     if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
   }

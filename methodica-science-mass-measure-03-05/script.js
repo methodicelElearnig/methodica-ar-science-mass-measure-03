@@ -1363,13 +1363,25 @@ function makeDragQuestion(cfg) {
        placement **וגם** מערבב מחדש את המאגר — בכל ניווט, לא רק בשחזור. */
     if (!done && attempts === 0) { hideFeedback(); render(); return; }
 
+    /* אחרי ניסיון שגוי שאינו אחרון, מסמנים רק אזור שעדיין מחזיק את מה שהוגש בו
+       (לפי lastWrong) — כמו בזמן אמת, שבו drop מנקה את סימון האזור שנגעו בו.
+       קודם כל אזור סומן לפי ההצבה הנוכחית, כך שיציאה וחזרה למסך "בדקה" לוח שלא
+       הוגש ודלפה את התשובה בלי לבזבז ניסיון (בדיקת QA, 23.09.26). */
+    const submitted = {};
+    if (!done && lastWrong) lastWrong.split(' | ').forEach(function (part) {
+      const i = part.indexOf('=');
+      if (i > 0) submitted[part.slice(0, i)] = part.slice(i + 1);
+    });
     targetIds.forEach(function (tId) {
       const valid = correctMap[tId];
       let placed = null;
       dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
       const ok = (placed === valid) || (placed && labels[placed] === labels[valid]);
       const zone = document.getElementById(tId);
-      if (zone) { zone.classList.remove('correct', 'wrong'); zone.classList.add(ok ? 'correct' : 'wrong'); }
+      if (!zone) return;
+      zone.classList.remove('correct', 'wrong');
+      if (!done && lastWrong && submitted[tId.replace(/^.*-target-/, '')] !== (placed ? labels[placed] : '—')) return;
+      zone.classList.add(ok ? 'correct' : 'wrong');
     });
 
     if (done) {

@@ -76,6 +76,16 @@ function section(title) { console.log('\n' + title); }
    בין dragstart ל-drop. כדי לשחזר את הסדר הזה צריך לתת ללולאת האירועים לרוץ. */
 const tick = () => new Promise((r) => setTimeout(r, 5));
 
+/* סימוני ניסיון שגוי שנשארו על המסך — X, ירוק/אדום, מסגרת שגיאה, משוב גלוי.
+   אחרי שהלומד שינה תשובה, יצא וחזר, אסור שיופיעו על התשובה החדשה (שלא הוגשה):
+   זה אומר לו שתשובה נכונה שגויה, ובגרירה — מדליף את הבדיקה בלי לבזבז ניסיון
+   (בדיקת QA, 23.09.26). מחזיר תיאור של מה שנמצא, או '' כשהמסך נקי. */
+function marksIn(P, sel) {
+  return P.val('(function(){ var r = document.querySelector(' + q(sel) + '); if (!r) return "no " + ' + q(sel) + ';' +
+    ' return [].slice.call(r.querySelectorAll(".wrong, .correct, .btn-wrong, .btn-correct, .row-wrong, .error, [id$=\\"-feedbox\\"].visible"))' +
+    '.map(function (e) { return (e.id || e.getAttribute("data-id") || e.tagName) + "." + [].slice.call(e.classList).join("."); }).join(" ; "); })()');
+}
+
 /* ═══════════════════════════ jsdom ═══════════════════════════
    אותו אתחול כמו statement-flow.js: בלי 50-loader ו-90-boot (שמושכים את ספריית
    ה-CDN ומריצים את האתחול האמיתי), ו-sendStatement720 מוחלף ב-no-op. */
@@ -153,6 +163,7 @@ function scq(c, screen, o) {
     c, name: p + ' (' + (o.kind || 'בחירה יחידה') + ')', screen, away: o.away != null ? o.away : screen - 1,
     btn: o.btn || 's' + screen + '-check', check: p + 'Check()',
     set: async (P, which) => P.run(p + 'Select(' + q(opts(P)[which]) + ');'),
+    stale: (P) => marksIn(P, o.sel || '#s' + screen),
     lw: o.lw, extra: o.extra,
   };
 }
@@ -167,6 +178,7 @@ function tf(c, screen, o) {
       const wrong = correct === 'true' ? 'false' : 'true';
       P.run(p + 'Select(' + q(which === 'wrong' ? wrong : correct) + ');');
     },
+    stale: (P) => marksIn(P, '#' + p),
     lw: o.lw,
   };
 }
@@ -179,6 +191,7 @@ function viq(c, screen, o) {
       const v = which === 'correct' ? String(P.val(o.correct)) : o[which];
       P.run('(function(){ var i = document.getElementById(' + q(o.input) + '); i.value = ' + q(v) + '; ' + o.onInput + '; })();');
     },
+    stale: (P) => marksIn(P, '#s' + screen),
     typeRaw: (P, v) => P.run('(function(){ var i = document.getElementById(' + q(o.input) + '); i.value = ' + q(v) + '; ' + o.onInput + '; })();'),
     lw: o.lw, extra: o.extra,
   };
@@ -191,6 +204,7 @@ function mcq(c, screen, o) {
     c, name: 's' + screen + ' (רב-ברירה)', screen, away: o.away, btn: 's' + screen + '-check', check: 's' + screen + 'Check()',
     set: async (P, which) => P.run('s1Selected.slice().forEach(function (x) { s1Toggle(x); });' +
       q(o[which]) + '.forEach(function (x) { s1Toggle(x); });'),
+    stale: (P) => marksIn(P, '#s' + screen),
     lw: o.lw, extra: o.extra,
   };
 }
@@ -200,6 +214,7 @@ function tfTable(c, screen, o) {
   return {
     c, legacy: true, name: 's' + screen + ' (טבלת נכון/לא נכון)', screen, away: o.away, btn: 's' + screen + '-check', check: 's' + screen + 'Check()',
     set: async (P, which) => o[which].forEach((v, i) => P.run('s' + screen + 'Select(' + (i + 1) + ',' + q(v) + ');')),
+    stale: (P) => marksIn(P, '#s' + screen),
     lw: o.lw,
   };
 }
@@ -238,6 +253,11 @@ function dq(c, screen, o) {
       if (!moved) { const t0 = Object.keys(board)[0]; await move(P, board[t0], t0); }
     },
     move, lw: o.lw, extra: o.extra,
+    stale: (P) => Object.keys(o.other)
+      .filter((t) => label(P, o.other[t]) !== label(P, o.wrong[t]))
+      .map((t) => P.val('(function(){ var z = document.getElementById(' + q(t) + ');' +
+        ' return z && (z.classList.contains("correct") || z.classList.contains("wrong")) ? z.id + "." + z.className : ""; })()'))
+      .filter(Boolean).join(' ; '),
   };
 }
 
@@ -257,6 +277,8 @@ function s17(c) {
       }
     },
     drop,
+    stale: (P) => P.val('[].slice.call(document.querySelectorAll("#s17 [id^=\\"s17-zone-\\"]")).filter(function (z) {' +
+      ' return z.classList.contains("correct") || z.classList.contains("wrong"); }).map(function (z) { return z.id; }).join(" ; ")'),
     lw: (st) => st.s17 && st.s17.lw === q(boards.wrong),
     extra: async (P, Q, scope) => {
       /* ⚠️ בסדר מפתחות של S17_ITEM_IDS — החתימה היא JSON של s17SnapshotPlacement. */
@@ -423,6 +445,10 @@ async function runGate(Q) {
     await Q.set(P, 'other');
     P.run('goTo(' + Q.away + '); goTo(' + Q.screen + ');');
     ok(scope, 'changed answer, goTo away and back -> enabled (no over-locking)', dis() === false);
+    if (Q.stale) {
+      const found = Q.stale(P);
+      ok(scope, 'changed answer, goTo away and back -> no wrong-attempt marks on the unsubmitted answer', !found, found);
+    }
     await Q.set(P, 'wrong');
 
     if (Q.extra) await Q.extra(P, Q, scope, JSON.parse(P.val('JSON.stringify(capturePartPayload())')));

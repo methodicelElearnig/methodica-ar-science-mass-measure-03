@@ -944,13 +944,25 @@ function makeDragQuestion(cfg) {
     if (!done && attempts === 0) { hideFeedback(); render(); return; }
 
     /* סימוני האזורים — אותה לולאה בדיוק כמו ב-check(). */
+    /* אחרי ניסיון שגוי שאינו אחרון, מסמנים רק אזור שעדיין מחזיק את מה שהוגש בו
+       (לפי lastWrong) — כמו בזמן אמת, שבו drop מנקה את סימון האזור שנגעו בו.
+       קודם כל אזור סומן לפי ההצבה הנוכחית, כך שיציאה וחזרה למסך "בדקה" לוח שלא
+       הוגש ודלפה את התשובה בלי לבזבז ניסיון (בדיקת QA, 23.09.26). */
+    const submitted = {};
+    if (!done && lastWrong) lastWrong.split(' | ').forEach(function (part) {
+      const i = part.indexOf('=');
+      if (i > 0) submitted[part.slice(0, i)] = part.slice(i + 1);
+    });
     targetIds.forEach(function (tId) {
       const valid = correctMap[tId];
       let placed = null;
       dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
       const ok = (placed === valid) || (placed && labels[placed] === labels[valid]);
       const zone = document.getElementById(tId);
-      if (zone) { zone.classList.remove('correct', 'wrong'); zone.classList.add(ok ? 'correct' : 'wrong'); }
+      if (!zone) return;
+      zone.classList.remove('correct', 'wrong');
+      if (!done && lastWrong && submitted[tId.replace(/^.*-target-/, '')] !== (placed ? labels[placed] : '—')) return;
+      zone.classList.add(ok ? 'correct' : 'wrong');
     });
 
     if (done) {
@@ -1185,12 +1197,14 @@ function restoreScreenUI(n) {
     if (n === 2) restoreNoPhaseScqUI({
       screenSel: '#s2', correctId: S6A.correctId, selected: s6aSelected,
       attempts: s6aAttempts, done: s6aDone, optEl: s6aOptEl,
-      lock: s6aLockOptions, showFeedback: s6aShowFeedback, sync: s6aSyncBar
+      lock: s6aLockOptions, showFeedback: s6aShowFeedback, sync: s6aSyncBar,
+      lastWrong: s6aLastWrong
     });
     if (n === 3) restoreNoPhaseScqUI({
       screenSel: '#s3', correctId: S6B.correctId, selected: s6bSelected,
       attempts: s6bAttempts, done: s6bDone, optEl: s6bOptEl,
-      lock: s6bLockOptions, showFeedback: s6bShowFeedback, sync: s6bSyncBar
+      lock: s6bLockOptions, showFeedback: s6bShowFeedback, sync: s6bSyncBar,
+      lastWrong: s6bLastWrong
     });
     if (n === 4) dqSectionC.restoreUI();
   } catch (e) { console.error('[resume] restoreScreenUI', e); }
@@ -1215,11 +1229,16 @@ function restoreNoPhaseScqUI(o) {
       o.showFeedback('wrong2', false);
     }
     o.lock();
-  } else if (o.attempts > 0) {
+  } else if (o.attempts > 0 && (o.lastWrong == null || o.selected === o.lastWrong)) {
+    /* רק כשהבחירה היא עדיין זו שסומנה שגויה. לומד שבחר אחרת ויצא חוזר לבחירה
+       רגילה, בלי X ובלי משוב — בדיוק מה שראה (sNSelect מנקה אותם). קודם הבחירה
+       החדשה, גם הנכונה, צוירה כשגויה (בדיקת QA, 23.09.26). lastWrong חסר =
+       מסמך ישן, ואז אין ממה לדעת — ההתנהגות הקודמת. */
     var wEl = o.optEl(o.selected);
     if (wEl) { wEl.classList.add('wrong'); wEl.classList.remove('selected'); }
     o.showFeedback('wrong1', false);
   } else if (o.selected) {
+    /* גם ענף "ניסיון שגוי + בחירה אחרת": הרמז נשאר גלוי דרך o.sync(). */
     var sEl = o.optEl(o.selected);
     if (sEl) { sEl.classList.add('selected'); sEl.setAttribute('aria-checked', 'true'); }
   }
