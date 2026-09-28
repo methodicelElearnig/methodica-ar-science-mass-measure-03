@@ -223,9 +223,9 @@ const S1 = {
   correctId: 'c',
   maxAttempts: 2,
   feedback: {
-    correct: { title: 'נכון.', body: 'הנתונים תומכים בכדורים שנבדקו, אך לא בכלל הייצור.' },
-    wrong1: { title: 'התשובה אינה נכונה.', body: 'לא נורא, גם מטעויות לומדים.\nננסה שוב?' },
-    wrong2: { title: 'התשובה אינה נכונה.\nהתשובה הנכונה מסומנת.', body: 'הנתונים תומכים בכדורים שנבדקו, אך לא בכלל הייצור.' }
+    correct: { title: 'صحيح.', body: 'المعطيات تدعم الاستنتاج بشأن الكرات التي تم فحصها، لكنها لا تنطبق على الإنتاج بأكمله.' },
+    wrong1: { title: 'الإجابة غير صحيحة.', body: 'لا بأس، نتعلّم من الأخطاء أيضًا.\nهل نحاول مرة أخرى؟' },
+    wrong2: { title: 'الإجابة غير صحيحة.\nالإجابة الصحيحة مُشار إليها.', body: 'المعطيات تدعم الاستنتاج بشأن الكرات التي تم فحصها، لكنها لا تنطبق على الإنتاج بأكمله.' }
   }
 };
 
@@ -253,7 +253,7 @@ function s1Select(id) {
   s1Phase = 'selected';
   if (wasWrong1) document.getElementById('s1-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s1-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   /* Retry gate: אותה תשובה שכבר סומנה שגויה אינה ניתנת להגשה שוב. */
   checkBtn.disabled = (s1Selected === s1LastWrong);
   checkBtn.onclick = s1Check;
@@ -297,7 +297,7 @@ function s1Check() {
     s1ShowFeedback('correct', true);
     stationProgress.q1 = 'success';
     updateQuestionNav('s1');
-    s1SetBarDone('המשך', function () { goTo(2); });
+    s1SetBarDone('متابعة', function () { goTo(2); });
     /* resume: סנכרוני, לא debounce — התשובה כבר מחויבת, ולשונית שנסגרת
        לפני הניווט הבא לא תאבד אותה. ⚠️ לפני ה-return, לא אחריו. */
     try { flushResumeSave(); } catch (e) {}
@@ -312,7 +312,7 @@ function s1Check() {
     s1LastWrong = s1Selected; /* Retry gate */
     s1ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s1-check');
-    checkBtn.textContent = 'צדקתי?';
+    checkBtn.textContent = 'هل إجابتي صحيحة؟';
     checkBtn.disabled = true;
     checkBtn.onclick = s1Check;
     const hintBtn = document.getElementById('s1-hint');
@@ -327,7 +327,7 @@ function s1Check() {
     s1ShowFeedback('wrong2', false);
     stationProgress.q1 = 'fail';
     updateQuestionNav('s1');
-    s1SetBarDone('המשך', function () { goTo(2); });
+    s1SetBarDone('متابعة', function () { goTo(2); });
   }
   try { flushResumeSave(); } catch (e) {}
 }
@@ -371,7 +371,7 @@ function resetScreenState1() {
   });
   document.getElementById('s1-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s1-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   checkBtn.disabled = true;
   checkBtn.onclick = s1Check;
   const hintBtn = document.getElementById('s1-hint');
@@ -424,9 +424,9 @@ const S2 = {
   correctId: 'd',
   maxAttempts: 2,
   feedback: {
-    correct: { title: 'נכון.', body: 'שילוב של מכשיר מדויק (אנליטי) עם חזרות הוא המתכון המדעי האמין ביותר.' },
-    wrong1: { title: 'התשובה אינה נכונה.', body: 'לא נורא, גם מטעויות לומדים.\nננסה שוב?' },
-    wrong2: { title: 'התשובה אינה נכונה.\nהתשובה הנכונה מסומנת.', body: 'שילוב של מכשיר מדויק (אנליטי) עם חזרות הוא המתכון המדעי האמין ביותר.' }
+    correct: { title: 'صحيح.', body: 'الدمج بين الجهاز الدقيق (ميزان تحليلي) وبين القياسات المتكررة هو الطريقة العلمية الأكثر موثوقية.' },
+    wrong1: { title: 'الإجابة غير صحيحة.', body: 'لا بأس، نتعلّم من الأخطاء أيضًا.\nهل نحاول مرة أخرى؟' },
+    wrong2: { title: 'الإجابة غير صحيحة.\nالإجابة الصحيحة مُشار إليها.', body: 'الدمج بين الجهاز الدقيق (ميزان تحليلي) وبين القياسات المتكررة هو الطريقة العلمية الأكثر موثوقية.' }
   }
 };
 
@@ -453,7 +453,7 @@ function s2Select(id) {
   s2Phase = 'selected';
   if (wasWrong1) document.getElementById('s2-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s2-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   /* Retry gate: אותה תשובה שכבר סומנה שגויה אינה ניתנת להגשה שוב. */
   checkBtn.disabled = (s2Selected === s2LastWrong);
   checkBtn.onclick = s2Check;
@@ -495,7 +495,7 @@ function s2Check() {
     s2ShowFeedback('correct', true);
     stationProgress.q2 = 'success';
     updateQuestionNav('s2');
-    s2SetBarDone('המשך', function () { goTo(3); });
+    s2SetBarDone('متابعة', function () { goTo(3); });
     /* resume: סנכרוני, לא debounce — התשובה כבר מחויבת, ולשונית שנסגרת
        לפני הניווט הבא לא תאבד אותה. ⚠️ לפני ה-return, לא אחריו. */
     try { flushResumeSave(); } catch (e) {}
@@ -510,7 +510,7 @@ function s2Check() {
     s2LastWrong = s2Selected; /* Retry gate */
     s2ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s2-check');
-    checkBtn.textContent = 'צדקתי?';
+    checkBtn.textContent = 'هل إجابتي صحيحة؟';
     checkBtn.disabled = true;
     checkBtn.onclick = s2Check;
     const hintBtn = document.getElementById('s2-hint');
@@ -525,7 +525,7 @@ function s2Check() {
     s2ShowFeedback('wrong2', false);
     stationProgress.q2 = 'fail';
     updateQuestionNav('s2');
-    s2SetBarDone('המשך', function () { goTo(3); });
+    s2SetBarDone('متابعة', function () { goTo(3); });
   }
   try { flushResumeSave(); } catch (e) {}
 }
@@ -572,7 +572,7 @@ function resetScreenState2() {
   });
   document.getElementById('s2-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s2-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   checkBtn.disabled = true;
   checkBtn.onclick = s2Check;
   const hintBtn = document.getElementById('s2-hint');
@@ -600,13 +600,13 @@ const S3 = {
   maxAttempts: 2,
   feedback: {
     correct: {
-      title: 'תשובה נכונה ומלאה. כל הכבוד.',
-      body: 'כאשר שתי מדידות שונות זו מזו, מדידה שלישית יכולה לעזור לזהות אם אחת המדידות חריגה.\nביצוע כמה מדידות מאפשר לחשב ממוצע אמין יותר ולהגדיל את הביטחון בתוצאה.'
+      title: 'إجابة صحيحة وكاملة. كل الاحترام.',
+      body: 'عندما يختلف قياسان عن بعضهما البعض، قد يساعد القياس الثالث في تحديد ما إذا كان أحد القياسين شاذًا.\nكما أن إجراء عدة قياسات يتيح إمكانية حساب معدل أكثر موثوقية وزيادة الثقة في النتيجة.'
     },
-    wrong1: { title: 'התשובה אינה נכונה במלואה.', body: 'לא נורא, גם מטעויות לומדים.\nננסה שוב?' },
+    wrong1: { title: 'الإجابة ليست صحيحة بالكامل.', body: 'لا بأس، نتعلّم من الأخطاء أيضًا.\nهل نحاول مرة أخرى؟' },
     wrong2: {
-      title: 'התשובה אינה נכונה במלואה. התשובה המלאה מוצגת.',
-      body: 'כאשר שתי מדידות שונות זו מזו, מדידה שלישית יכולה לעזור לזהות אם אחת המדידות חריגה.\nביצוע כמה מדידות מאפשר לחשב ממוצע אמין יותר ולהגדיל את הביטחון בתוצאה.'
+      title: 'الإجابة ليست صحيحة بالكامل. الإجابة الكاملة تظهر الآن.',
+      body: 'عندما يختلف قياسان عن بعضهما البعض، قد يساعد القياس الثالث في تحديد ما إذا كان أحد القياسين شاذًا.\nكما أن إجراء عدة قياسات يتيح إمكانية حساب معدل أكثر موثوقية وزيادة الثقة في النتيجة.'
     }
   }
 };
@@ -725,7 +725,7 @@ function s3Check() {
     s3ShowFeedback('correct', true);
     stationProgress.q3 = 'success';
     updateQuestionNav('s3');
-    s3SetBarDone('המשך', s3Finish);
+    s3SetBarDone('متابعة', s3Finish);
     /* resume: סנכרוני, לא debounce — התשובה כבר מחויבת, ולשונית שנסגרת
        לפני הניווט הבא לא תאבד אותה. ⚠️ לפני ה-return, לא אחריו. */
     try { flushResumeSave(); } catch (e) {}
@@ -761,7 +761,7 @@ function s3Check() {
     s3ShowFeedback('wrong2', false);
     stationProgress.q3 = 'fail';
     updateQuestionNav('s3');
-    s3SetBarDone('המשך', s3Finish);
+    s3SetBarDone('متابعة', s3Finish);
   }
   try { flushResumeSave(); } catch (e) {}
 }
@@ -815,7 +815,7 @@ function resetScreenState3() {
   });
   document.getElementById('s3-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s3-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   checkBtn.disabled = true;
   checkBtn.onclick = s3Check;
   const hintBtn = document.getElementById('s3-hint');
@@ -1037,7 +1037,7 @@ function restoreScqUI(o) {
       o.showFeedback('wrong2', false);
     }
     o.lock();
-    o.setBarDone('המשך', o.onContinue);
+    o.setBarDone('متابعة', o.onContinue);
     return;
   }
 
@@ -1050,7 +1050,7 @@ function restoreScqUI(o) {
     if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
     /* מושבת עד בחירה חדשה — בדיוק כמו בקוד החי; sNSelect מפעיל מחדש,
        ולכן הלומד אינו תקוע. */
-    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
+    if (checkBtn) { checkBtn.textContent = 'هل إجابتي صحيحة؟'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
     return;
   }
 
@@ -1061,7 +1061,7 @@ function restoreScqUI(o) {
   /* Retry gate (720 spec; דיווח MOE 23.09.26): הצייר רץ בכל goTo — בלי
      ההשוואה ל-lastWrong הוא היה פותח מחדש את התשובה שכבר סומנה שגויה. */
   if (checkBtn) {
-    checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check;
+    checkBtn.textContent = 'هل إجابتي صحيحة؟'; checkBtn.onclick = o.check;
     checkBtn.disabled = !o.selected || o.selected === o.lastWrong;
   }
 }
@@ -1080,7 +1080,7 @@ function restoreTfTableUI() {
        בדיוק כמו הקוד החי — טבלה נכונה לגמרי אינה מסומנת. */
     s3LockRows(s3Phase !== 'correct');
     s3ShowFeedback(s3Phase === 'correct' ? 'correct' : 'wrong2', s3Phase === 'correct');
-    s3SetBarDone('המשך', s3Finish);
+    s3SetBarDone('متابعة', s3Finish);
     return;
   }
 
@@ -1127,7 +1127,7 @@ function restoreTfTableUI() {
      23.09.26) — הצייר רץ בכל goTo ובלעדיו היה פותח מחדש את הטבלה השגויה. */
   var checkBtn = document.getElementById('s3-check');
   if (checkBtn) {
-    checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = s3Check;
+    checkBtn.textContent = 'هل إجابتي صحيحة؟'; checkBtn.onclick = s3Check;
     checkBtn.disabled = !s3AllSelected() || s3Sig() === s3LastWrong;
   }
 }

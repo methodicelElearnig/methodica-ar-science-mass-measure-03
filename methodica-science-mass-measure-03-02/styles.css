@@ -130,6 +130,11 @@ img { display: block; max-width: none; }
   cursor: pointer;
   white-space: nowrap;
 }
+.btn-continue {
+  /* גרסה ערבית: "هل إجابتي صحيحة؟" ארוך מ-140px — הכפתור גדל לפי הטקסט, מינימום 140px (תוויות קצרות לא משתנות) */
+  width: auto;
+  min-width: 140px;
+}
 .btn-continue:disabled {
   background: #AEAEAE;
   color: #303030;
@@ -310,7 +315,8 @@ img { display: block; max-width: none; }
 }
 .scq-hint-close {
   align-self: center;
-  width: 196px;
+  width: 280px;
+  white-space: nowrap;
   padding: 16px 40px;
   border-radius: 999px;
   background: #fff;
@@ -1105,3 +1111,24 @@ img { display: block; max-width: none; }
 .tf-btn.btn-correct { background: #edf8ed; border: 1.5px solid #609e12; }
 .tf-btn.btn-wrong { background: #fff0f4; border: 1.5px solid #b20010; }
 .tf-btn:disabled { cursor: default; }
+
+/* ── גרסה ערבית: פונט Calibri לטקסט הערבי בלבד (פונט מערכת — לא ארוז, לא ניתן להפצה).
+   unicode-range מגביל את Calibri לתווים ערביים ולספרות 0-9; אותיות לטיניות נשארות ב-Assistant.
+   גדלים ומשקלים לא משתנים — רגיל → Calibri, מודגש (600+) → Calibri Bold.
+   במכשיר בלי Calibri חוזרים לשרשרת הקודמת. !important גובר גם על unit-css/25-report.css. ── */
+@font-face {
+  font-family: 'Calibri Arabic';
+  src: local('Calibri');
+  font-weight: 100 599;
+  unicode-range: U+0030-0039, U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Calibri Arabic';
+  src: local('Calibri Bold'), local('Calibri-Bold');
+  font-weight: 600 1000;
+  unicode-range: U+0030-0039, U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+body,
+body * {
+  font-family: 'Calibri Arabic', 'Assistant', 'Segoe UI', Arial, sans-serif !important;
+}

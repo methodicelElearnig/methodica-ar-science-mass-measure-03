@@ -487,7 +487,8 @@ img { display: block; max-width: none; }
 }
 .scq-hint-close {
   align-self: center;
-  width: 196px;
+  width: 280px;
+  white-space: nowrap;
   padding: 16px 40px;
   border-radius: 999px;
   background: #fff;
@@ -2261,3 +2262,12 @@ img { display: block; max-width: none; }
 
 /* מסכי המודול הספציפיים יתווספו כאן בהמשך, מסך אחר מסך,
    לפי הבריף/פיגמה שיסופקו לכל אחד. */
+
+/* ── גרסה ערבית, חלק 01 כולו: פונט Calibri (פונט מערכת — לא ארוז, לא ניתן להפצה).
+   גדלים ומשקלים (bold) לא משתנים — רק המשפחה. במכשיר בלי Calibri חוזרים לשרשרת הקודמת.
+   !important כדי לגבור גם על unit-css/25-report.css (חלון הדיווח).
+   מסך ה-LCD של הסימולציה (.dq-sim-lcd, ספרות בלבד) נשאר בפונט הדיגיטלי. ── */
+body,
+body *:not(.dq-sim-lcd):not(.dq-sim-lcd *) {
+  font-family: 'Calibri', 'Assistant', 'Segoe UI', Arial, sans-serif !important;
+}

@@ -59,9 +59,9 @@ var REPORT_FIELDS = {
    הוא input נסתר + select מותאם ולא <select> נייטיב, ולכן האידיום המקובל
    options[selectedIndex].text לא רלוונטי. */
 var REPORT_TYPE_LABELS = {
-  'technical': 'תקלה טכנית או שמשהו לא עובד',
-  'unclear':   'משהו לא ברור לי',
-  'other':     'אחר'
+  'technical': 'عطل تقني أو شيء ما لا يعمل',
+  'unclear':   'شيء غير واضح لي',
+  'other':     'آخر'
 };
 
 function openReportModal() {
@@ -223,7 +223,7 @@ function initReportModal() {
   /* ה-select המותאם */
   (function () {
     var LABELS = REPORT_TYPE_LABELS;
-    var PLACEHOLDER = 'בחרו סוג בעיה';
+    var PLACEHOLDER = 'اختاروا نوع المشكلة';
     var wrapper = document.getElementById('report-type-wrapper');
     if (!wrapper) return;
     var btn        = wrapper.querySelector('.report-select-btn');

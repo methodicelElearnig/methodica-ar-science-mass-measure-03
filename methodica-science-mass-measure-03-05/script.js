@@ -250,7 +250,7 @@ function s1AddRow() {
   tr.dataset.row = String(s1RowCount);
   tr.innerHTML =
     '<td class="tbl-td"><span class="tbl-avg-display" id="s1-avg-' + s1RowCount + '"></span></td>' +
-    '<td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="מסה בגרם, מדידה ' + s1RowCount + '" oninput="s1OnCellInput()"></td>' +
+    '<td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="الكتلة بالغرام، القياس رقم ' + s1RowCount + '" oninput="s1OnCellInput()"></td>' +
     '<td class="tbl-td">' + s1RowCount + '</td>';
   tbody.appendChild(tr);
   if (s1RowCount >= 7) document.getElementById('s1-add-row').disabled = true;
@@ -301,7 +301,7 @@ function resetScreenState1() {
   tbody.innerHTML =
     '<tr data-row="1">' +
     '<td class="tbl-td"><span class="tbl-avg-display" id="s1-avg-1"></span></td>' +
-    '<td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="מסה בגרם, מדידה 1" oninput="s1OnCellInput()"></td>' +
+    '<td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="الكتلة بالغرام، القياس رقم 1" oninput="s1OnCellInput()"></td>' +
     '<td class="tbl-td">1</td>' +
     '</tr>';
   document.getElementById('s1-add-row').disabled = false;
@@ -502,10 +502,10 @@ const S2 = {
   correctId: 'c',
   maxAttempts: 2,
   feedback: {
-    correct: { title: 'נכון.', body: 'לאחר כ-4 מדידות הממוצע מתחיל להשתנות פחות בין מדידה למדידה, ולכן אפשר לומר שהוא מתחיל להתייצב.' },
-    wrong1: { title: 'התשובה אינה נכונה.', body: 'לא נורא, גם מטעויות לומדים.\nננסה שוב?' },
-    wrong2: { title: 'התשובה אינה נכונה.\nהתשובה הנכונה מסומנת.',
-      body: 'לאחר כ-4 מדידות הממוצע מתחיל להשתנות פחות בין מדידה למדידה, ולכן אפשר לומר שהוא מתחיל להתייצב.' }
+    correct: { title: 'صحيح.', body: 'بعد 4 قياسات تقريبًا، يبدأ المعدل بالتغيّر بدرجة أقل من قياس إلى آخر، ولذلك يمكن القول إنه بدأ يستقر.' },
+    wrong1: { title: 'الإجابة غير صحيحة.', body: 'لا بأس، نتعلّم من الأخطاء أيضًا.\nهل نحاول مرة أخرى؟' },
+    wrong2: { title: 'الإجابة غير صحيحة.\nالإجابة الصحيحة مُشار إليها.',
+      body: 'بعد 4 قياسات تقريبًا، يبدأ المعدل بالتغيّر بدرجة أقل من قياس إلى آخر، ولذلك يمكن القول إنه بدأ يستقر.' }
   }
 };
 
@@ -533,7 +533,7 @@ function s2Select(id) {
   s2Phase = 'selected';
   if (wasWrong1) document.getElementById('s2-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s2-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   /* Retry gate: חזרה לתשובה שזה עתה סומנה שגויה → מושבת. */
   checkBtn.disabled = (s2Selected === s2LastWrong);
   checkBtn.onclick = s2Check;
@@ -574,7 +574,7 @@ function s2Check() {
     s2LockOptions();
     s2ShowFeedback('correct', true);
     saveMoedAResult(2, true);
-    s2SetBarDone('המשך', function () { goTo(3); });
+    s2SetBarDone('متابعة', function () { goTo(3); });
     try { flushResumeSave(); } catch (e) {}
     return;
   }
@@ -587,7 +587,7 @@ function s2Check() {
     s2LastWrong = s2Selected; // Retry gate (720 spec; דיווח MOE 23.09.26)
     s2ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s2-check');
-    checkBtn.textContent = 'צדקתי?';
+    checkBtn.textContent = 'هل إجابتي صحيحة؟';
     checkBtn.disabled = true;
     checkBtn.onclick = s2Check;
     const hintBtn = document.getElementById('s2-hint');
@@ -601,7 +601,7 @@ function s2Check() {
     s2LockOptions();
     s2ShowFeedback('wrong2', false);
     saveMoedAResult(2, false);
-    s2SetBarDone('המשך', function () { goTo(3); });
+    s2SetBarDone('متابعة', function () { goTo(3); });
   }
   try { flushResumeSave(); } catch (e) {}
 }
@@ -643,7 +643,7 @@ function resetScreenState2() {
   });
   document.getElementById('s2-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s2-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   checkBtn.disabled = true;
   checkBtn.onclick = s2Check;
   const hintBtn = document.getElementById('s2-hint');
@@ -670,9 +670,9 @@ const S3 = {
   correctId: 'c',
   maxAttempts: 2,
   feedback: {
-    correct: { title: 'התשובה נכונה.', body: 'מדידה אחת יכולה להיות מושפעת מאי ודאות או מטעות רגעית. ממוצע של כמה מדידות נותן בסיס אמין יותר לקביעת מסת התליון.' },
-    wrong1: { title: 'התשובה אינה נכונה.', body: 'לא נורא, גם מטעויות לומדים.\nננסה שוב?' },
-    wrong2: { title: 'התשובה אינה נכונה.\nהתשובה הנכונה מסומנת.', body: 'מדידה אחת יכולה להיות מושפעת מאי ודאות או מטעות רגעית. ממוצע של כמה מדידות נותן בסיס אמין יותר לקביעת מסת התליון.' }
+    correct: { title: 'الإجابة صحيحة.', body: 'القياس الواحد قد يتأثر من عدم اليقين أو من الخطأ اللحظي. معدل عدّة قياسات يوفّر لنا أساسًا موثوقًا أكثر لتحديد كتلة القلادة.' },
+    wrong1: { title: 'الإجابة غير صحيحة.', body: 'لا بأس، نتعلّم من الأخطاء أيضًا.\nهل نحاول مرة أخرى؟' },
+    wrong2: { title: 'الإجابة غير صحيحة.\nالإجابة الصحيحة مُشار إليها.', body: 'القياس الواحد قد يتأثر من عدم اليقين أو من الخطأ اللحظي. معدل عدّة قياسات يوفّر لنا أساسًا موثوقًا أكثر لتحديد كتلة القلادة.' }
   }
 };
 
@@ -700,7 +700,7 @@ function s3Select(id) {
   s3Phase = 'selected';
   if (wasWrong1) document.getElementById('s3-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s3-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   /* Retry gate: חזרה לתשובה שזה עתה סומנה שגויה → מושבת. */
   checkBtn.disabled = (s3Selected === s3LastWrong);
   checkBtn.onclick = s3Check;
@@ -744,7 +744,7 @@ function s3Check() {
     s3LockOptions();
     s3ShowFeedback('correct', true);
     saveMoedAResult(3, true);
-    s3SetBarDone('המשך');
+    s3SetBarDone('متابعة');
     try { flushResumeSave(); } catch (e) {}
     return;
   }
@@ -757,7 +757,7 @@ function s3Check() {
     s3LastWrong = s3Selected; // Retry gate (720 spec; דיווח MOE 23.09.26)
     s3ShowFeedback('wrong1', false);
     const checkBtn = document.getElementById('s3-check');
-    checkBtn.textContent = 'צדקתי?';
+    checkBtn.textContent = 'هل إجابتي صحيحة؟';
     checkBtn.disabled = true;
     checkBtn.onclick = s3Check;
     const hintBtn = document.getElementById('s3-hint');
@@ -771,7 +771,7 @@ function s3Check() {
     s3LockOptions();
     s3ShowFeedback('wrong2', false);
     saveMoedAResult(3, false);
-    s3SetBarDone('המשך');
+    s3SetBarDone('متابعة');
   }
   try { flushResumeSave(); } catch (e) {}
 }
@@ -813,7 +813,7 @@ function resetScreenState3() {
   });
   document.getElementById('s3-feedbox').classList.remove('visible');
   const checkBtn = document.getElementById('s3-check');
-  checkBtn.textContent = 'צדקתי?';
+  checkBtn.textContent = 'هل إجابتي صحيحة؟';
   checkBtn.disabled = true;
   checkBtn.onclick = s3Check;
   const hintBtn = document.getElementById('s3-hint');
@@ -1138,7 +1138,7 @@ function makeDragQuestion(cfg) {
       revealCorrect();
       showFeedback('wrongFinal');
       revealed = true;
-      if (revealBtn) revealBtn.textContent = 'התשובה שלי';
+      if (revealBtn) revealBtn.textContent = 'إجابتي';
     } else {
       dragIds.forEach(function (dId) { placement[dId] = answerSnapshot[dId]; });
       targetIds.forEach(function (tId) {
@@ -1152,7 +1152,7 @@ function makeDragQuestion(cfg) {
       render();
       showFeedback('pending');
       revealed = false;
-      if (revealBtn) revealBtn.textContent = 'התשובה הנכונה';
+      if (revealBtn) revealBtn.textContent = 'الإجابة الصحيحة';
     }
   }
 
@@ -1193,7 +1193,7 @@ function makeDragQuestion(cfg) {
       saveResult(true);
       showFeedback('correct');
       if (cfg.onResult) cfg.onResult('success');
-      if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+      if (btn) { btn.textContent = 'متابعة'; btn.disabled = false; btn.onclick = cfg.onContinue; }
     } else if (attempts >= maxAttempts) {
       done = true;
       passed = false;
@@ -1204,13 +1204,13 @@ function makeDragQuestion(cfg) {
         revealed = false;
         showFeedback('pending');
         const revealBtn = document.getElementById(cfg.revealBtnId);
-        if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = 'התשובה הנכונה'; }
+        if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = 'الإجابة الصحيحة'; }
       } else {
         revealCorrect();
         showFeedback('wrongFinal');
       }
       if (cfg.onResult) cfg.onResult('fail');
-      if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+      if (btn) { btn.textContent = 'متابعة'; btn.disabled = false; btn.onclick = cfg.onContinue; }
     } else {
       showFeedback('wrong1');
       checked = false;
@@ -1218,7 +1218,7 @@ function makeDragQuestion(cfg) {
       render();
       const hintBtn = cfg.hintBtnId ? document.getElementById(cfg.hintBtnId) : null;
       if (hintBtn) hintBtn.hidden = false;
-      if (btn) { btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+      if (btn) { btn.textContent = 'هل إجابتي صحيحة؟'; btn.disabled = true; btn.onclick = check; }
     }
 
     /* ⚠️ אחרי כל שרשרת ההסתעפות, לא לפניה. done/passed ו-saveResult נקבעים
@@ -1279,10 +1279,10 @@ function makeDragQuestion(cfg) {
     if (cfg.hintOverlayId) document.getElementById(cfg.hintOverlayId).hidden = true;
     if (cfg.revealBtnId) {
       const revealBtn = document.getElementById(cfg.revealBtnId);
-      if (revealBtn) { revealBtn.hidden = true; revealBtn.textContent = 'התשובה הנכונה'; }
+      if (revealBtn) { revealBtn.hidden = true; revealBtn.textContent = 'الإجابة الصحيحة'; }
     }
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+    if (btn) { btn.textContent = 'هل إجابتي صحيحة؟'; btn.disabled = true; btn.onclick = check; }
     const panel = document.getElementById(cfg.panelId);
     if (panel) panel.scrollTop = 0;
     render();
@@ -1290,14 +1290,14 @@ function makeDragQuestion(cfg) {
 
   function restoreFinal() {
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.textContent = 'המשך'; btn.disabled = false; btn.onclick = cfg.onContinue; }
+    if (btn) { btn.textContent = 'متابعة'; btn.disabled = false; btn.onclick = cfg.onContinue; }
     if (cfg.hintBtnId) {
       const hintBtn = document.getElementById(cfg.hintBtnId);
       if (hintBtn) hintBtn.hidden = true;
     }
     if (cfg.revealBtnId && answerSnapshot) {
       const revealBtn = document.getElementById(cfg.revealBtnId);
-      if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = revealed ? 'התשובה שלי' : 'התשובה הנכונה'; }
+      if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = revealed ? 'إجابتي' : 'الإجابة الصحيحة'; }
     }
     render();
   }
@@ -1404,7 +1404,7 @@ function makeDragQuestion(cfg) {
     const allFilled = targetIds.every(function (tId) {
       return dragIds.some(function (dId) { return placement[dId] === tId; });
     });
-    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = !allFilled || sig() === lastWrong; btn.onclick = check; }
+    if (btn) { btn.hidden = false; btn.textContent = 'هل إجابتي صحيحة؟'; btn.disabled = !allFilled || sig() === lastWrong; btn.onclick = check; }
   }
 
   return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
@@ -1440,20 +1440,20 @@ function s4SectionGDecision() {
 
 const TEXTS_S4_DQ = {
   correct: {
-    title: 'כל הכבוד!',
-    body: 'ההמלצה לבצע 4 מדידות מבוססת על כך שבשלב זה הממוצע מתחיל להתייצב. חזרות נוספות מפחיתות את אי הוודאות ומאפשרות לקבל תוצאה אמינה יותר.'
+    title: 'كل الاحترام!',
+    body: 'التوصية بإجراء 4 قياسات تستند إلى الحقيقة بأن المعدل يبدأ بالاستقرار في هذه المرحلة. التكرارات الإضافية تقلّل عدم اليقين وتساعد في الحصول على نتيجة موثوقة أكثر.'
   },
   wrong1: {
-    title: 'התשובה אינה נכונה.',
-    body: 'לא נורא, מוריה נותנת לנו עוד ניסיון.\nננסה שוב?'
+    title: 'الإجابة غير صحيحة.',
+    body: 'لا بأس، دنيا تعطينا محاولة أخرى.\nهل نحاول مرة أخرى؟'
   },
   wrongFinal: {
-    title: 'התשובה אינה נכונה במלואה.\nהתשובה הנכונה מסומנת.',
-    body: 'ההמלצה לבצע 4 מדידות מבוססת על כך שבשלב זה הממוצע מתחיל להתייצב. חזרות נוספות מפחיתות את אי הוודאות ומאפשרות לקבל תוצאה אמינה יותר.'
+    title: 'الإجابة غير صحيحة بالكامل.\nالإجابة الصحيحة مُشار إليها.',
+    body: 'التوصية بإجراء 4 قياسات تستند إلى الحقيقة بأن المعدل يبدأ بالاستقرار في هذه المرحلة. التكرارات الإضافية تقلّل عدم اليقين وتساعد في الحصول على نتيجة موثوقة أكثر.'
   },
   pending: {
-    title: 'התשובה אינה נכונה.',
-    body: 'רוצים לראות את הפתרון הנכון?'
+    title: 'الإجابة غير صحيحة.',
+    body: 'ترغبون بعرض الحل الصحيح؟'
   }
 };
 
@@ -1474,13 +1474,13 @@ const dqSectionG = makeDragQuestion({
   labels: {
     's4-drag-4': '4',
     's4-drag-3': '3',
-    's4-drag-memutza': 'ממוצע',
-    's4-drag-hityatzev': 'התייצב',
-    's4-drag-vadaut': 'אי-ודאות',
-    's4-drag-amina': 'אמינה',
-    's4-drag-hazarot': 'חזרות',
-    's4-drag-hishtana': 'השתנה',
-    's4-drag-shguya': 'שגויה'
+    's4-drag-memutza': 'المعدل',
+    's4-drag-hityatzev': 'استقرار',
+    's4-drag-vadaut': 'عدم اليقين',
+    's4-drag-amina': 'موثوقة',
+    's4-drag-hazarot': 'تكرارات',
+    's4-drag-hishtana': 'تغيّر',
+    's4-drag-shguya': 'خاطئة'
   },
   correctMap: {
     's4-target-1': 's4-drag-4',
@@ -1721,7 +1721,7 @@ function restoreScqUI(o) {
       o.showFeedback('wrong2', false);
     }
     o.lock();
-    o.setBarDone('המשך', o.onContinue);
+    o.setBarDone('متابعة', o.onContinue);
     return;
   }
   var checkBtn = document.getElementById(o.checkBtnId);
@@ -1731,12 +1731,12 @@ function restoreScqUI(o) {
     o.showFeedback('wrong1', false);
     var hintBtn = document.getElementById(o.hintBtnId);
     if (hintBtn) { hintBtn.hidden = false; hintBtn.disabled = false; }
-    if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
+    if (checkBtn) { checkBtn.textContent = 'هل إجابتي صحيحة؟'; checkBtn.onclick = o.check; checkBtn.disabled = true; }
     return;
   }
   var selEl = o.optEl(o.selected);
   if (selEl) { selEl.classList.add('selected'); selEl.setAttribute('aria-checked', 'true'); }
-  if (checkBtn) { checkBtn.textContent = 'צדקתי?'; checkBtn.onclick = o.check;
+  if (checkBtn) { checkBtn.textContent = 'هل إجابتي صحيحة؟'; checkBtn.onclick = o.check;
     /* Retry gate (720 spec; דיווח MOE 23.09.26): הצייר רץ בכל goTo — בלי השער
        הזה חזרה למסך הייתה משחררת את התשובה השגויה לניסיון שני. */
     checkBtn.disabled = !o.selected || o.selected === o.lastWrong; }
@@ -1759,7 +1759,7 @@ function s1RestoreUI() {
   for (var r = 1; r <= s1RowCount; r++) {
     html += '<tr data-row="' + r + '">' +
       '<td class="tbl-td"><span class="tbl-avg-display" id="s1-avg-' + r + '"></span></td>' +
-      '<td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="מסה בגרם, מדידה ' + r + '" oninput="s1OnCellInput()"></td>' +
+      '<td class="tbl-td"><input class="tbl-input" type="text" inputmode="decimal" aria-label="الكتلة بالغرام، القياس رقم ' + r + '" oninput="s1OnCellInput()"></td>' +
       '<td class="tbl-td">' + r + '</td>' +
       '</tr>';
   }

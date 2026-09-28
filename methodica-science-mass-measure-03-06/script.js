@@ -133,9 +133,9 @@ const S6A = {
   correctId: 'b',
   maxAttempts: 2,
   feedback: {
-    correct: { title: 'תשובה נכונה.', body: 'בואו נמשיך ונבין מדוע.' },
-    wrong1: { title: 'התשובה אינה נכונה.', body: 'לא נורא, גם מטעויות לומדים.\nננסה שוב?' },
-    wrong2: { title: 'זו טעות. התשובה הנכונה מסומנת.', body: 'בואו נמשיך ונבין מדוע.' }
+    correct: { title: 'إجابة صحيحة.', body: 'هيّا نتابع ونفهم لماذا.' },
+    wrong1: { title: 'الإجابة غير صحيحة.', body: 'لا بأس، نتعلّم من الأخطاء أيضًا.\nهل نحاول مرة أخرى؟' },
+    wrong2: { title: 'هذا خطأ. الإجابة الصحيحة مُشار إليها.', body: 'هيّا نتابع ونفهم لماذا.' }
   }
 };
 
@@ -240,12 +240,12 @@ function s6aSyncBar() {
   const checkBtn = document.getElementById('s2-check');
   const hintBtn = document.getElementById('s2-hint');
   if (s6aDone) {
-    checkBtn.textContent = 'המשך';
+    checkBtn.textContent = 'متابعة';
     checkBtn.disabled = false;
     checkBtn.onclick = function () { goTo(3); };
     hintBtn.hidden = true;
   } else {
-    checkBtn.textContent = 'צדקתי?';
+    checkBtn.textContent = 'هل إجابتي صحيحة؟';
     /* Retry gate: השוואה חיה — גם בחירה, גם בדיקה, גם צייר ה-resume עוברים כאן. */
     checkBtn.disabled = !s6aSelected || s6aSelected === s6aLastWrong;
     checkBtn.onclick = s6aCheck;
@@ -282,9 +282,9 @@ const S6B = {
   correctId: 'c',
   maxAttempts: 2,
   feedback: {
-    correct: { title: 'התשובה נכונה.', body: 'כלי מתאים ותוצאות עקביות מספקים ראיות חזקות יותר לקבלת החלטה.' },
-    wrong1: { title: 'התשובה אינה נכונה.', body: 'לא נורא, גם מטעויות לומדים.\nננסה שוב?' },
-    wrong2: { title: 'התשובה אינה נכונה. התשובה הנכונה מסומנת.', body: 'כלי מתאים ותוצאות עקביות מספקים ראיות חזקות יותר לקבלת החלטה.' }
+    correct: { title: 'الإجابة صحيحة.', body: 'الأداة الملائمة والنتائج المتناسقة توفّر أدلة أقوى لاتخاذ القرار.' },
+    wrong1: { title: 'الإجابة غير صحيحة.', body: 'لا بأس، نتعلّم من الأخطاء أيضًا.\nهل نحاول مرة أخرى؟' },
+    wrong2: { title: 'الإجابة غير صحيحة. الإجابة الصحيحة مُشار إليها.', body: 'الأداة الملائمة والنتائج المتناسقة توفّر أدلة أقوى لاتخاذ القرار.' }
   }
 };
 
@@ -382,12 +382,12 @@ function s6bSyncBar() {
   const checkBtn = document.getElementById('s3-check');
   const hintBtn = document.getElementById('s3-hint');
   if (s6bDone) {
-    checkBtn.textContent = 'המשך';
+    checkBtn.textContent = 'متابعة';
     checkBtn.disabled = false;
     checkBtn.onclick = function () { goTo(4); };
     hintBtn.hidden = true;
   } else {
-    checkBtn.textContent = 'צדקתי?';
+    checkBtn.textContent = 'هل إجابتي صحيحة؟';
     /* Retry gate: השוואה חיה — גם בחירה, גם בדיקה, גם צייר ה-resume עוברים כאן. */
     checkBtn.disabled = !s6bSelected || s6bSelected === s6bLastWrong;
     checkBtn.onclick = s6bCheck;
@@ -728,7 +728,7 @@ function makeDragQuestion(cfg) {
       revealCorrect();
       showFeedback('wrongFinal');
       revealed = true;
-      if (revealBtn) revealBtn.textContent = 'התשובה שלי';
+      if (revealBtn) revealBtn.textContent = 'إجابتي';
     } else {
       dragIds.forEach(function (dId) { placement[dId] = answerSnapshot[dId]; });
       targetIds.forEach(function (tId) {
@@ -742,7 +742,7 @@ function makeDragQuestion(cfg) {
       render();
       showFeedback('pending');
       revealed = false;
-      if (revealBtn) revealBtn.textContent = 'התשובה הנכונה';
+      if (revealBtn) revealBtn.textContent = 'الإجابة الصحيحة';
     }
   }
 
@@ -783,7 +783,7 @@ function makeDragQuestion(cfg) {
       lastWrong = null;
       saveResult(true);
       showFeedback('correct');
-      if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
+      if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'متابعة'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else if (attempts >= maxAttempts) {
       done = true;
       passed = false;
@@ -794,12 +794,12 @@ function makeDragQuestion(cfg) {
         revealed = false;
         showFeedback('pending');
         const revealBtn = document.getElementById(cfg.revealBtnId);
-        if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = 'התשובה הנכונה'; }
+        if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = 'الإجابة الصحيحة'; }
       } else {
         revealCorrect();
         showFeedback('wrongFinal');
       }
-      if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
+      if (btn) { if (cfg.onContinue) { btn.textContent = (cfg.continueLabel || 'متابعة'); btn.disabled = false; btn.onclick = cfg.onContinue; } else { btn.hidden = true; } }
     } else {
       lastWrong = answerSig(); /* Retry gate — לפני render(), כדי שהשער יחול מיד */
       showFeedback('wrong1');
@@ -807,7 +807,7 @@ function makeDragQuestion(cfg) {
       render();
       const hintBtn = cfg.hintBtnId ? document.getElementById(cfg.hintBtnId) : null;
       if (hintBtn) hintBtn.hidden = false;
-      if (btn) { btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+      if (btn) { btn.textContent = 'هل إجابتي صحيحة؟'; btn.disabled = true; btn.onclick = check; }
     }
 
     /* ⚠️ אחרי כל שרשרת ההסתעפות, לא לפניה. done/passed ו-saveResult נקבעים
@@ -849,17 +849,17 @@ function makeDragQuestion(cfg) {
     if (cfg.hintOverlayId) document.getElementById(cfg.hintOverlayId).hidden = true;
     if (cfg.revealBtnId) {
       const revealBtn = document.getElementById(cfg.revealBtnId);
-      if (revealBtn) { revealBtn.hidden = true; revealBtn.textContent = 'התשובה הנכונה'; }
+      if (revealBtn) { revealBtn.hidden = true; revealBtn.textContent = 'الإجابة الصحيحة'; }
     }
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = true; btn.onclick = check; }
+    if (btn) { btn.hidden = false; btn.textContent = 'هل إجابتي صحيحة؟'; btn.disabled = true; btn.onclick = check; }
     render();
   }
 
   function restoreFinal() {
     const btn = document.getElementById(cfg.checkBtnId);
     if (btn) {
-      if (cfg.onContinue) { btn.hidden = false; btn.textContent = (cfg.continueLabel || 'המשך'); btn.disabled = false; btn.onclick = cfg.onContinue; }
+      if (cfg.onContinue) { btn.hidden = false; btn.textContent = (cfg.continueLabel || 'متابعة'); btn.disabled = false; btn.onclick = cfg.onContinue; }
       else { btn.hidden = true; }
     }
     if (cfg.hintBtnId) {
@@ -868,7 +868,7 @@ function makeDragQuestion(cfg) {
     }
     if (cfg.revealBtnId && answerSnapshot) {
       const revealBtn = document.getElementById(cfg.revealBtnId);
-      if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = revealed ? 'התשובה שלי' : 'התשובה הנכונה'; }
+      if (revealBtn) { revealBtn.hidden = false; revealBtn.textContent = revealed ? 'إجابتي' : 'الإجابة الصحيحة'; }
     }
     render();
   }
@@ -986,7 +986,7 @@ function makeDragQuestion(cfg) {
        לומד ששינה את הלוח אחרי הטעות ועזב חוזר לכפתור פעיל; לוח זהה לשגוי
        נשאר מושבת. */
     const btn = document.getElementById(cfg.checkBtnId);
-    if (btn) { btn.hidden = false; btn.textContent = 'צדקתי?'; btn.disabled = checkBlocked(); btn.onclick = check; }
+    if (btn) { btn.hidden = false; btn.textContent = 'هل إجابتي صحيحة؟'; btn.disabled = checkBlocked(); btn.onclick = check; }
   }
 
   return { reset: reset, getState: getState, setState: setState, restoreUI: restoreUI };
@@ -994,20 +994,20 @@ function makeDragQuestion(cfg) {
 
 const TEXTS_S6C_DQ = {
   correct: {
-    title: 'התשובה נכונה. כל הכבוד!',
-    body: 'חזרות וחישוב ממוצע עוזרים לצמצם את השפעת אי הוודאות ולהגיע להחלטה אמינה יותר.'
+    title: 'الإجابة صحيحة. كل الاحترام!',
+    body: 'التكرارات وحساب المعدل يساعدان على تقليل تأثير عدم اليقين والوصول إلى قرار أكثر موثوقية.'
   },
   wrong1: {
-    title: 'התשובה אינה נכונה במלואה.',
-    body: 'ננסה שוב?'
+    title: 'الإجابة ليست صحيحة بالكامل.',
+    body: 'هل نحاول مرة أخرى؟'
   },
   wrongFinal: {
-    title: 'התשובה אינה נכונה.\nהתשובה הנכונה מסומנת.',
-    body: 'חזרות וחישוב ממוצע עוזרים לצמצם את השפעת אי הוודאות ולהגיע להחלטה אמינה יותר.'
+    title: 'الإجابة غير صحيحة. الإجابة الصحيحة مُشار إليها.',
+    body: 'التكرارات وحساب المعدل يساعدان على تقليل تأثير عدم اليقين والوصول إلى قرار أكثر موثوقية.'
   },
   pending: {
-    title: 'התשובה אינה נכונה.',
-    body: 'רוצים לראות את הפתרון הנכון?'
+    title: 'الإجابة غير صحيحة.',
+    body: 'ترغبون بعرض الحل الصحيح؟'
   }
 };
 
@@ -1028,15 +1028,15 @@ const dqSectionC = makeDragQuestion({
      שמדווחים completed: Kata מסירה את הרכיב מהמסך ברגע שהדיווח מגיע
      (הנחיות 2.7 עמ' 23), ודיווח בתוך check() היה חוטף מהלומד את המשוב ואת
      כפתור "התשובה הנכונה" באותו רגע. לכן נוסף כפתור סיום מפורש. */
-  continueLabel: 'סיימתי',
+  continueLabel: 'انتهيت',
   onContinue: function () { s6cFinish(); },
   labels: {
-    's6c-drag-medayekim': 'המדייקים',
-    's6c-drag-teken': 'התקן',
-    's6c-drag-hazarot': 'חזרות',
-    's6c-drag-memutza': 'ממוצע',
-    's6c-drag-vadaut': 'אי הודאות',
-    's6c-drag-diyuk': 'דיוק'
+    's6c-drag-medayekim': 'المدقّقون',
+    's6c-drag-teken': 'المعيار',
+    's6c-drag-hazarot': 'التكرارات',
+    's6c-drag-memutza': 'المعدل',
+    's6c-drag-vadaut': 'عدم اليقين',
+    's6c-drag-diyuk': 'الدقة'
   },
   correctMap: {
     's6c-target-1': 's6c-drag-medayekim',

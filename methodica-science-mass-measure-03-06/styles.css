@@ -62,6 +62,11 @@ img { display: block; max-width: none; }
   font-family: 'Assistant', sans-serif; font-size: 20px; font-weight: 400;
   padding: 12px 40px; width: 140px; cursor: pointer; white-space: nowrap;
 }
+.btn-continue {
+  /* גרסה ערבית: "هل إجابتي صحيحة؟" ארוך מ-140px — הכפתור גדל לפי הטקסט, מינימום 140px (תוויות קצרות לא משתנות) */
+  width: auto;
+  min-width: 140px;
+}
 .btn-continue:disabled { background: #AEAEAE; color: #303030; cursor: not-allowed; }
 .btn-continue:not(:disabled):hover { opacity: 0.88; }
 .btn-continue:focus-visible { outline: 3px solid var(--subject-500); outline-offset: 2px; }
@@ -129,7 +134,7 @@ img { display: block; max-width: none; }
 .scq-hint-title { flex: 1; font-weight: 700; font-size: 32px; color: #fff; text-align: right; }
 .scq-hint-bulb { width: 40px; height: 34px; flex-shrink: 0; }
 .scq-hint-body { font-weight: 400; font-size: 22px; color: #fff; text-align: right; line-height: 1.5; }
-.scq-hint-close { align-self: center; width: 196px; padding: 16px 40px; border-radius: 999px; background: #fff; color: #303030; font-size: 24px; text-align: center; }
+.scq-hint-close { align-self: center; width: 280px; white-space: nowrap; padding: 16px 40px; border-radius: 999px; background: #fff; color: #303030; font-size: 24px; text-align: center; }
 
 /* ════════════════════════════════════════════════════════
    GLOBAL — Image zoom
@@ -389,4 +394,25 @@ img { display: block; max-width: none; }
   45%   { opacity: 0.35; }
   50%   { opacity: 0;    scale: 1 1; }
   100%  { opacity: 0;    scale: 1 1; }
+}
+
+/* ── גרסה ערבית: פונט Calibri לטקסט הערבי בלבד (פונט מערכת — לא ארוז, לא ניתן להפצה).
+   unicode-range מגביל את Calibri לתווים ערביים ולספרות 0-9; אותיות לטיניות נשארות ב-Assistant.
+   גדלים ומשקלים לא משתנים — רגיל → Calibri, מודגש (600+) → Calibri Bold.
+   במכשיר בלי Calibri חוזרים לשרשרת הקודמת. !important גובר גם על unit-css/25-report.css. ── */
+@font-face {
+  font-family: 'Calibri Arabic';
+  src: local('Calibri');
+  font-weight: 100 599;
+  unicode-range: U+0030-0039, U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Calibri Arabic';
+  src: local('Calibri Bold'), local('Calibri-Bold');
+  font-weight: 600 1000;
+  unicode-range: U+0030-0039, U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+body,
+body * {
+  font-family: 'Calibri Arabic', 'Assistant', 'Segoe UI', Arial, sans-serif !important;
 }
