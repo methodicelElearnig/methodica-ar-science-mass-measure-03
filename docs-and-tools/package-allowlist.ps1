@@ -44,6 +44,12 @@
 
     This unit also has NO unit-assets/ before the 2026-09-07 hoist; the key below is
     harmless while the directory does not exist.
+
+    It ships NO root files (rule set 28.09.26 for all 720 units; Documentation/
+    reporting-and-resume/ADDING-REPORTING-AND-RESUME.md §5.2). Platforms launch every component
+    by its own .../<component>/index.html link — Kata's hostedContentRef — so a unit-level entry
+    point is never used, and the MOE CDN serves a folder URL as 0 bytes (a folder-style redirect
+    is a blank page). The root index.html stays in the repo for local browsing only.
 #>
 
 # ── Directories that never contribute a single file, whatever is inside them ──
@@ -88,7 +94,7 @@ $ExcludeRelPaths = @(
 )
 
 # ── What each shipped area contributes ──
-$RootFiles = @('index.html')             # the redirect into component 01
+$RootFiles = @()                         # none — the root index.html is not deployed (see .NOTES)
 
 $UnitDirs = @{
     'metadata'    = '*.json'             # unit + per-component catalogue records
