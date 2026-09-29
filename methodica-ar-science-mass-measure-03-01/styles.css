@@ -937,7 +937,7 @@ img { display: block; max-width: none; }
   object-fit: cover;
   cursor: zoom-in;
 }
-/* מסך 20 (s19) — התמונה (שיחה-בין-המוכרים.png, 1771×931, יחס-רוחב/גובה
+/* מסך 20 (s19) — התמונה (sellers-conversation_ar.png, 1730×909, יחס-רוחב/גובה
    רחב) חייבת contain ולא cover: cover בתוך המסגרת הריבועית 380×380
    הייתה חותכת רוב רוחב התמונה (רק פס מרכזי צר היה נראה). contain
    משאיר "letterbox" לבן מעל/מתחת (הרקע הלבן של .scq-img-inner כבר
@@ -1499,7 +1499,7 @@ img { display: block; max-width: none; }
    -card, .dq-word-bank, .dq-source-slot, .dq-drag-card) חדשות —
    לא היו קיימות (מסכים 6+7 היו ValueInputQuestion, לא גרירה).
    ========================================================= */
-/* תמונה נלווית (ילדה שוקלת טונה.png) — נוספה לפי בקשה מפורשת, אותו
+/* תמונה נלווית (girl-weighing-tuna_ar.png) — נוספה לפי בקשה מפורשת, אותו
    רכיב .scq-img/.scq-img-inner/.img-zoom-btn המשמש בשאלות רב-ברירה
    (מסך-scq-question), אך מוצב כאן position:absolute עצמאי (במקום
    flex-item בתוך .scq-question) כי מסך 12 אינו בנוי כשורת-flex —
