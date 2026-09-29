@@ -82,10 +82,11 @@ param(
 # NEVER hard-code it here — this script is committed. It is resolved at runtime, in
 # order, from: the -ApiKey parameter, the KATA_API_KEY environment variable, or the
 # git-ignored key file below (one line, just the key). See SEND-METADATA.md.
-# Repo root is one level up: this script lives in docs-and-tools/, while the
-# key file, metadata/, and the log all stay at the repo root.
+# The key file sits next to this script in docs-and-tools/ (the rule for 720 units
+# processed from 2026-09-29, as in the Arabic mass-measure-01/-02). Repo root is one
+# level up: metadata/ and the log stay at the repo root.
 $RepoRoot = Split-Path $PSScriptRoot -Parent
-$ApiKeyFile = Join-Path $RepoRoot 'kata-api-key.txt'
+$ApiKeyFile = Join-Path $PSScriptRoot 'kata-api-key.txt'
 # API base URL (override at launch with -BaseUrl).
 if (-not $BaseUrl) { $BaseUrl = 'https://kata.cet.ac.il' }
 # Metadata folder to send (override with -MetadataDir). Defaults to repo root's ./metadata.
