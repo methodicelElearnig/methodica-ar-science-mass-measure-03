@@ -315,7 +315,7 @@ const QUESTIONS = [
     wrong:   { 's11-target-1': 's11-drag-hafhatot', 's11-target-2': 's11-drag-sikum' },
     other:   { 's11-target-1': 's11-drag-hafhatot', 's11-target-2': 's11-drag-mimutza' },
     correct: { 's11-target-1': 's11-drag-hazarot', 's11-target-2': 's11-drag-mimutza' },
-    lw: (st) => st.dq11 && st.dq11.lw === '1=הפחתות | 2=סיכום',
+    lw: (st) => st.dq11 && st.dq11.lw === '1=إنقاص | 2=تلخيص',
     extra: async (P, Q, scope, payload) => {
       /* מסמך resume מלפני התיקון (בלי lw): setState גוזר את השער מההצבה השמורה,
          כדי לא לשחרר לומד שהיה נעול לפני העדכון. */
@@ -333,7 +333,7 @@ const QUESTIONS = [
     wrong:   { 's16-target-1': 's16-drag-510', 's16-target-2': 's16-drag-hariga', 's16-target-3': 's16-drag-590' },
     other:   { 's16-target-1': 's16-drag-1532', 's16-target-2': 's16-drag-hariga', 's16-target-3': 's16-drag-590' },
     correct: { 's16-target-1': 's16-drag-590', 's16-target-2': 's16-drag-hariga', 's16-target-3': 's16-drag-510' },
-    lw: (st) => st.dq16 && st.dq16.lw === '1=5.10 | 2=תוצאה חריגה | 3=5.90',
+    lw: (st) => st.dq16 && st.dq16.lw === '1=5.10 | 2=نتيجة شاذّة | 3=5.90',
   }),
   s17('01'),
   scq('01', 19, { away: 18, correct: 'S19.correctId', lw: (st) => st.scq && st.scq.s19 && !!st.scq.s19.lw }),
@@ -388,7 +388,7 @@ const QUESTIONS = [
              's4-target-4': 's4-drag-3', 's4-target-5': 's4-drag-vadaut', 's4-target-6': 's4-drag-shguya' },
     correct: { 's4-target-1': 's4-drag-4', 's4-target-2': 's4-drag-memutza', 's4-target-3': 's4-drag-hityatzev',
                's4-target-4': 's4-drag-3', 's4-target-5': 's4-drag-vadaut', 's4-target-6': 's4-drag-amina' },
-    lw: (st) => st.dqG && typeof st.dqG.lw === 'string' && /6=חזרות/.test(st.dqG.lw),
+    lw: (st) => st.dqG && typeof st.dqG.lw === 'string' && /6=تكرارات/.test(st.dqG.lw),
   }),
 
   /* ── 06 ── (המסכים ממוספרים 2/3/4, השאלות s6a/s6b/s6c) */
@@ -404,7 +404,7 @@ const QUESTIONS = [
              's6c-target-4': 's6c-drag-hazarot', 's6c-target-5': 's6c-drag-vadaut', 's6c-target-6': 's6c-drag-diyuk' },
     correct: { 's6c-target-1': 's6c-drag-medayekim', 's6c-target-2': 's6c-drag-teken', 's6c-target-3': 's6c-drag-hazarot',
                's6c-target-4': 's6c-drag-memutza', 's6c-target-5': 's6c-drag-vadaut', 's6c-target-6': 's6c-drag-diyuk' },
-    lw: (st) => st.dqC && typeof st.dqC.lw === 'string' && st.dqC.lw.indexOf('1=התקן') === 0,
+    lw: (st) => st.dqC && typeof st.dqC.lw === 'string' && st.dqC.lw.indexOf('1=المعيار') === 0,
     extra: async (P, Q, scope) => {
       /* לוח מלא בלי קלף רזרבי: הזזת קלף מוצב משאירה חור — חלקי → מושבת. */
       P.run('(function(){ var pc = document.querySelector("#s6c-target-3 .dq-placed-card");' +
@@ -484,9 +484,9 @@ async function runGate(Q) {
     await Q.set(P, 'correct');
     P.run(Q.check);
     const b = P.btn(Q.btn);
-    /* "המשך", או "סיימתי" בשאלה האחרונה של הסין (06 s6c) — העיקר שהוא כבר לא "צדקתי?". */
+    /* "המשך", או "סיימתי" בשאלה האחרונה של הסין (06 s6c) — העיקר שהוא כבר לא "هل إجابتي صحيحة؟" (צדקתי?). */
     ok(scope, 'correct answer after the gated retry finishes (button -> enabled advance button)',
-       b.disabled === false && !!b.text && b.text !== 'צדקתי?', JSON.stringify(b));
+       b.disabled === false && !!b.text && b.text !== 'هل إجابتي صحيحة؟', JSON.stringify(b));
   } catch (e) {
     ok(scope, 'walk completes without a harness error', false, e.message);
   }
