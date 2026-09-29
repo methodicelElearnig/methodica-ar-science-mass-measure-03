@@ -1,0 +1,104 @@
+{
+  "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/",
+  "title": "هيا نتحدى أنفسنا",
+  "learningUnitId": "methodica-ar-science-mass-measure-03",
+  "componentPurpose": "practice",
+  "isAssessment": false,
+  "recommendedAfterFail": [],
+  "isRequired": false,
+  "relativeDifficulty": 5,
+  "masteryLevel": null,
+  "order": 3,
+  "depthLevel": "core-curriculum-basic",
+  "cognitiveLevels": ["analyzing"],
+  "languages": ["Arabic"],
+  "skills": [],
+  "estimatedTimeInMinutes": 12,
+  "createdAt": "2026-09-28T00:00:00.000Z",
+  "updatedAt": "2026-09-28T00:00:00.000Z",
+  "subContent": [
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-001/",
+      "title": "مراقبة الجودة في مصنع كرات القدم",
+      "informationToBot": "מטרת הפריט: לתרגל הסקת מסקנות מדעיות ממדגם קטן של מדידות, תוך זיהוי ההבדל בין מסקנה על הפריטים שנבדקו לבין הכללה על כלל תהליך הייצור. מה התלמיד אמור להבין/לתרגל: שתוצאות של מדגם קטן (שני כדורים בלבד) יכולות לתמוך במסקנה על הפריטים שנבדקו עצמם, אך אינן מספיקות כדי להכליל מסקנה על כל תוצרת המפעל. כיווני חשיבה ואסטרטגיות: להשוות בין ערכי המדידה שהתקבלו (418, 421 גרם) לטווח התקן (410-450 גרם), ולהבחין בין הקביעה \"המדגם עומד בתקן\" לבין הקביעה \"כל הייצור עומד בתקן\". טעויות נפוצות: הכללת מסקנה מהמדגם הקטן על כלל הייצור במפעל; פסילת הנתונים כלא-מספיקים לחלוטין במקום זיהוי הצורך בבדיקות נוספות. מידע נוסף: שאלת בחירה מרובה, עד 2 ניסיונות ורמז זמין (\"האם מדידה אחת מספיקה כדי להסיק מסקנה על כל הכדורים שהמפעל מייצר?\"). לפני השאלה מוצג מסך פתיחה קצר לרכיב כולו (\"זמן ל-3 שאלות מתקדמות\"). צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-001/q1",
+          "questionType": "choice",
+          "questionText": "قام منتِج كرات المونديال بقياس كتلة كرتَين وحصل على الوزنَين التاليَين: 418 غرام، 421 غرام. معيار اتّحاد كرة القدم لكرة المونديال هو: 450-410 غرام. ما هو الاستنتاج الأفضل؟",
+          "answers": [
+            "جميع الكرات التي ينتجها المصنع مطابقة للمعيار.",
+            "جميع الكرات في المصنع تزن 419 غرام تقريبًا",
+            "الكرات التي تم فحصها مطابقة للمعيار، لكن يجب إجراء فحوصات إضافية",
+            "المعطيات غير كافية لتقييم الإنتاج"
+          ],
+          "correctAnswers": [
+            "الكرات التي تم فحصها مطابقة للمعيار، لكن يجب إجراء فحوصات إضافية"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-002/",
+      "title": "مقارنة موثوقية القياس بين مجموعات البحث",
+      "informationToBot": "מטרת הפריט: לתרגל הערכת אמינות ראיה מדעית תוך שילוב שני קריטריונים - רמת הדיוק של מכשיר המדידה ומספר החזרות שבוצעו. מה התלמיד אמור להבין/לתרגל: שראיה מדעית חזקה משלבת גם מכשיר מדויק (רמת דיוק גבוהה) וגם ביצוע מספר מדידות חוזרות ועקביות, ולא מסתפקת בקריטריון אחד בלבד. כיווני חשיבה ואסטרטגיות: להשוות בין שלוש הקבוצות לפי רמת הדיוק של המאזניים (0.001 גרם לעומת 0.01 גרם) ולפי מספר החזרות ומידת העקביות בין המדידות שביצעה כל קבוצה. טעויות נפוצות: להתמקד רק ברמת הדיוק של המכשיר (קבוצה א') ולהתעלם מכך שבוצעה מדידה אחת בלבד; להתמקד רק בעקביות בין מדידות חוזרות (קבוצה ב') ולהתעלם מרמת הדיוק הנמוכה יותר של המכשיר. מידע נוסף: שאלת בחירה מרובה מבוססת טבלת נתונים, עד 2 ניסיונות ורמז זמין (\"שימו לב גם לרמת הדיוק של המכשיר וגם למספר המדידות שבוצעו\"). צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-002/q1",
+          "questionType": "choice",
+          "questionText": "تفحص شركة أدوية مادة فعالة وزنها نحو 0.053 غرام. قامت ثلاث مجموعات بإجراء القياسات: المجموعة أ - ميزان تحليلي، مستوى دقّة 0.001 غرام: القياس 1 - 0.051 غرام (القياسان 2 و3 لم يُجرَيا). المجموعة ب - ميزان مختبر، مستوى دقّة 0.01 غرام: القياس 1 - 0.050 غرام، القياس 2 - 0.050 غرام، القياس 3 - 0.050 غرام. المجموعة ت - ميزان تحليلي، مستوى دقّة 0.001 غرام: القياس 1 - 0.050 غرام، القياس 2 - 0.051 غرام، القياس 3 - 0.050 غرام. أي مجموعة قدّمت الدليل العلمي الأقوى؟",
+          "answers": [
+            "المجموعة أ — بسبب مستوى الدقّة العالي",
+            "المجموعة ب — بسبب التناسُق بين القياسات",
+            "المجموعتان ب وَ ت — لأنهما أجرتا قياسات متكررة",
+            "تلمجموعة ج — بسبب الدمج بين الدقة والتكرار"
+          ],
+          "correctAnswers": [
+            "تلمجموعة ج — بسبب الدمج بين الدقة والتكرار"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/",
+      "title": "لماذا نجري ثلاثة قياسات علمية",
+      "informationToBot": "מטרת הפריט: להבין את התפקיד של ביצוע שלוש מדידות (ולא הסתפקות בשתיים) בהערכת מהימנות תוצאה מדעית. מה התלמיד אמור להבין/לתרגל: שכאשר שתי מדידות שונות זו מזו לא ניתן לדעת איזו מהן מדויקת יותר, ושמדידה שלישית מסייעת לזהות תוצאה חריגה ולחשב ממוצע אמין יותר - ואינה נועדה סתם לקבל תוצאה גדולה יותר. כיווני חשיבה ואסטרטגיות: לבחון כל היגד בנפרד ביחס לתרחיש הנתון (שתי מדידות שונות: 5.0 גרם ו-5.8 גרם), ולהימנע מהנחה אוטומטית שהערך הגבוה יותר הוא המדויק יותר. טעויות נפוצות: הנחה שהמדידה הגבוהה יותר היא תמיד המדויקת יותר; מחשבה שמדידה שלישית נועדה רק להגדיל את התוצאה ולא לשפר את אמינותה. מידע נוסף: 4 היגדי נכון/לא נכון הנבדקים יחד כסעיף אחד (יש לענות נכון על כל ההיגדים כדי לעבור), עד 2 ניסיונות ורמז זמין (\"השוו בין שתי המדידות: האם הן קרובות זו לזו או שונות מאוד? חשבו מה יכולה להוסיף מדידה שלישית...\"). צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q1",
+          "questionType": "true-false",
+          "questionText": "لماذا يجب علينا إجراء 3 قياسات على الأقل في العلم؟ قامت باحثة بقياس وزن عيّنة مرتين وحصلت على نتيجتين: 5.0 غرام، 5.8 غرام. اقترحت زميلتها إجراء قياس ثالث. اختاروا: 1. إذا كان هناك قياسان مختلفان، فإن القياس الأكبر هو الأدقّ دائمًا.",
+          "answers": ["صحيح", "غير صحيح"],
+          "correctAnswers": ["غير صحيح"]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q2",
+          "questionType": "true-false",
+          "questionText": "2. إجراء عدة قياسات قد يساعد في حساب معدل أكثر موثوقية.",
+          "answers": ["صحيح", "غير صحيح"],
+          "correctAnswers": ["صحيح"]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q3",
+          "questionType": "true-false",
+          "questionText": "3. عندما يكون لدينا قياسان مختلفان فقط، من الصعب معرفة أيهما يمثل كتلة العينة بشكل أفضل.",
+          "answers": ["صحيح", "غير صحيح"],
+          "correctAnswers": ["صحيح"]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q4",
+          "questionType": "true-false",
+          "questionText": "4. الهدف من القياس الثالث هو الحصول على نتيجة أكبر فقط.",
+          "answers": ["صحيح", "غير صحيح"],
+          "correctAnswers": ["غير صحيح"]
+        }
+      ]
+    }
+  ]
+}

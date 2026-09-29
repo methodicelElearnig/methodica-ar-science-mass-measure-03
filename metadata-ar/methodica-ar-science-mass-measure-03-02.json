@@ -1,0 +1,106 @@
+{
+  "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/",
+  "title": "وقت التدريب 2",
+  "learningUnitId": "methodica-ar-science-mass-measure-03",
+  "componentPurpose": "practice",
+  "isAssessment": false,
+  "recommendedAfterFail": ["https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/methodica-science-mass-measure-03-01/"],
+  "isRequired": true,
+  "relativeDifficulty": 2,
+  "masteryLevel": null,
+  "order": 2,
+  "depthLevel": "core-curriculum-basic",
+  "cognitiveLevels": ["applying-a-model-or-procedure"],
+  "languages": ["Arabic"],
+  "skills": [],
+  "estimatedTimeInMinutes": 14,
+  "createdAt": "2026-09-28T00:00:00.000Z",
+  "updatedAt": "2026-09-28T00:00:00.000Z",
+  "subContent": [
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-001/",
+      "title": "دقّة عالية في القياس",
+      "informationToBot": "מטרת הפריט: לתרגל זיהוי מצבים שבהם נדרשת רמת דיוק גבוהה במיוחד במדידת מסה. מה התלמיד אמור להבין/לתרגל: לזהות שדרישת הדיוק במדידה תלויה בהשלכות של טעות - ככל שטעות קטנה עלולה לגרום לנזק גדול יותר (בריאותי, כלכלי), כך נדרשת רמת דיוק גבוהה יותר. כיווני חשיבה ואסטרטגיות: לבחון כל תרחיש ולשאול 'מה יקרה אם המדידה תהיה מעט לא מדויקת - האם זה משנה משמעותית את התוצאה או ההשלכה?'. טעויות נפוצות: בחירת תרחישים יומיומיים (כמו שקילת ירקות) כדורשים דיוק גבוה, או פספוס תרחישים עם השלכה כספית/בריאותית (תרופה, זהב) כדורשים דיוק גבוה. מידע נוסף: שאלת בחירה מרובה (סמנו 2 תשובות נכונות מתוך 4); שני ניסיונות, עם רמז זמין לאחר ניסיון ראשון שגוי ('היכן טעות קטנה עלולה לגרום לנזק גדול או להפסד כספי משמעותי?'). המסך מגיע לאחר מסך מעבר קצר שמציג שהתרגול כולל 3 שאלות ושדי בתשובה נכונה על 2 מתוך 3 כדי להתקדם. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-001/q1",
+          "questionType": "choice",
+          "questionText": "أين نحتاج إلى دقّة أعلى؟ اختاروا الحالتين اللتين تحتاجان إلى دقّة عالية جدًا:",
+          "answers": ["قياس وزن بندورة لتحضير سلطة", "قياس وزن مادة لتحضير دواء", "قياس وزن خاتم ذهب للبيع", "قياس وزن كرة قدم للتدريب"],
+          "correctAnswers": ["قياس وزن مادة لتحضير دواء", "قياس وزن خاتم ذهب للبيع"]
+        }
+      ]
+    },
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-002/",
+      "title": "لماذا نكرر القياس عدة مرات",
+      "informationToBot": "מטרת הפריט: לתרגל את ההיגיון שעומד בבסיס ביצוע מדידות חוזרות לאותה דגימה. מה התלמיד אמור להבין/לתרגל: מדידה חוזרת של אותה דגימה נועדה לצמצם את השפעתן של טעויות מדידה אקראיות ולהגביר את הביטחון בתוצאה, ולא כדי לקבל מספר גדול יותר, לחסוך זמן, או להגדיל את הסיכוי לתוצאה רצויה. כיווני חשיבה ואסטרטגיות: לקשר בין חזרתיות המדידה לבין הקטנת אי-הוודאות הסטטיסטית - חזרה על מדידה ממצעת טעויות אקראיות שיכולות להטות מדידה בודדת. טעויות נפוצות: בלבול בין מטרת החזרה על המדידה (הקטנת טעויות אקראיות) לבין הגדלת התוצאה המספרית או חיסכון בזמן. מידע נוסף: שאלת בחירה יחידה מתוך 4 אפשרויות; שני ניסיונות, רמז זמין לאחר ניסיון ראשון שגוי ('האם מדידה יחידה מייצגת או נותנת את התוצאה הנכונה?'). צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-002/q1",
+          "questionType": "choice",
+          "questionText": "قامت عالِمة بقياس وزن نفس العينة ثلاث مرات. لماذا؟",
+          "answers": ["لتقليل تأثير أخطاء القياس العشوائية", "لزيادة احتمال الحصول على النتيجة المطلوبة", "للحصول على رقم أكبر في كل قياس", "لتوفير الوقت عند إجراء القياسات"],
+          "correctAnswers": ["لتقليل تأثير أخطاء القياس العشوائية"]
+        }
+      ]
+    },
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-003/",
+      "title": "قياس أم شعور؟",
+      "informationToBot": "מטרת הפריט: לתרגל את ההבחנה בין ראיה מדעית מבוססת-מדידה לבין הערכה סובייקטיבית/תחושתית. מה התלמיד אמור להבין/לתרגל: טענה המבוססת על מספר ויחידת מידה (מדידה כמותית) מספקת ראיה מדעית טובה יותר מטענה המבוססת על תחושה, כיוון שניתן לבדוק ולהשוות אותה. כיווני חשיבה ואסטרטגיות: להשוות בין שני סוגי הטענות בתרחיש - טענה עם ערך מספרי ויחידת מידה מול טענה המבוססת על תחושה גרידא - ולזהות איזו מהן ניתנת לאימות אובייקטיבי. טעויות נפוצות: הנחה שגויה ששתי הטענות שקולות מבחינת אמינות, או שאי אפשר להשוות ביניהן כלל. מידע נוסף: שאלת בחירה יחידה מתוך 4 אפשרויות, מוצגת כתרחיש ויכוח בין בני זוג ('משפחת גראם'); שני ניסיונות, רמז זמין לאחר ניסיון ראשון שגוי ('איזו טענה מבוססת על נתונים כמותיים?'). צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-003/q1",
+          "questionType": "choice",
+          "questionText": "قياس أم شعور؟ دارَ نقاش في عائلة غرام. كان الزوجان في ورشة قاس وزن، وقاما بقياس وزن خاتم ذهب: السيدة ميلي (غرام): \"كتلة الخاتم هي 5.20 غرام\". السيد كيلو (غرام): \"أنتِ مخطئة، الخاتم ثقيل\". أيّ الادّعاءين يوفّر دليلًا علميًا أفضل؟",
+          "answers": ["كِلا الادعاءَين يوفّران أدلة قوية بنفس الدرجة", "ادّعاء السيد كيلو: يصف الشعور بالوزن", "ادّعاء السيدة ميلي: يستند إلى عدد ووحدة قياس", "لا يمكن المقارنة بين الادّعاءَين"],
+          "correctAnswers": ["ادّعاء السيدة ميلي: يستند إلى عدد ووحدة قياس"]
+        }
+      ]
+    },
+    {
+      "id": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-004/",
+      "title": "اختيار الميزان وفقًا لمعيار FIFA",
+      "informationToBot": "מטרת הפריט: לתרגל תרחיש מדידה מציאותי רב-שלבי - בחירת כלי מדידה מתאים, חישוב ממוצע, והשוואה לתקן. מה התלמיד אמור להבין/לתרגל: (א) יש לבחור מאזניים שרמת הדיוק שלהם מתאימה לדרישות התקן (לא פחות ולא יותר מהנדרש) - כאן, כדור בטווח תקן של 410-450 גרם (טווח של 40 גרם) אינו מצריך דיוק של אלפיות גרם; (ב) חישוב ממוצע של מדידות חוזרות (428, 430, 429 גרם) - הממוצע הוא 429 גרם; (ג) קביעה האם תוצאת הממוצע עומדת בטווח התקן; (ד) ההבנה שממוצע של כמה מדידות מצמצם את השפעתן של טעויות אקראיות בהשוואה למדידה בודדת. כיווני חשיבה ואסטרטגיות: להתאים את רמת הדיוק הנדרשת לגודל טווח הסטייה המותר בתקן; לחשב ממוצע כסכום המדידות חלקי מספרן; להשוות את הממוצע המחושב לטווח התקן; לזהות שמדידה חוזרת ומיצוע מקטינים אי-ודאות אקראית. טעויות נפוצות: בחירת מאזניים מדויקים מדי (אנליטיים) מתוך מחשבה ש'יותר מדויק תמיד עדיף', ללא התחשבות בכך שרמת הדיוק צריכה להתאים לדרישה בפועל; טעויות חישוב בממוצע; בלבול לגבי מטרת המיצוע (חושבים שהוא נועד להגדיל את התוצאה ולא לצמצם טעויות אקראיות). מידע נוסף: פריט מורכב מארבעה סעיפים (א-ד) התואמים לתסריט ההפקה המקורי (שקפים 86-106): סעיף א - שאלת בחירה יחידה (רמת דיוק מתאימה); סעיף ב - קלט מספרי (חישוב ממוצע); סעיף ג - שאלת נכון/לא נכון (עמידה בתקן); סעיף ד - שאלת בחירה יחידה (מטרת המיצוע). כל סעיף עם שני ניסיונות ורמז ייעודי. מסך מעבר בפתיחה מציין שמדובר בשני תרגילים ברמת קושי גבוהה יותר, וכי יש לענות נכון על 3 מתוך 4 סעיפים כדי להתקדם. צילום מסך: לא צורף.",
+      "contentType": "practice",
+      "mediaFormat": "interactive-content",
+      "questions": [
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-004/q1",
+          "questionType": "choice",
+          "questionText": "أ. تفحص شركة لمعدات الرياضة ما إذا كانت كرات القدم مطابقة لمعيار FIFA (الاتحاد الدولي لكرة القدم). بحسب المعيار، يجب أن تكون كتلة الكرة المعيارية بين 410 و-450 غرام. ساعدوا الشركة على اختيار الميزان الأنسب للمهمّة: أيّ نوع ميزان هو الأنسب للمهمّة؟",
+          "answers": ["ميزان مطبخ", "ميزان مختبر", "ميزان تحليلي", "لا يمكن المعرفة"],
+          "correctAnswers": ["ميزان مطبخ"]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-004/q2",
+          "questionType": "numeric",
+          "questionText": "ب. قاس التقنيّ كتلة الكرة نفسها 3 مرات: 428 غرام، 430 غرام، 429 غرام. أكملوا: معدل الكتلة هو ___ غرام.",
+          "answers": [],
+          "correctAnswers": [429]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-004/q3",
+          "questionType": "true-false",
+          "questionText": "ت. حدّدوا ما إذا كانت الجملة التالية صحيحة أم غير صحيحة: استنادًا إلى المعدل الذي حسبتموه، الكرة مطابقة لمعيار FIFA.",
+          "answers": ["صحيح", "غير صحيح"],
+          "correctAnswers": ["صحيح"]
+        },
+        {
+          "questionId": "https://lomdot.education.gov.il/metodica/720active/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-004/q4",
+          "questionType": "choice",
+          "questionText": "ت. لماذا من الأفضل حساب معدل 3 قياسات بدلًا من الاعتماد على قياس واحد فقط؟",
+          "answers": ["للحصول على نتيجة أكبر من نتائج القياسات", "لضمان أن الكرة مطابقة للمعيار", "لتقصير وقت إجراء الفحص", "لتقليل تأثير الأخطاء العشوائية"],
+          "correctAnswers": ["لتقليل تأثير الأخطاء العشوائية"]
+        }
+      ]
+    }
+  ]
+}
