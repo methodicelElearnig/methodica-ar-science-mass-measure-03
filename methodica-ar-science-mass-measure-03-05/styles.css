@@ -209,8 +209,8 @@ img { display: block; max-width: none; }
   left: 0; top: 0; width: 427px; height: 636px;
   overflow: hidden;
 }
-/* סימולציית שקילה — גררו את שרשרת הזהב (weighting-application/gold-
-   necklace.png) אל המאזניים (weighting-application/weight-machine.png)
+/* סימולציית שקילה — גררו את שרשרת הזהב (assets/images/gold-
+   necklace.png) אל המאזניים (assets/images/weight-machine.png)
    כדי לקבל מדידה. אין כפתור "מדידת מסה" נפרד (כפי שמתואר בשקפים
    132-133) — לפי בקשה מפורשת: הגרירה עצמה היא פעולת המדידה (אותה
    מוסכמה כמו makeScaleSimulation בסיין 1), וה"שאלה" (טבלת המילוי

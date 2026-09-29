@@ -114,9 +114,12 @@ $ComponentGlob  = 'methodica-ar-science-mass-measure-03-[0-9][0-9]'
 #    SINGULAR there — the components use styles.css.)
 #    This unit has no iframe sub-app. The two Hebrew-named folders in component 01 are a
 #    dead React prototype of the weighing simulation — the shipped simulation is vanilla JS
-#    inside script.js — and component 05's weighting-application/ holds stray reference
-#    images. None is referenced, and the component rule ships only assets/ plus the three
-#    named files, so all three are already excluded without naming them.
+#    inside script.js. Neither is referenced, and the component rule ships only assets/ plus
+#    the three named files, so both are already excluded without naming them.
+#    ⚠️ Component 05's weighting-application/ was NOT stray: screen 2's weighing simulation
+#    loads weight-machine.png and gold-necklace.png from it, so every package built by this
+#    rule shipped those two images missing (the Hebrew 19-23.09 packages lack them too).
+#    Both now live in 05/assets/images/, where the component rule ships them.
 $ComponentSubApps = @()
 $SubAppFiles      = @('index.html', 'script.js', 'style.css')
 
