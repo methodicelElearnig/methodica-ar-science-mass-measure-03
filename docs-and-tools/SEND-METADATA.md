@@ -1,11 +1,42 @@
 # Sending metadata to the Kata catalog
 
-`send-metadata.ps1` pushes the `metadata/` folder (1 unit + 5 components + their
-items) into the Katalog (Kata) catalog at `https://kata.cet.ac.il/api/v1`.
+`send-metadata.ps1` pushes the `metadata/` folder (5 components + their items, into
+the existing Hebrew unit — see below) into the Katalog (Kata) catalog at
+`https://kata.cet.ac.il/api/v1`.
 It **upserts**: for each entity it does a `GET` by uniqueKey, then `PATCH` if it
 already exists or `POST` if it doesn't — so it's safe to run more than once.
 
 See [KATA-API-DETAILED.md](../../KATA-API-DETAILED.md) for the full endpoint schemas.
+
+## This unit: Arabic components inside the existing Hebrew unit
+
+`methodica-ar-science-mass-measure-03` has **no unit of its own in Kata**. Kata binds a learning
+objective to exactly one unit: a separate Arabic unit was rejected for the ratio unit
+(`409 "objective already bound to a unit (strict 1:1)"`, 2026-09-24), and this unit shares its
+objective with the Hebrew unit. The Kata team's instruction is to add the Arabic components to the
+existing unit, as `methodica-ar-math-ratio-01` and `methodica-ar-science-mass-measure-01` / `-02` do.
+
+So the script runs in **parent-unit mode** by default: `$ParentUnitKey =
+'methodica-science-mass-measure-03'` (the Hebrew unit; override with `-ParentUnitKey`,
+`-ParentUnitKey ''` restores the own-unit upsert).
+
+- The parent unit is **read-only**. One `GET` confirms it exists; then the 5 Arabic components
+  and their items are created under
+  `/api/v1/content-units/methodica-science-mass-measure-03/components`. No `POST` / `PATCH` ever
+  goes to the unit, and `metadata/*_unit.json` is not read.
+- The key file is **`docs-and-tools/kata-api-key.txt`**, next to the scripts.
+- Values that must match the live Hebrew components (`order`, `isRequired`, item `mediaFormat` …)
+  are taken from Kata, not from the Hebrew repo's `metadata/`, which went stale after 22.09.
+  Components 05 and 06 share order 4, as in Kata (06 is 05's second-chance version).
+- A first send creates 5 components + 22 items and links 02 → 01 and 05 → 06:
+  `created=27 updated=2 failed=0`. A re-send: `created=0 updated=29`.
+- **Check every send** with `retrieve-metadata.ps1 -UnitKey methodica-science-mass-measure-03
+  -KeepRaw -MetadataDir '' -OutDir ..\..\deployments\!kata-snapshots\<date>-<what>` before and
+  after, and diff the two: the Hebrew records must stay byte-identical.
+
+**Sent 2026-09-29** from `64b30d2`: `created=27 updated=2 failed=0`, re-send `created=0
+updated=29`, Hebrew records unchanged, Kata equals `metadata/` (0 differences). Full record:
+`deployments/!kata-snapshots/KATA-SEND-2026-09-29.md`.
 
 ## Requirements
 

@@ -21,6 +21,9 @@ kata-api-key.txt
 send-metadata.log
 retrieve-metadata.log
 rename-to-iri.log
+# Timestamped copies of a send log, kept next to the key (send-metadata.<kind>-<ts>.log).
+# The one archived deliberately, send-metadata-2026-09-19-create.log, uses a dash and stays tracked.
+send-metadata.*.log
 
 # Catalogue snapshot pulled down to diff against metadata/ — not a source of truth.
 metadata-from/

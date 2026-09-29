@@ -127,10 +127,21 @@ rather than content.
 
 ## First run against this unit
 
-`methodica-ar-science-mass-measure-03` was created in the catalog on 2026-09-19
-(`send-metadata.log`: `created=26 updated=1 failed=0`) and updated on 2026-09-22 with the
-re-extracted metadata. Record here which fields genuinely drift between the catalog and
-the repo, so later diffs can be read quickly.
+The **Hebrew** unit `methodica-science-mass-measure-03` was created in the catalog on
+2026-09-19 (`send-metadata.log`: `created=26 updated=1 failed=0`) and updated on 2026-09-22
+with the re-extracted metadata. (Until 2026-09-29 this line named the Arabic slug: the text
+came over with the fork and the identity rename rewrote it.)
+
+The **Arabic** components of `methodica-ar-science-mass-measure-03` live inside that Hebrew unit
+(see SEND-METADATA.md). They were sent on 2026-09-29, so retrieve with
+`-UnitKey methodica-science-mass-measure-03`: one response lists the 5 Hebrew and the 5 Arabic
+components. Pass `-MetadataDir ''`, or the audit reports every Hebrew record as "not in
+metadata/". Output files are named by slug, so Hebrew and Arabic never collide.
+
+Drift found so far: between 22.09 and 29.09 the Hebrew unit was edited in the catalog
+(02 `isRequired` → false, 06 `order` → 4, 01 items 002/003/006 `mediaFormat` → `video`); the
+Arabic `metadata/` follows Kata since `64b30d2`. Record further drift here, so later diffs can be
+read quickly.
 
 Known blind spots in `-FailOnDrift`, worth knowing before you trust an exit code of 0:
 the audit compares `uniqueKey`, `hostedContentRef` and every `questions[]` entry, and
