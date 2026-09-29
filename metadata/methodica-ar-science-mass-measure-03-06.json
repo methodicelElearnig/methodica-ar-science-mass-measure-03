@@ -8,7 +8,7 @@
   "isRequired": true,
   "relativeDifficulty": 5,
   "masteryLevel": null,
-  "order": 5,
+  "order": 4,
   "depthLevel": "core-curriculum-basic",
   "cognitiveLevels": ["analyzing"],
   "languages": ["Arabic"],

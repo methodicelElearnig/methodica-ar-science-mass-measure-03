@@ -5,7 +5,7 @@
   "componentPurpose": "practice",
   "isAssessment": false,
   "recommendedAfterFail": ["https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-01/"],
-  "isRequired": true,
+  "isRequired": false,
   "relativeDifficulty": 2,
   "masteryLevel": null,
   "order": 2,
