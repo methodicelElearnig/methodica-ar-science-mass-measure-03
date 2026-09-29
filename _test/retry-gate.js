@@ -50,7 +50,7 @@ const fs = require('fs');
 const path = require('path');
 
 const BASE = process.argv[2] || path.join(__dirname, '..');
-const UNIT_SLUG = 'methodica-science-mass-measure-03';
+const UNIT_SLUG = 'methodica-ar-science-mass-measure-03';
 
 let JSDOM = null, VirtualConsole = null;
 try { ({ JSDOM, VirtualConsole } = require('jsdom')); } catch (e) {

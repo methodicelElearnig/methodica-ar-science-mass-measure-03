@@ -9,7 +9,7 @@
    התפרים הפר-סיניים, כולם נקראים בזמן CALL ולא בזמן טעינה (וזו הסיבה
    ש-script.js יכול להיטען אחרי הקבצים המשותפים):
      SCREEN_TO_SUBCONTENT   מסך -> [סיומת פריט, עמוד-בפריט]; null = אין פריט בקטלוג
-     XAPI_COMP_SLUG         למשל 'methodica-science-mass-measure-03-02'
+     XAPI_COMP_SLUG         למשל 'methodica-ar-science-mass-measure-03-02'
      XAPI_COMP_ID           XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/'
      XAPI_EVAL_ITEMS        פריטים שנושאים שאלה מדורגת בקוד (לא רק במטא-דאטה)
      XAPI_ITEM_RESULT       אופציונלי; סיומת פריט -> פונקציה שמחזירה result מפורש

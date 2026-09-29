@@ -16,7 +16,7 @@ let currentScreen = 0;
    כאן הייתה עוצרת את טעינת כל script.js */
 let savedCharacter = null;
 try {
-  savedCharacter = localStorage.getItem('lomda_selectedCharacter');
+  savedCharacter = localStorage.getItem('methodica_ar_science_mass_measure_03_selectedCharacter');
 } catch (e) { /* localStorage חסום (opaque origin/פרטיות) — נמשיך בלי שמירה */ }
 window.lomdaState = {
   selectedCharacter: savedCharacter || null
@@ -179,7 +179,7 @@ function s21Finish() {
   const _n = getStationBScore();
   xapiEndComponent({ success: _n >= 4, score: { scaled: _n / 5 } },
     document.getElementById('s21-check'));
-  if (DEV_NAV) window.location.href = '../methodica-science-mass-measure-03-02/index.html';
+  if (DEV_NAV) window.location.href = '../methodica-ar-science-mass-measure-03-02/index.html';
 }
 
 /* ---------- Dev postMessage bridge (index_dev.html free nav) ---------- */
@@ -229,7 +229,7 @@ function selectOption(cardEl) {
   /* try/catch: localStorage חסום ב-SecurityError בפתיחה מ-file:// בחלק
      מהדפדפנים/opaque origins — שמירת ההעדפה בין הסינים היא nice-to-have,
      אין להפיל את המסך הראשון אם היא נכשלת */
-  try { localStorage.setItem('lomda_selectedCharacter', cardEl.dataset.value); } catch (e) {}
+  try { localStorage.setItem('methodica_ar_science_mass_measure_03_selectedCharacter', cardEl.dataset.value); } catch (e) {}
   const btn = document.getElementById('s0-continue');
   if (btn) btn.disabled = false;
 }
@@ -3747,7 +3747,7 @@ var SCREEN_TO_SUBCONTENT = {
   21: ['013', 2]    /* שאלה 5 — אצל מי הטעות קריטית יותר */
 };
 
-var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-01';
+var XAPI_COMP_SLUG = 'methodica-ar-science-mass-measure-03-01';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
 /* פריטים שנושאים שאלה **מדורגת בקוד**.
@@ -3760,7 +3760,7 @@ var XAPI_EVAL_ITEMS = {
   '009': 1, '010': 1, '011': 1, '012': 1, '013': 1
 };
 
-var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-01.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-science-mass-measure-03-01.json';
 
 /* קישור בין סינים — חזרה: אם הגענו לכאן עם #screen=N (מכפתור "חזרה"
    בסיין הבא, סיין 2), קופצים ישר למסך הזה במקום למסך הראשון. אותה

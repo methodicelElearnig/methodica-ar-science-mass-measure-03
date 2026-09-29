@@ -128,7 +128,7 @@ function emptyUnitState() {
 /* מפתחות ה-localStorage שהיו עד v3 מקור האמת, ומ-v4 הם קאש סינכרוני בלבד.
    מוחזקים ברשימה אחת כי שני אתרים צריכים אותה: ה-getters (fallback כשאין
    מסמך) ו-initResumeResetHatch (איפוס חייב לנקות גם את הקאש). */
-var UI_CHARACTER_KEY = 'lomda_selectedCharacter';
+var UI_CHARACTER_KEY = 'methodica_ar_science_mass_measure_03_selectedCharacter';
 /* ⚠️ המפתחות כאן חייבים להיות בדיוק אלה שהסינים כותבים בפועל. מפתח שחסר ברשימה
    פשוט לא ייכנס ל-results שבמסמך, ואז moedAFullyPassed() ימשיך לקרוא
    מ-localStorage בלבד — כלומר לומד שממשיך את אותו registration במכשיר אחר
@@ -444,7 +444,7 @@ function sendCompletedOnce(ledger, key, objectType, result, opts) {
    מניסיון קודם עלולה לשלוח לומד למסלול שהוא לא עבר בפעם הזאת. */
 /* ⚠️ נושא את slug היחידה במכוון. שתי יחידות שחולקות את המפתח הזה חולקות יומן,
    וכל אחת משתיקה בשקט את הדיווחים של השנייה. */
-var NAV_EDGE_KEY = 'lomda_nav_edges::methodica-science-mass-measure-03';
+var NAV_EDGE_KEY = 'lomda_nav_edges::methodica-ar-science-mass-measure-03';
 
 function _readEdges() {
   try {

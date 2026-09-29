@@ -9,7 +9,7 @@ let currentScreen = 0;
 
 let savedCharacter = null;
 try {
-  savedCharacter = localStorage.getItem('lomda_selectedCharacter');
+  savedCharacter = localStorage.getItem('methodica_ar_science_mass_measure_03_selectedCharacter');
 } catch (e) { /* localStorage חסום (opaque origin/פרטיות) — נמשיך בלי שמירה */ }
 window.lomdaState = {
   selectedCharacter: savedCharacter || null
@@ -117,7 +117,7 @@ function s0Continue() { goTo(1); }
    נתיב יחסי + #screen=N, אותה מוסכמה בדיוק כמו בפרויקט הקודם,
    Methodica-science-mass-measure-02-linked. */
 function s0BackToPreviousSain() {
-  window.location.href = '../methodica-science-mass-measure-03-05/index.html#screen=4';
+  window.location.href = '../methodica-ar-science-mass-measure-03-05/index.html#screen=4';
 }
 
 /* =========================================================
@@ -422,7 +422,7 @@ function resetScreenState3() {
    ========================================================= */
 
 /* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
-   (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in
+   (methodica-ar-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in
    the first pass. One hint for the *first* draggable element only. `slotEl` must already be
    `position:relative` (see .dq-source-slot). Uses `slotEl.dataset.gestureShown` (lives on the
    slot's own stable DOM node, survives the inner draggable card being recreated on every render()).
@@ -456,7 +456,7 @@ function showDragGestureHint(slotEl) {
      feedback: the hand+rings were sitting directly on top of — and hiding — the dragged element's
      own label text).
      Measured from the actual rendered LABEL TEXT's own right edge (via Range, not slotEl's
-     offsetWidth) — reported 2026-09-10 (ported fix from Sain 1, methodica-science-mass-measure-03-01,
+     offsetWidth) — reported 2026-09-10 (ported fix from Sain 1, methodica-ar-science-mass-measure-03-01,
      which found the same bug on "התקן" here): offsetWidth-based math assumed the text sits centered
      with a wide, fairly constant margin inside the pill, which doesn't hold for every label/position —
      sizing off the container's width is only ever a proxy for "past the text", and a wrong one
@@ -1287,12 +1287,12 @@ var SCREEN_TO_SUBCONTENT = {
   4: ['001', 4]     /* סעיף ג — q3 (גרירה), ובסופו כפתור "סיימתי" */
 };
 
-var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-06';
+var XAPI_COMP_SLUG = 'methodica-ar-science-mass-measure-03-06';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
 var XAPI_EVAL_ITEMS = { '001': 1 };
 
-var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-06.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-science-mass-measure-03-06.json';
 
 /* אתחול */
 scaleApp();

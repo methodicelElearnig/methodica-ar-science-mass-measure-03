@@ -30,7 +30,7 @@ const fs = require('fs');
 const path = require('path');
 
 const BASE = process.argv[2] || path.join(__dirname, '..');
-const UNIT_SLUG = 'methodica-science-mass-measure-03';
+const UNIT_SLUG = 'methodica-ar-science-mass-measure-03';
 
 /* Sain 3 was pulled from the sequence and archived on 2026-09-08; navigation
    goes 02 -> 04 directly. The gap is intentional — do not "restore" it. */

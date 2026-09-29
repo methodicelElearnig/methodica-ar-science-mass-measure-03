@@ -127,7 +127,7 @@ rather than content.
 
 ## First run against this unit
 
-`methodica-science-mass-measure-03` was created in the catalog on 2026-09-19
+`methodica-ar-science-mass-measure-03` was created in the catalog on 2026-09-19
 (`send-metadata.log`: `created=26 updated=1 failed=0`) and updated on 2026-09-22 with the
 re-extracted metadata. Record here which fields genuinely drift between the catalog and
 the repo, so later diffs can be read quickly.

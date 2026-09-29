@@ -1,6 +1,6 @@
 'use strict';
 /* ═══════════════════ xAPI (720) — identity ═══════════════════
-   משותף לחמשת הסינים של methodica-science-mass-measure-03 (01, 02, 04, 05, 06 —
+   משותף לחמשת הסינים של methodica-ar-science-mass-measure-03 (01, 02, 04, 05, 06 —
    סין 03 הועבר לארכיון ואינו קיים). נטען ראשון.
 
    התחילית הקנונית של היחידה. כל מזהה שהלומדה מדווחת נבנה ממנה, והיא חייבת
@@ -29,10 +29,10 @@
 
    הבדיקה אינה ידנית: 50-loader.js משווה את XAPI_COMP_ID מול window.METADATA.id
    בכל טעינה של כל סין, וזועק לקונסול על אי-התאמה. */
-var XAPI_ID_PREFIX = 'https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03/';
+var XAPI_ID_PREFIX = 'https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/';
 
 /* מזהה היחידה — **slug בלבד, לא IRI**, ושווה בדיוק ל-id ב-
-   metadata/methodica-science-mass-measure-03_unit.json.
+   metadata/methodica-ar-science-mass-measure-03_unit.json.
 
    הנחיות 720 v2.5 §2.7 הסירו את חובת ה-IRI **מיחידת התוכן בלבד**; עבור רכיב
    ופריט חובת ה-IRI מגרסה 2.2 עומדת בעינה, ולכן XAPI_ID_PREFIX למעלה נשאר URL
@@ -46,7 +46,7 @@ var XAPI_ID_PREFIX = 'https://lomdot.education.gov.il/metodica/720active/science
    ⚠️ חייב להישאר זהה ל-learningUnitId שבכל ששת קבצי המטא-דאטה: טופס דיווח
    הבעיות רושם shortId(METADATA.learningUnitId) כעמודת היחידה בגיליון המשותף,
    וההתאמה בין השניים היא מה שמייצר עץ קטלוג נכון. */
-window.XAPI_UNIT_ID = 'methodica-science-mass-measure-03';
+window.XAPI_UNIT_ID = 'methodica-ar-science-mass-measure-03';
 
 /* המקטע האחרון של מזהה קנוני — ה-slug הקצר שטופס דיווח הבעיות רושם. */
 function shortId(u) { return String(u || '').replace(/\/+$/, '').split('/').pop(); }

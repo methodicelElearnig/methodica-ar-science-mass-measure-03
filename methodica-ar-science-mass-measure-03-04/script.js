@@ -8,10 +8,10 @@ const TOTAL_SCREENS = 4;
 let currentScreen = 0;
 
 /* הדמות שנבחרה בסיין 1 נשמרה ב-localStorage תחת אותו מפתח בדיוק
-   ('lomda_selectedCharacter') — כאן היא נקראת מחדש (גשר בין סינים). */
+   ('methodica_ar_science_mass_measure_03_selectedCharacter') — כאן היא נקראת מחדש (גשר בין סינים). */
 let savedCharacter = null;
 try {
-  savedCharacter = localStorage.getItem('lomda_selectedCharacter');
+  savedCharacter = localStorage.getItem('methodica_ar_science_mass_measure_03_selectedCharacter');
 } catch (e) { /* localStorage חסום (opaque origin/פרטיות) — נמשיך בלי שמירה */ }
 window.lomdaState = {
   selectedCharacter: savedCharacter || null
@@ -176,7 +176,7 @@ function s0Continue() { goTo(1); }
    הקישור מדלג עליו ישירות לסיין 2 — אותו יעד שסיין 3 עצמו הפנה אליו
    לפני ההוצאה מהרצף. נתיב יחסי + #screen=N. */
 function s0BackToPreviousSain() {
-  window.location.href = '../methodica-science-mass-measure-03-02/index.html#screen=9';
+  window.location.href = '../methodica-ar-science-mass-measure-03-02/index.html#screen=9';
 }
 
 /* =========================================================
@@ -783,7 +783,7 @@ function s3Finish() {
   const _n = getStation04Score();
   xapiEndComponent({ success: _n === 3, score: { scaled: _n / 3 } },
     document.getElementById('s3-check'));
-  if (DEV_NAV) window.location.href = '../methodica-science-mass-measure-03-05/index.html';
+  if (DEV_NAV) window.location.href = '../methodica-ar-science-mass-measure-03-05/index.html';
 }
 
 function s3OpenHint() {
@@ -1148,13 +1148,13 @@ var SCREEN_TO_SUBCONTENT = {
   3: ['003', 1]     /* שאלה 3/3 — נכון/לא נכון, ארבע שורות = q1..q4 */
 };
 
-var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-04';
+var XAPI_COMP_SLUG = 'methodica-ar-science-mass-measure-03-04';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
 /* פריטים שנושאים שאלה **מדורגת בקוד**. שלושתם כאלה בסין הזה. */
 var XAPI_EVAL_ITEMS = { '001': 1, '002': 1, '003': 1 };
 
-var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-04.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-science-mass-measure-03-04.json';
 
 /* אתחול */
 scaleApp();

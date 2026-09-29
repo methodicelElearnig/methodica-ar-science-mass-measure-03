@@ -591,7 +591,7 @@ img { display: block; max-width: none; }
 .dq-drag-card.locked { cursor: default; }
 
 /* Gesture Hint — Cursor Scroll + Cursor Drag (SELF-QA.md §7, Figma nodes 2915:35184/2915:35185).
-   Ported from Sain 1 (methodica-science-mass-measure-03-01, which this family's SELF-QA.md
+   Ported from Sain 1 (methodica-ar-science-mass-measure-03-01, which this family's SELF-QA.md
    governs) — missed here in the first pass. עודכן (2026-09-17): #s4-scroll-gesture הוסר —
    מסך 5 כבר לא גולל (ראו הערה למעלה ליד .s4-dq-content). */
 .gesture-hint-scroll-wrap {

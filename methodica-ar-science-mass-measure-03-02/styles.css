@@ -1,7 +1,7 @@
 /* =========================================================
    לומדה 720 — מדעים יעד 3 | סיין 2
    תשתית בסיס בלבד — מועתקת מהמנוע/רכיבים הגלובליים המאומתים
-   של סיין 1 (methodica-science-mass-measure-03-01), לפי מוסכמת
+   של סיין 1 (methodica-ar-science-mass-measure-03-01), לפי מוסכמת
    "כל סין הוא חבילה עצמאית" (ראו ARCHITECTURE.md של סיין 1,
    סעיף "מבנה נכסים"). ייבנה בהדרגה מסך אחר מסך לפי הבריף/פיגמה/
    תסריט ההפקה, בדיוק כמו שנבנה סיין 1.
@@ -884,7 +884,7 @@ img { display: block; max-width: none; }
 .fake-scrollbar-thumb:active { cursor: grabbing; }
 
 /* Gesture Hint — Cursor Scroll overlay for .s7-content. Ported from
-   methodica-science-mass-measure-03-04 (s2MaybeShowScrollGesture pattern). Positioned as a sibling
+   methodica-ar-science-mass-measure-03-04 (s2MaybeShowScrollGesture pattern). Positioned as a sibling
    of .s7-content using the identical box (top:139px/left:40px/right:40px/bottom:90px) so it sits
    fixed over the scroll viewport instead of scrolling away with the content. See script.js for the
    show-once/hide-on-real-scroll logic (s7MaybeShowScrollGesture). */

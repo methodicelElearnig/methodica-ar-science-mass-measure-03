@@ -8,7 +8,7 @@ const TOTAL_SCREENS = 10;
 let currentScreen = 0;
 
 /* הדמות שנבחרה בסיין 1 (מסך 1, TwoOptionSelection) נשמרה שם
-   ב-localStorage תחת אותו מפתח בדיוק ('lomda_selectedCharacter') —
+   ב-localStorage תחת אותו מפתח בדיוק ('methodica_ar_science_mass_measure_03_selectedCharacter') —
    כאן היא נקראת מחדש, כדי שהדמות הנלווית תמשיך "לזכור" את הבחירה
    גם בסיין נפרד לחלוטין (סיין = מסמך HTML נפרד, window.lomdaState
    לא "עובר" בין סינים בטעינת עמוד מלאה — localStorage הוא הגשר).
@@ -17,7 +17,7 @@ let currentScreen = 0;
    הייתה עוצרת את טעינת כל script.js */
 let savedCharacter = null;
 try {
-  savedCharacter = localStorage.getItem('lomda_selectedCharacter');
+  savedCharacter = localStorage.getItem('methodica_ar_science_mass_measure_03_selectedCharacter');
 } catch (e) { /* localStorage חסום (opaque origin/פרטיות) — נמשיך בלי שמירה */ }
 window.lomdaState = {
   selectedCharacter: savedCharacter || null
@@ -195,7 +195,7 @@ function s0Continue() { goTo(1); }
    האחרון בפועל שם). נתיב יחסי + #screen=N, אותה מוסכמה בדיוק כמו
    בפרויקט הקודם, Methodica-science-mass-measure-02-linked. */
 function s0BackToPreviousSain() {
-  window.location.href = '../methodica-science-mass-measure-03-01/index.html#screen=21';
+  window.location.href = '../methodica-ar-science-mass-measure-03-01/index.html#screen=21';
 }
 
 /* =========================================================
@@ -1185,7 +1185,7 @@ document.getElementById('s7-hint-overlay').addEventListener('click', function (e
   if (e.target === this) s7CloseHint();
 });
 
-/* Gesture Hint — Cursor Scroll. Ported from methodica-science-mass-measure-03-04's
+/* Gesture Hint — Cursor Scroll. Ported from methodica-ar-science-mass-measure-03-04's
    s2MaybeShowScrollGesture(). Shown once per screen visit, hidden the instant a real scroll is
    attempted (wheel/keydown on .s7-content). */
 function s7MaybeShowScrollGesture() {
@@ -2015,7 +2015,7 @@ function s9Finish() {
   const _s = getSectionScore02();
   xapiEndComponent({ success: _b >= 2 && _s >= 3, score: { scaled: (_b + _s) / 7 } },
     document.getElementById('s9-check'));
-  if (DEV_NAV) window.location.href = '../methodica-science-mass-measure-03-04/index.html';
+  if (DEV_NAV) window.location.href = '../methodica-ar-science-mass-measure-03-04/index.html';
 }
 
 /* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
@@ -2038,12 +2038,12 @@ var SCREEN_TO_SUBCONTENT = {
   9: ['004', 5]     /* סעיף ד — q4 */
 };
 
-var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-02';
+var XAPI_COMP_SLUG = 'methodica-ar-science-mass-measure-03-02';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
 var XAPI_EVAL_ITEMS = { '001': 1, '002': 1, '003': 1, '004': 1 };
 
-var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-02.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-science-mass-measure-03-02.json';
 
 /* קישור בין סינים — חזרה: אם הגענו לכאן עם #screen=N (מכפתור "חזרה"
    בסיין הבא), קופצים ישר למסך הזה במקום למסך הראשון. אותה מוסכמה

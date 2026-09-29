@@ -26,7 +26,7 @@
    האזהרה שם היא על השאלה **לא מכוונת**: "reports were arriving under the
    wrong project until the endpoint was corrected". מה שהופך שיתוף מכוון
    לתקין הוא ששני שדות בטופס נושאים את הזיהוי בכל שליחה:
-     entry.1933069481 = slug היחידה  (methodica-science-mass-measure-03)
+     entry.1933069481 = slug היחידה  (methodica-ar-science-mass-measure-03)
      entry.2070680092 = slug הסין
    כלומר בגיליון המשותף יש עמודה שמפרידה בין היחידות, ודיווח מהיחידה הזאת
    ניתן לזיהוי חד-משמעי. השדות האלה נשלחים מ-window.METADATA, כלומר מהמטא-דאטה

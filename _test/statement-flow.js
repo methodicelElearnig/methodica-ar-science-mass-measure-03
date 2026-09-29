@@ -31,7 +31,7 @@ const fs = require('fs');
 const path = require('path');
 
 const BASE = process.argv[2] || path.join(__dirname, '..');
-const UNIT_SLUG = 'methodica-science-mass-measure-03';
+const UNIT_SLUG = 'methodica-ar-science-mass-measure-03';
 const COMPONENTS = ['01', '02', '04', '05', '06'];
 
 let JSDOM = null;

@@ -105,7 +105,7 @@ $UnitDirs = @{
 
 # Inside a component folder: these files, plus everything under assets/.
 $ComponentFiles = @('index.html', 'script.js', 'styles.css')
-$ComponentGlob  = 'methodica-science-mass-measure-03-[0-9][0-9]'
+$ComponentGlob  = 'methodica-ar-science-mass-measure-03-[0-9][0-9]'
 
 # ── Sub-apps: a self-contained site inside a component, loaded by <iframe> ───
 #    A sub-app is a self-contained site inside a component, pulled in by <iframe>. It has

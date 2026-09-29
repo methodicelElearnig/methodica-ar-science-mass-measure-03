@@ -113,7 +113,7 @@ $LogFile = Join-Path $RepoRoot 'retrieve-metadata.log'
 # ── (2) PER-UNIT — usually fine as-is ───────────────────────────────────────
 # Which language to unwrap the unit's title object with:
 #   { "Hebrew": "מדידת מסה" } -> "מדידת מסה".
-$TitleLangKey = 'Hebrew'
+$TitleLangKey = 'Arabic'
 # Value written to each component's `manufacture`.
 # ⚠️ CHANGED FOR percent-02 (was 'methodica', inherited from scale-01).
 # `manufacture` is a v2.4 field. The 720 standard v2.5 §2.6 renamed it to
@@ -132,7 +132,7 @@ $Manufacture = $null
 # It arrived here pointing at math/percent/02, which is where this script was copied
 # from. In practice it is the THIRD fallback and is not reached while components carry
 # an IRI uniqueKey, so the wrong value never surfaced — which is exactly why it sat.
-if (-not $IdBase) { $IdBase = 'https://lomdot.education.gov.il/metodica/720active/science/mass-measure/03' }
+if (-not $IdBase) { $IdBase = 'https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03' }
 # The authored metadata/ that KATA is audited against (override with -MetadataDir,
 # or pass '' to skip). Not bound to $OutDir: the point is to compare the catalogue
 # with what we MEANT to publish, not with a previous retrieval of itself.

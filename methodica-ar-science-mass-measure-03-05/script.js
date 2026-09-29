@@ -9,7 +9,7 @@ let currentScreen = 0;
 
 let savedCharacter = null;
 try {
-  savedCharacter = localStorage.getItem('lomda_selectedCharacter');
+  savedCharacter = localStorage.getItem('methodica_ar_science_mass_measure_03_selectedCharacter');
 } catch (e) { /* localStorage חסום (opaque origin/פרטיות) — נמשיך בלי שמירה */ }
 window.lomdaState = {
   selectedCharacter: savedCharacter || null
@@ -198,7 +198,7 @@ function s0Continue() { goTo(1); }
    האחרון בפועל שם). נתיב יחסי + #screen=N, אותה מוסכמה בדיוק כמו
    בפרויקט הקודם, Methodica-science-mass-measure-02-linked. */
 function s0BackToPreviousSain() {
-  window.location.href = '../methodica-science-mass-measure-03-04/index.html#screen=3';
+  window.location.href = '../methodica-ar-science-mass-measure-03-04/index.html#screen=3';
 }
 
 /* =========================================================
@@ -843,7 +843,7 @@ document.querySelectorAll('#s3 .scq-opt').forEach(function (opt) {
    ========================================================= */
 
 /* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
-   (methodica-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in
+   (methodica-ar-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in
    the first pass. One hint for the *first* draggable element only. `slotEl` must already be
    `position:relative` (see .dq-source-slot). Uses `slotEl.dataset.gestureShown` (lives on the
    slot's own stable DOM node, survives the inner draggable card being recreated on every render()).
@@ -853,7 +853,7 @@ function showDragGestureHint(slotEl) {
   /* Guards on "was this actually dismissed" (set inside dismiss() below), not "was this function
      ever called" — a redundant reset() call (e.g. a screen revisit, or a scroll-position-driven
      section sync firing twice for one navigation — see the equivalent fix and full writeup in
-     methodica-science-mass-measure-03-06/script.js) can re-render the word bank and wipe a hint that
+     methodica-ar-science-mass-measure-03-06/script.js) can re-render the word bank and wipe a hint that
      was never actually seen/dismissed. Checking for an existing .gesture-hint child (not just a
      one-shot flag) lets a redundant call safely re-add it instead of leaving the slot hint-less. */
   if (!slotEl || slotEl.dataset.gestureDismissed || slotEl.querySelector('.gesture-hint')) return;
@@ -1434,7 +1434,7 @@ function s4SectionGDecision() {
        ממי שהצליח לראות את מסך 5 בכלל. כל מסלול מדווח בנפרד, בנקודת
        הסיום האמיתית שלו. */
     xapiEndComponent(moedAComponentResult(), document.getElementById('s4-check'));
-    if (DEV_NAV) window.location.href = '../methodica-science-mass-measure-03-06/index.html';
+    if (DEV_NAV) window.location.href = '../methodica-ar-science-mass-measure-03-06/index.html';
   }
 }
 
@@ -1803,12 +1803,12 @@ var SCREEN_TO_SUBCONTENT = {
   5: null           /* "השלמת את היחידה בהצלחה" — מסך סיום, בלי פריט */
 };
 
-var XAPI_COMP_SLUG = 'methodica-science-mass-measure-03-05';
+var XAPI_COMP_SLUG = 'methodica-ar-science-mass-measure-03-05';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
 var XAPI_EVAL_ITEMS = { '001': 1 };
 
-var XAPI_METADATA_FILE = '../metadata/methodica-science-mass-measure-03-05.json';
+var XAPI_METADATA_FILE = '../metadata/methodica-ar-science-mass-measure-03-05.json';
 
 /* קישור בין סינים — חזרה: אם הגענו לכאן עם #screen=N (מכפתור "חזרה"
    בסיין הבא), קופצים ישר למסך הזה במקום למסך הראשון. */

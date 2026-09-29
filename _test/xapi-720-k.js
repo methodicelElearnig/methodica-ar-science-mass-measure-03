@@ -192,14 +192,14 @@
         .forEach(function (k) { sessionStorage.removeItem(k); });
       sessionStorage.removeItem(LOG_KEY);
       sessionStorage.removeItem(FAIL_KEY);
-      sessionStorage.removeItem('lomda_nav_edges::methodica-science-mass-measure-03');
+      sessionStorage.removeItem('lomda_nav_edges::methodica-ar-science-mass-measure-03');
     } catch (e) {}
     /* v4: הדמות ותוצאות המועד עברו למסמך ה-state, ו-localStorage הוא קאש
        בלבד. מנקים גם אותו — אחרת __reset() משאיר את הדמות ואת שערי המועד
        מהריצה הקודמת בחיים בחלון שלפני קריאת המסמך, וזה בדיוק סוג המצב
        שהעוזר הזה קיים כדי לחסל. אותו ניקוי כמו ב-initResumeResetHatch. */
     try {
-      localStorage.removeItem('lomda_selectedCharacter');
+      localStorage.removeItem('methodica_ar_science_mass_measure_03_selectedCharacter');
       ['lomda_moedA_partA_result', 'lomda_moedA_partB_result',
        'lomda_moedB_partA_step1_result', 'lomda_moedB_partA_step2_result',
        'lomda_moedB_partB_result'].forEach(function (k) { localStorage.removeItem(k); });
