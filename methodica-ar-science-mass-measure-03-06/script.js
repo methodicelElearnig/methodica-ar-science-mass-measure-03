@@ -1267,10 +1267,14 @@ function getMoedBScore() {
    שהמשוב והפתרון כבר הוצגו. מדווח בשני המסלולים (הצלחה וכישלון).
    ⚠️ הרכיב אינו מנווט: Kata מסירה אותו מהמסך ברגע שה-completed מגיע.
    מסך 0 מבטיח "3 סעיפים, עליכם להצליח בכולם", ולכן success הוא 3 מתוך 3. */
-function s6cFinish() {
+/* The component result (screen 0 promises "3 sections, pass all of them": success is 3 of 3).
+   Also the result of item 001, which is the whole component (QA 2026-10-02 O-8). */
+function moedBComponentResult() {
   const _n = getMoedBScore();
-  xapiEndComponent({ success: _n === 3, score: { scaled: _n / 3 } },
-    document.getElementById('s4-check'));
+  return { success: _n === 3, score: { scaled: _n / 3 } };
+}
+function s6cFinish() {
+  xapiEndComponent(moedBComponentResult(), document.getElementById('s4-check'));
 }
 
 /* ═══════════════════ xAPI (720) — קונפיגורציה של הסין ═══════════════════
@@ -1291,6 +1295,10 @@ var XAPI_COMP_SLUG = 'methodica-ar-science-mass-measure-03-06';
 var XAPI_COMP_ID   = XAPI_ID_PREFIX + XAPI_COMP_SLUG + '/';
 
 var XAPI_EVAL_ITEMS = { '001': 1 };
+
+/* QA 2026-10-02 O-8: item 001 is the whole component, so its 'completed' carries the component's
+   own result (decided 2026-10-04), rebuilt from restored state after a reload. */
+var XAPI_ITEM_RESULT = { '001': function () { return moedBComponentResult(); } };
 
 var XAPI_METADATA_FILE = '../metadata/methodica-ar-science-mass-measure-03-06.json';
 

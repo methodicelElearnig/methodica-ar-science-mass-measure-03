@@ -80,10 +80,39 @@ var xapiCurrentItem = null;
 
 /* result מפורש ל-completed של פריט, כשה-AND של הספרייה שגוי עבורו.
    סין שלא מגדיר XAPI_ITEM_RESULT מקבל null — בדיוק מה שהיה מועבר literal. */
+/* ── O-8 (QA 2026-10-02): every evaluated item supplies its own result ──
+   Without one the library scored an item's 'completed' from its in-memory per-item aggregate, which
+   a reload wipes: live, ar-mass-measure-03 06 item 001, answered 3/3 before a reload, closed with no
+   result; an item answered partly before and partly after a reload got a score counted from the
+   post-reload answers only. XAPI_Q_RESULTS is saved and restored by every part (st.qResults), so the
+   result is rebuilt from it: success = every declared question correct, scaled = correct / declared
+   (declared = this item's questions in metadata/). A part may override an item through
+   XAPI_ITEM_RESULT (the single-item parts mirror their component result). Nothing answered and
+   nothing restored -> null, as before. Pattern of methodica-math-ratio-04 unit-js/70-platform.js. */
+function _xapiDeclaredQs(item) {
+  try {
+    var sc = (window.METADATA && window.METADATA.subContent) || [];
+    for (var i = 0; i < sc.length; i++) {
+      if (_xapiTrim(sc[i].id).slice(-(item.length + 1)) !== '-' + item) continue;
+      return (sc[i].questions || []).map(function (q) { return _xapiTrim(q.questionId).split('/').pop(); });
+    }
+  } catch (e) {}
+  return [];
+}
+function _xapiDefaultItemResult(item) {
+  var mine = Object.keys(XAPI_Q_RESULTS).filter(function (k) { return k.split('/')[0] === item; })
+                   .map(function (k) { return k.slice(item.length + 1); });
+  if (!mine.length) return null;
+  var qs = _xapiDeclaredQs(item);
+  if (!qs.length) qs = mine;
+  var ok = qs.filter(function (q) { return XAPI_Q_RESULTS[item + '/' + q] === true; }).length;
+  return { success: ok === qs.length, score: { scaled: ok / qs.length } };
+}
 function xapiItemResult(item) {
   var map = (typeof XAPI_ITEM_RESULT !== 'undefined') ? XAPI_ITEM_RESULT : null;
   var f = map && map[item];
-  return f ? f() : null;
+  if (f) return f();
+  return _xapiIsEval(item) ? _xapiDefaultItemResult(item) : null;
 }
 
 function _xapiIsEval(item) {

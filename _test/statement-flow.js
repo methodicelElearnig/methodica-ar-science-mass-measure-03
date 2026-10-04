@@ -90,7 +90,7 @@ function boot(c) {
     'window.XAPI_USING_G = true;' +
     'window.__log = [];' +
     'window.sendStatement720 = function (verb, objType, result, ctx) {' +
-    '  window.__log.push({ verb: verb, objectId: (ctx && (ctx.objectId || ctx.questionId)) || null });' +
+    '  window.__log.push({ verb: verb, objectId: (ctx && (ctx.objectId || ctx.questionId)) || null, result: result || null });' +
     '};'
   );
   const val = (expr) => {
@@ -191,6 +191,32 @@ for (const c of COMPONENTS) {
   got = drain().map(fmt);
   ok('B-1', '01 once answered, leaving 007 sends its completed exactly once', got.filter((g) => g === 'completed:007').length === 1, got.join(', '));
   close();
+}
+
+/* ── O-8 (QA 2026-10-02): an item's result survives a reload ──
+   02 item 004 carries four declared questions (q1–q4 on screens 6–9). Two wrong before a reload, two
+   right after: the 'completed' must count all four (0.5, success false), not only the post-reload
+   pair. Live: 06 item 001, answered 3/3 before a reload, closed with no result at all. */
+{
+  const a = boot('02');
+  a.run('_resumeReady = true; _unitState = emptyUnitState();');
+  a.run("xapiAnswered('004', 'q1', false, true, 'x'); xapiAnswered('004', 'q2', false, true, 'x');");
+  const snap = a.val('JSON.stringify(capturePartPayload())');
+  a.close();
+  const b = boot('02');
+  b.run('_resumeReady = true; _unitState = emptyUnitState(); window.xapiItemAnswered = {}; applyExecutionState(' + snap + ');');
+  b.drain();
+  b.run("xapiAnswered('004', 'q3', true, true, 'x'); xapiAnswered('004', 'q4', true, true, 'x'); xapiCurrentItem = '004'; xapiFinishItems();");
+  const got = JSON.parse(b.val('JSON.stringify(window.__log)')).filter((s) => s.verb === 'completed');
+  ok('O-8', '02 after a reload, item 004 completes once', got.length === 1, JSON.stringify(got));
+  ok('O-8', '02 with the result of all four answers (success false, scaled 0.5)',
+     got[0] && got[0].result && got[0].result.success === false && got[0].result.score.scaled === 0.5, JSON.stringify(got[0]));
+  b.close();
+  const d = boot('06');
+  ok('O-8', '06 item 001 (the whole component) reports the component result',
+     d.val('JSON.stringify(xapiItemResult("001")) === JSON.stringify(moedBComponentResult())') === true,
+     d.val('JSON.stringify([xapiItemResult("001"), moedBComponentResult()])'));
+  d.close();
 }
 
 console.log('='.repeat(64));
