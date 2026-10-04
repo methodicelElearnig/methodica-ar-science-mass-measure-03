@@ -131,6 +131,27 @@ function xapiSeedAnsweredFromResume(){
   });
 }
 
+/* ── B-1 (QA 2026-10-02; port of methodica-science-mass-weight-01 5ad764d) ──
+   The library DROPS an evaluated item's 'completed' when that item has no 'answered' in this page
+   load (its "deferring" return: no queue, no retry). sendCompletedOnce cannot see that: it marks the
+   ledger anyway, and the real, scored 'completed' after the learner comes back and answers is then
+   suppressed forever. Live 2026-10-02: Back through an unanswered item (ar-mass-measure-02 01
+   S6 -> S5, item 004; ar-mass-measure-03 01 S10 -> S9, item 007; ar-math-ratio-02 01 S3 -> S2,
+   item 002) and Kata never received that item's 'completed'.
+   So the close asks the library's own question first and, when the library would drop the
+   statement, sends nothing and leaves the ledger untouched. Fallback when the map is unreachable:
+   an answer recorded in XAPI_Q_RESULTS (restored by resume, the same predicate as the seed). */
+function _xapiLibWouldDrop(item) {
+  if (!_xapiIsEval(item)) return false;
+  var m = window.xapiItemAnswered;
+  if (m) return !m[xapiItemId(item)];
+  return !Object.keys(XAPI_Q_RESULTS).some(function (k) { return k.split('/')[0] === item; });
+}
+function _xapiCloseItem(item) {
+  if (_xapiLibWouldDrop(item)) return;
+  try { sendCompletedOnce('doneItems', itemLedgerKey(item), 'question', xapiItemResult(item), { objectId: xapiItemId(item), expectsAnswer: _xapiIsEval(item) }); } catch (e) {}
+}
+
 /* זוגות initialized/completed ברמת הפריט, מונעים מ-goTo(). דפדוף בתוך אותו
    פריט לא משדר כלום; הפריט נסגר כשהלומד נכנס למסך ששייך לפריט אחר. */
 function xapiOnScreen(screen) {
@@ -138,9 +159,7 @@ function xapiOnScreen(screen) {
   var map = (typeof SCREEN_TO_SUBCONTENT !== 'undefined') ? SCREEN_TO_SUBCONTENT[screen] : null;
   var item = map ? map[0] : null;
   if (item === xapiCurrentItem) return;
-  if (xapiCurrentItem) {
-    try { sendCompletedOnce('doneItems', itemLedgerKey(xapiCurrentItem), 'question', xapiItemResult(xapiCurrentItem), { objectId: xapiItemId(xapiCurrentItem), expectsAnswer: _xapiIsEval(xapiCurrentItem) }); } catch (e) {}
-  }
+  if (xapiCurrentItem) _xapiCloseItem(xapiCurrentItem);
   xapiCurrentItem = item;
   if (item) {
     try { sendStatement720('initialized', 'question', null, { objectId: xapiItemId(item), isEvaluationItem: _xapiIsEval(item) }); } catch (e) {}
@@ -151,7 +170,7 @@ function xapiOnScreen(screen) {
 function xapiFinishItems() {
   if (!window.XAPI_USING_G || typeof sendStatement720 !== 'function') return;
   if (xapiCurrentItem) {
-    try { sendCompletedOnce('doneItems', itemLedgerKey(xapiCurrentItem), 'question', xapiItemResult(xapiCurrentItem), { objectId: xapiItemId(xapiCurrentItem), expectsAnswer: _xapiIsEval(xapiCurrentItem) }); } catch (e) {}
+    _xapiCloseItem(xapiCurrentItem);
     /* מתאפס בין אם ה-statement דוכא ובין אם לא: latch שנשאר דלוק היה גורם
        ל-xapiOnScreen הבא לנסות לסגור את אותו פריט שוב. */
     xapiCurrentItem = null;

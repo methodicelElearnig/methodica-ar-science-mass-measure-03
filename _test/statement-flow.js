@@ -116,6 +116,9 @@ for (const c of COMPONENTS) {
   const suffixOf = (n) => (map[n] ? map[n][0] : null);
 
   run('xapiCurrentItem = null;');
+  /* The walk checks the MAP, so the library's answered map says yes for every item: with B-1's guard
+     (QA 2026-10-02) an unanswered evaluated item closes nothing, which is checked on its own below. */
+  run('window.xapiItemAnswered = new Proxy({}, { get: function () { return true; } });');
   run('goTo(0);');
   drain();
 
@@ -169,6 +172,24 @@ for (const c of COMPONENTS) {
      map[0] === null || Array.isArray(map[0]),
      JSON.stringify(map[0]));
 
+  close();
+}
+
+/* ── B-1 (QA 2026-10-02): Back through an unanswered item ──
+   Live (ar-mass-measure-03 01): S10 (item 007) left unanswered with Back to S9 (no item). The
+   library dropped 007's 'completed' (no 'answered' yet) while the ledger marked it sent, so the real
+   one after the learner answered was suppressed forever. */
+{
+  const { val, run, drain, close } = boot('01');
+  run('_resumeReady = true; _unitState = emptyUnitState(); window.xapiItemAnswered = {}; xapiCurrentItem = null; goTo(9); goTo(10);');
+  drain();
+  run('goTo(9);');
+  let got = drain().map(fmt);
+  ok('B-1', '01 Back S10 → S9 from unanswered 007 sends no completed', !got.some((g) => g.startsWith('completed')), got.join(', '));
+  ok('B-1', '01 …and leaves 007 out of the ledger', val("alreadySent('doneItems', itemLedgerKey('007'))") === false);
+  run("goTo(10); xapiAnswered('007', 'q1', true, true, 'x'); window.xapiItemAnswered[xapiItemId('007')] = true; goTo(11);");
+  got = drain().map(fmt);
+  ok('B-1', '01 once answered, leaving 007 sends its completed exactly once', got.filter((g) => g === 'completed:007').length === 1, got.join(', '));
   close();
 }
 
