@@ -103,6 +103,9 @@ function initFakeScrollbar(el) {
 
 function goTo(n) {
   if (n < 0 || n >= TOTAL_SCREENS) return;
+  /* העצירה אחרי שאלה 3 — גם ניווט שעוקף את הכפתור לא עובר אותה. */
+  if (currentScreen === 3 && n > 3 && !(typeof _restoring !== 'undefined' && _restoring) &&
+      typeof basicStopBlocks === 'function' && basicStopBlocks()) { s3EndAtStop(); return; }
   document.querySelectorAll('.screen').forEach(function (el) {
     el.classList.remove('active');
   });
@@ -693,7 +696,7 @@ function s3Check() {
     /* באג ישן: זו לא הייתה "מסך אחרון של הסיין" — s4 (מסך 5) כבר קיים
        בפועל, ההערה/callback הריק נשארו מזמן שהמסך הזה היה אכן האחרון
        שנבנה. תוקן ל-goTo(4) בפועל. */
-    s3SetBarDone('متابعة', function () { goTo(4); });
+    s3SetBarDone('متابعة', s3Continue);
     try { flushResumeSave(); } catch (e) {}
     return;
   }
@@ -724,9 +727,51 @@ function s3Check() {
     /* באג ישן: זו לא הייתה "מסך אחרון של הסיין" — s4 (מסך 5) כבר קיים
        בפועל, ההערה/callback הריק נשארו מזמן שהמסך הזה היה אכן האחרון
        שנבנה. תוקן ל-goTo(4) בפועל. */
-    s3SetBarDone('متابعة', function () { goTo(4); });
+    s3SetBarDone('متابعة', s3Continue);
   }
   try { flushResumeSave(); } catch (e) {}
+}
+
+/* ═══ עצירה אחרי שאלה 3: "ענו נכון על 2 שאלות ומעלה כדי להתקדם" (מסך 0) ═══
+   דיווח MOE 05-06.10: גם עם שלוש תשובות שגויות הלומד המשיך למסך 4 ("יופי של
+   עבודה! ...שאלה ברמת קושי גבוהה יותר"). מעכשיו, כשכל שלוש השאלות הוכרעו ופחות
+   משתיים נכונות, "המשך" של שאלה 3 מסיים את הרכיב כאן: completed עם success:false
+   (פעם אחת, דרך היומן), הכפתור מושבת, והפלטפורמה מנתבת לפי recommendedAfterFail
+   (03-01). כמו mass-measure-01-02 ו-ratio-05-03.
+   fail open: חוסם רק כשכל שלוש התחנות הוכרעו — מצב חלקי לעולם לא נועל.
+   basicStopEnded נשמר במסמך ה-resume: מחוץ ל-Kata אין דיווח ולכן היומן ריק,
+   ובלי הדגל ריענון היה מחזיר "המשך" חי שלא עושה כלום. */
+let basicStopEnded = false;
+
+function basicStopBlocks() {
+  const qs = [stationProgress.q1, stationProgress.q2, stationProgress.q3];
+  if (qs.some(function (v) { return v !== 'success' && v !== 'fail'; })) return false;
+  return getBasicScore02() < 2;
+}
+
+function s3EndAtStop() {
+  const btn = document.getElementById('s3-check');
+  if (basicStopEnded || alreadySent('done', currentPartSlug())) {   // כבר הסתיים (למשל לפני ריענון)
+    if (btn) { btn.disabled = true; btn.setAttribute('aria-disabled', 'true'); }
+    basicStopEnded = true;
+    return;
+  }
+  basicStopEnded = true;
+  xapiEndComponent({ success: false, score: { scaled: getBasicScore02() / 7 } }, btn);
+  try { flushResumeSave(); } catch (e) {}
+}
+
+function s3Continue() {
+  if (basicStopBlocks()) { s3EndAtStop(); return; }
+  goTo(4);
+}
+
+/* ציור מסך 3 (ניווט / ריענון): רכיב שכבר הסתיים בעצירה נשאר מסתיים. */
+function s3RestoreStop() {
+  if (!s3Done || !basicStopBlocks()) return;
+  if (!basicStopEnded && !alreadySent('done', currentPartSlug())) return;   // ענה ועוד לא לחץ — הכפתור חי
+  const btn = document.getElementById('s3-check');
+  if (btn) { btn.disabled = true; btn.setAttribute('aria-disabled', 'true'); }
 }
 
 function s3LockOptions() {
@@ -1731,6 +1776,7 @@ function capturePartPayload() {
      stationProgress2.q1 רק כששלמו כל הארבעה. בלי המפה הזאת, ריענון באמצע
      היה גורם לשאלה לא להיספר כלל. */
   st.q1Sections = Object.assign({}, q1SectionResults);
+  st.basicStopEnded = basicStopEnded;   /* העצירה אחרי שאלה 3 */
 
   st.s1 = {
     sel: s1Selected.slice(), att: s1Attempts, done: s1Done, phase: s1Phase,
@@ -1767,6 +1813,7 @@ function applyResumeVars(st) {
   if (st.stations) Object.keys(st.stations).forEach(function (k) { stationProgress[k] = st.stations[k]; });
   if (st.stations2) Object.keys(st.stations2).forEach(function (k) { stationProgress2[k] = st.stations2[k]; });
   if (st.q1Sections) Object.keys(st.q1Sections).forEach(function (k) { q1SectionResults[k] = st.q1Sections[k]; });
+  basicStopEnded = !!st.basicStopEnded;
 
   if (st.s1) {
     s1Selected = (st.s1.sel || []).slice();
@@ -1820,7 +1867,8 @@ function restoreScreenUI(n) {
     if (n === 3) restoreScqUI({ screenSel: '#s3', cfg: S3, selected: s3Selected, attempts: s3Attempts, lastWrong: s3LastWrong,
       done: s3Done, phase: s3Phase, optEl: s3OptEl, lock: s3LockOptions, showFeedback: s3ShowFeedback,
       setBarDone: s3SetBarDone, check: s3Check, checkBtnId: 's3-check', hintBtnId: 's3-hint',
-      onContinue: function () { goTo(4); } });
+      onContinue: s3Continue });
+    if (n === 3) s3RestoreStop();
     if (n === 6) restoreScqUI({ screenSel: '#s6', cfg: S6, selected: s6Selected, attempts: s6Attempts, lastWrong: s6LastWrong,
       done: s6Done, phase: s6Phase, optEl: s6OptEl, lock: s6LockOptions, showFeedback: s6ShowFeedback,
       setBarDone: s6SetBarDone, check: s6Check, checkBtnId: 's6-check', hintBtnId: 's6-hint',

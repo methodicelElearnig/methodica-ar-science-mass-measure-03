@@ -938,6 +938,44 @@ function showDragGestureHint(slotEl) {
 }
 
 /* makeDragQuestion factory — זהה 1:1 לזו שבסיין 3 (maxAttempts+onResult) */
+/* Drag image (MOE 05.10, 03-01: "בכל שאלות הגרירה בעת הגרירה עצמה התשובה נחתכת").
+   The browser builds the native drag image from the element where it sits — inside #app, which is
+   transform:scale()d to the window and overflow:hidden. Chrome sizes that image from the unscaled
+   box and clips it, so the label shows cut off under the cursor. Fix: hand the browser a copy of
+   the card, outside #app, at the size it is actually seen, with its computed look copied over
+   (ancestor-scoped CSS would not apply to a copy in <body>). Removed right after the snapshot.
+   Any failure leaves the browser's default image — never blocks the drag. */
+function setScaledDragImage(e, el) {
+  try {
+    if (!el || !e.dataTransfer || typeof e.dataTransfer.setDragImage !== 'function') return;
+    const r = el.getBoundingClientRect();
+    if (!r.width || !el.offsetWidth) return;
+    const cs = getComputedStyle(el);
+    const clone = el.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.querySelectorAll('.gesture-hint').forEach(function (h) { h.remove(); });   // the first-drag hint hand is not part of the card
+    for (let i = 0; i < cs.length; i++) {
+      const p = cs[i];
+      clone.style.setProperty(p, cs.getPropertyValue(p));
+    }
+    clone.style.position = 'fixed';
+    clone.style.left = '-10000px';
+    clone.style.top = '0';
+    clone.style.right = 'auto';
+    clone.style.bottom = 'auto';
+    clone.style.margin = '0';
+    clone.style.transform = 'none';
+    clone.style.transition = 'none';
+    clone.style.animation = 'none';
+    clone.style.opacity = '1';
+    clone.style.pointerEvents = 'none';
+    clone.style.zoom = String(r.width / el.offsetWidth);   // the #app scale, laid out (not painted) at size
+    document.body.appendChild(clone);
+    e.dataTransfer.setDragImage(clone, e.clientX - r.left, e.clientY - r.top);
+    setTimeout(function () { clone.remove(); }, 0);
+  } catch (err) { /* default drag image */ }
+}
+
 function makeDragQuestion(cfg) {
   const labels = cfg.labels;
   const correctMap = cfg.correctMap;
@@ -1033,6 +1071,7 @@ function makeDragQuestion(cfg) {
     dropHandled = false;
     e.dataTransfer.setData('text/plain', dragId);
     e.dataTransfer.effectAllowed = 'move';
+    setScaledDragImage(e, e.currentTarget || e.target);
     setTimeout(function () {
       const card = document.getElementById(dragId);
       if (card) card.classList.add('dragging');
@@ -1045,6 +1084,7 @@ function makeDragQuestion(cfg) {
     dropHandled = false;
     e.dataTransfer.setData('text/plain', dragId);
     e.dataTransfer.effectAllowed = 'move';
+    setScaledDragImage(e, e.currentTarget || e.target);
     setTimeout(function () {
       const oldZoneId = placement[dragId];
       placement[dragId] = 'source';
