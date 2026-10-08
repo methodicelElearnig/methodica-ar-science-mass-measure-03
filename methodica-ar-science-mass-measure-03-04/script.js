@@ -780,8 +780,9 @@ function getStation04Score() {
    ומחליטה מהקטלוג מה הרכיב הבא. הניווט הבין-סיני נשאר רק ל-walkthrough
    מקומי (DEV_NAV ב-10-identity.js). */
 function s3Finish() {
-  const _n = getStation04Score();
-  xapiEndComponent({ success: _n === 3, score: { scaled: _n / 3 } },
+  /* MOE 2026-10-08: real score, success only ≥60%, no gate, nothing shown. */
+  const _s = getStation04Score() / 3;
+  xapiEndComponent({ success: _s >= 0.6, score: { scaled: _s } },
     document.getElementById('s3-check'));
   if (DEV_NAV) window.location.href = '../methodica-ar-science-mass-measure-03-05/index.html';
 }

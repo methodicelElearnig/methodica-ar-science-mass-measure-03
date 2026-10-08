@@ -460,6 +460,18 @@ if (!JSDOM) {
        (walked.errs || []).length === 0, (walked.errs || []).join(' | '));
     ok(c, 'navigation reaches the last screen',
        walked.landed === walked.total - 1, 'landed=' + walked.landed);
+    if (c === '04') {
+      /* MOE 2026-10-08: the challenge reports its real score; success only at >= 60% (of 3 declared questions; unanswered = wrong). */
+      let thr = [];
+      try { thr = JSON.parse(val('(function(){ var orig = xapiEndComponent, keep = JSON.stringify(stationProgress), out = [];' +
+        ' xapiEndComponent = function (r) { out.push(r); };' +
+        ' [0, 1, 2, 3].forEach(function (n) { ["q1", "q2", "q3"].forEach(function (k, i) { stationProgress[k] = i < n ? "success" : (i === n ? "fail" : null); }); s3Finish(); });' +
+        ' xapiEndComponent = orig; Object.assign(stationProgress, JSON.parse(keep));' +
+        ' return JSON.stringify(out); })()')); } catch (e) { thr = []; }
+      ok(c, 'challenge: success only at >= 60%, real score (0/3, 1/3 fail; 2/3, 3/3 pass)',
+         thr.length === 4 && thr.map(function (r) { return r.success + ':' + r.score.scaled.toFixed(3); }).join(',') === 'false:0.000,false:0.333,true:0.667,true:1.000',
+         JSON.stringify(thr));
+    }
 
     w.close();
   }
