@@ -318,9 +318,9 @@ function resolveCharBubbleImg(imgId, assetMap) {
    2026-09-20, כפי שבוצע ב-mass-measure-01 וב-scale-01.
    ========================================================= */
 const VIDEO_INTRO_PLAYERS = [
-  { screen: 1, containerId: 's1-yt-player', videoId: 'g0lcVHET3tI', continueBtnId: 's1-continue', xapiItem: '002' },
-  { screen: 3, containerId: 's3-yt-player', videoId: 'QObJvc8ae3k', continueBtnId: 's3-continue', xapiItem: '002' },
-  { screen: 7, containerId: 's7-yt-player', videoId: 'ev-yCBqIF7k', continueBtnId: 's7-continue', xapiItem: '006' }
+  { screen: 1, containerId: 's1-yt-player', videoId: 'yLvCNuDw2cM', continueBtnId: 's1-continue', xapiItem: '002' },
+  { screen: 3, containerId: 's3-yt-player', videoId: 'fstzMqg2E0w', continueBtnId: 's3-continue', xapiItem: '002' },
+  { screen: 7, containerId: 's7-yt-player', videoId: 'h307r8DG3Ok', continueBtnId: 's7-continue', xapiItem: '006' }
 ];
 
 /* איזה שער-וידאו כבר נפתח. ⚠️ חייב להיות **מצב** ולא רק
