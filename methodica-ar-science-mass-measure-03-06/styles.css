@@ -340,6 +340,13 @@ img { display: block; max-width: none; }
 .dq-drag-card.dragging { opacity: 0.38; }
 .dq-drag-card.ghost { color: transparent; background: #f3f4f5; border: 1px solid rgba(174,174,174,0.3); pointer-events: none; }
 .dq-drag-card.locked { cursor: default; }
+/* Pointer DnD (unit-js/30-pointer-dnd.js): no page pan/zoom, native image drag or iOS long-press sheet
+   under the finger. The ghost is a clone appended to <body>, outside #app, so its look is class-scoped. */
+.dq-drag-card, .dq-placed-card {
+  touch-action: none; -webkit-user-drag: none; -webkit-touch-callout: none;
+  -webkit-user-select: none; user-select: none;
+}
+.dq-drag-card.pointer-drag-ghost { opacity: 1; cursor: grabbing; background: #fff; border: 1.5px solid #019de5; box-shadow: 0 2px 6px rgba(1,157,229,0.2); }
 
 /* Gesture Hint — Cursor Drag (SELF-QA.md §7, Figma node 2915:35185). Ported from Sain 1
    (methodica-ar-science-mass-measure-03-01, which this family's SELF-QA.md governs) — missed here in

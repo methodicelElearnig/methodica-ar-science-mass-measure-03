@@ -120,7 +120,7 @@ function boot(c) {
     s.textContent = code;
     w.document.body.appendChild(s);
   };
-  for (const f of ['10-identity', '20-xapi', '25-report', '40-resume']) {
+  for (const f of ['10-identity', '20-xapi', '25-report', '30-pointer-dnd', '40-resume']) {
     inject(read(path.join(BASE, 'unit-js', f + '.js')));
   }
   inject(read(path.join(dir, 'script.js')));
@@ -132,6 +132,19 @@ function boot(c) {
     /* אירוע גרירה מדומה: מספיק ל-dragStart/drop של הפקטורי ושל s17. */
     'window.__ev = function (data) { return { preventDefault: function () {}, stopPropagation: function () {},' +
     '  dataTransfer: { setData: function () {}, getData: function () { return data || ""; }, effectAllowed: "", dropEffect: "" } }; };'
+  );
+  /* Drag is pointer-based now (unit-js/30-pointer-dnd.js): press on src, move 40px (past the 6px slop),
+     release over dst. jsdom has no layout and no elementFromPoint, so the hit test is stubbed to dst. */
+  inject(
+    'window.__pdrag = function (src, dst) {' +
+    '  var mk = function (type, x) { var e = new window.MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: 0, button: 0 });' +
+    '    Object.defineProperty(e, "pointerId", { value: 1 }); Object.defineProperty(e, "pointerType", { value: "touch" });' +
+    '    Object.defineProperty(e, "isPrimary", { value: true }); return e; };' +
+    '  document.elementFromPoint = function () { return dst; };' +
+    '  src.dispatchEvent(mk("pointerdown", 0));' +
+    '  document.dispatchEvent(mk("pointermove", 40));' +
+    '  document.dispatchEvent(mk("pointerup", 40));' +
+    '};'
   );
   const val = (expr) => {
     inject('window.__V = (function(){ try { return (' + expr + '); } catch (e) { return "__THREW__" + e.message; } })();');
@@ -226,14 +239,13 @@ function dq(c, screen, o) {
   const sc = o.sel || '#s' + screen;
   async function move(P, dragId, targetId) {
     const where = P.val('(function(){ var c = document.getElementById(' + q(dragId) + ');' +
-      ' if (c && c.ondragstart && !c.classList.contains("ghost")) { c.ondragstart(__ev()); return "bank"; }' +
-      ' var lbl = c ? c.textContent : null;' +
-      ' var pc = [].slice.call(document.querySelectorAll(' + q(sc + ' .dq-placed-card') + ')).filter(function (x) { return x.textContent === lbl; })[0];' +
-      ' if (!pc) return "missing";' +
-      ' var e = new Event("dragstart"); e.dataTransfer = __ev().dataTransfer; pc.dispatchEvent(e); return "placed"; })()');
+      ' var src = c && !c.classList.contains("ghost") ? c : null;' +
+      ' if (!src) { var lbl = c ? c.textContent : null;' +
+      '   src = [].slice.call(document.querySelectorAll(' + q(sc + ' .dq-placed-card') + ')).filter(function (x) { return x.textContent === lbl; })[0]; }' +
+      ' if (!src) return "missing";' +
+      ' __pdrag(src, document.getElementById(' + q(targetId) + ')); return "ok"; })()');
     if (where === 'missing') throw new Error('card ' + dragId + ' not found');
-    if (where === 'placed') await tick();
-    P.run(o.drop + '(__ev(), ' + q(targetId) + ');');
+    await tick();
   }
   const cur = (P, t) => P.val('(function(){ var z = document.getElementById(' + q(t) + ');' +
     ' var pc = z && z.querySelector(".dq-placed-card"); return pc ? pc.textContent : null; })()');
@@ -263,7 +275,7 @@ function dq(c, screen, o) {
 
 /* 01 s17: מנגנון גרירה נפרד (לא הפקטורי). s17Drop קורא את המזהה מ-getData. */
 function s17(c) {
-  const drop = (P, item, zone) => P.run('s17Drop(__ev(' + q(item) + '), ' + q(zone) + ');');
+  const drop = (P, item, zone) => P.run('__pdrag(document.getElementById(' + q(item) + '), document.getElementById("s17-zone-' + zone + '"));');
   const boards = {
     wrong:   { 's17i-rice': 'lab', 's17i-gold': 'kitchen', 's17i-drug': 'analytic' },
     other:   { 's17i-rice': 'analytic', 's17i-gold': 'kitchen', 's17i-drug': 'lab' },
@@ -407,10 +419,10 @@ const QUESTIONS = [
     lw: (st) => st.dqC && typeof st.dqC.lw === 'string' && st.dqC.lw.indexOf('1=المعيار') === 0,
     extra: async (P, Q, scope) => {
       /* לוח מלא בלי קלף רזרבי: הזזת קלף מוצב משאירה חור — חלקי → מושבת. */
+      /* a placed card dragged out and released on the word bank (pointer path) */
       P.run('(function(){ var pc = document.querySelector("#s6c-target-3 .dq-placed-card");' +
-        ' var e = new Event("dragstart"); e.dataTransfer = __ev().dataTransfer; pc.dispatchEvent(e); })();');
+        ' __pdrag(pc, document.getElementById("s6c-word-bank")); })();');
       await tick();
-      P.run('s6cDropToBank(__ev());');
       ok(scope, 'full board made partial -> disabled', P.btn('s4-check').disabled === true);
       await Q.move(P, 's6c-drag-hazarot', 's6c-target-3');
       ok(scope, 'refilled to the same wrong board -> disabled', P.btn('s4-check').disabled === true);

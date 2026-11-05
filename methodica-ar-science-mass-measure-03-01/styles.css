@@ -1628,6 +1628,13 @@ img { display: block; max-width: none; }
 .dq-drag-card.dragging { opacity: 0.38; }
 .dq-drag-card.ghost { color: transparent; background: #f3f4f5; border: 1px solid rgba(174,174,174,0.3); pointer-events: none; }
 .dq-drag-card.locked { cursor: default; }
+/* Pointer DnD (unit-js/30-pointer-dnd.js): no page pan/zoom, native image drag or iOS long-press sheet
+   under the finger. The ghost is a clone appended to <body>, outside #app, so its look is class-scoped. */
+.dq-drag-card, .dq-placed-card {
+  touch-action: none; -webkit-user-drag: none; -webkit-touch-callout: none;
+  -webkit-user-select: none; user-select: none;
+}
+.dq-drag-card.pointer-drag-ghost { opacity: 1; cursor: grabbing; background: #fff; border: 1.5px solid #019de5; box-shadow: 0 2px 6px rgba(1,157,229,0.2); }
 
 /* =========================================================
    מסך 14 — מסך הסבר (לא שאלה!) עם שלוש תמונות, פתיחה לתחנת "שאלה 1
@@ -2096,7 +2103,12 @@ img { display: block; max-width: none; }
   flex-shrink: 0; /* בלי זה, אותו פריט נסחט לרוחב שונה כשהוא בתוך .s17-zone הצר יותר מ-.s17-source-bank — "קפיצת גודל" אחרי שחרור */
 }
 .s17-drag-item:hover { border-color: var(--subject-500); box-shadow: 0 2px 6px rgba(1, 157, 229, 0.2); }
-.s17-drag-item.s17-dragging { opacity: 0.38; cursor: grabbing; }
+.s17-drag-item.s17-dragging,
+.s17-drag-item.dragging { opacity: 0.38; cursor: grabbing; }
+/* Pointer DnD (unit-js/30-pointer-dnd.js): no page pan/zoom, native image drag or iOS long-press sheet under
+   the finger; the ghost is a clone in <body>, so its look is class-scoped. */
+.s17-drag-item { touch-action: none; -webkit-user-drag: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.s17-drag-item.pointer-drag-ghost { opacity: 1; cursor: grabbing; border-color: var(--subject-500); box-shadow: 0 2px 6px rgba(1, 157, 229, 0.2); }
 
 .s17-zones-row {
   /* justify-content:flex-start (לא center) בכוונה: תחת direction:rtl
@@ -2163,7 +2175,8 @@ img { display: block; max-width: none; }
 
   box-sizing: border-box;
 }
-.s17-zone.s17-drag-over { border: 1px dashed var(--subject-500); background: #fff; }
+.s17-zone.s17-drag-over,
+.s17-zone.drag-over { border: 1px dashed var(--subject-500); background: #fff; }
 .s17-zone.correct { border-color: #609e12; background: #fff; border-style: solid; }
 .s17-zone.wrong { border-color: #B20010; background: #fff; border-style: solid; }
 .s17-zone .s17-drag-item { cursor: default; }

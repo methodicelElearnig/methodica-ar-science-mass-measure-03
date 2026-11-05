@@ -509,10 +509,10 @@ function showDragGestureHint(slotEl) {
   function dismiss() {
     slotEl.dataset.gestureDismissed = 'true';
     hint.remove();
-    slotEl.removeEventListener('dragstart', dismiss);
+    slotEl.removeEventListener('pointerdown', dismiss);
     slotEl.removeEventListener('click', dismiss);
   }
-  slotEl.addEventListener('dragstart', dismiss);
+  slotEl.addEventListener('pointerdown', dismiss);   /* a press is the start of the gesture (also covers touch) */
   slotEl.addEventListener('click', dismiss);
 }
 
@@ -563,8 +563,6 @@ function makeDragQuestion(cfg) {
   let placement = {};
   dragIds.forEach(function (id) { placement[id] = 'source'; });
 
-  let dragActive = null;
-  let dropHandled = false;
   let checked = false;
   let attempts = 0;
   let done = false;
@@ -612,9 +610,7 @@ function makeDragQuestion(cfg) {
       if (placement[dragId] === 'source') {
         card.textContent = labels[dragId];
         if (!checked) {
-          card.draggable = true;
-          card.ondragstart = function (e) { dragStart(e, dragId); };
-          card.ondragend = dragEnd;
+          dnd.attachSource(card, dragId);   /* pointer DnD (30-pointer-dnd.js): mouse + touch */
         } else {
           card.classList.add('locked');
         }
@@ -637,9 +633,7 @@ function makeDragQuestion(cfg) {
         placed.className = 'dq-placed-card';
         placed.textContent = labels[placedId];
         if (!checked) {
-          placed.draggable = true;
-          placed.addEventListener('dragstart', function (e) { placedDragStart(e, placedId); });
-          placed.addEventListener('dragend', dragEnd);
+          dnd.attachSource(placed, placedId);   /* placed card: drag back out / to another target */
         } else {
           placed.classList.add('locked');
         }
@@ -653,82 +647,54 @@ function makeDragQuestion(cfg) {
     if (btn && !done) btn.disabled = checkBlocked();
   }
 
-  function dragStart(e, dragId) {
-    if (checked) { e.preventDefault(); return; }
-    dragActive = dragId;
-    dropHandled = false;
-    e.dataTransfer.setData('text/plain', dragId);
-    e.dataTransfer.effectAllowed = 'move';
-    setScaledDragImage(e, e.currentTarget || e.target);
-    setTimeout(function () {
-      const card = document.getElementById(dragId);
-      if (card) card.classList.add('dragging');
-    }, 0);
-  }
-
-  function placedDragStart(e, dragId) {
-    if (checked) { e.preventDefault(); return; }
-    dragActive = dragId;
-    dropHandled = false;
-    e.dataTransfer.setData('text/plain', dragId);
-    e.dataTransfer.effectAllowed = 'move';
-    setScaledDragImage(e, e.currentTarget || e.target);
-    setTimeout(function () {
-      const oldZoneId = placement[dragId];
-      placement[dragId] = 'source';
-      const oldZone = document.getElementById(oldZoneId);
-      if (oldZone) oldZone.classList.remove('correct', 'wrong');
+  /* ── Pointer DnD (mouse + touch) — ../unit-js/30-pointer-dnd.js ──
+     Replaces the native HTML5 drag handlers (dragstart/dragover/drop), which never fire from
+     touch (so the setScaledDragImage workaround for the native drag image is no longer needed
+     here: the ghost is a real clone, scaled to #app). placement stays the single model and
+     render() rebuilds every card, so the source and placed cards are attached inside render();
+     the targets and the bank are static markup and are attached once, here. Same rules as
+     before: nothing is draggable once checked; a placed card dragged out empties its target at
+     once; a release outside any target sends the card back to the bank; dropping on an occupied
+     target evicts its occupant. */
+  const dnd = createPointerDnd({
+    canDrag: function () { return !checked; },
+    onPick: function (dragId, src) {
+      if (src.classList.contains('dq-placed-card')) {   /* placed card: its target empties now */
+        const oldZoneId = placement[dragId];
+        placement[dragId] = 'source';
+        const oldZone = document.getElementById(oldZoneId);
+        if (oldZone) oldZone.classList.remove('correct', 'wrong');
+        render();
+        const card = document.getElementById(dragId);
+        if (card) card.classList.add('dragging');
+      }
+    },
+    onGhost: function (ghost, src) {   /* a placed card travels as the same pill as a bank card */
+      if (src.classList.contains('dq-placed-card')) {
+        ghost.className = 'dq-drag-card pointer-drag-ghost';
+        ghost.textContent = labels[src.dataset.pdragId];
+      }
+    },
+    onDrop: function (dragId, targetId) {
+      if (targetId === 'bank') {
+        placement[dragId] = 'source';
+      } else {
+        const zone = document.getElementById(targetId);
+        if (zone) zone.classList.remove('drag-over', 'correct', 'wrong');
+        dragIds.forEach(function (dId) {
+          if (placement[dId] === targetId && dId !== dragId) placement[dId] = 'source';
+        });
+        placement[dragId] = targetId;
+      }
       render();
-      const card = document.getElementById(dragId);
-      if (card) card.classList.add('dragging');
-    }, 0);
-  }
-
-  function dragEnd() {
-    if (!dropHandled && dragActive) {
-      placement[dragActive] = 'source';
+    },
+    onCancel: function (dragId) {   /* released outside any target: back to the bank */
+      placement[dragId] = 'source';
       render();
     }
-    dragActive = null;
-    dropHandled = false;
-    document.querySelectorAll(cfg.screenSelector + ' .drag-over').forEach(function (z) {
-      z.classList.remove('drag-over');
-    });
-  }
-
-  function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
-  function dragEnter(e, targetId) {
-    e.preventDefault();
-    const zone = document.getElementById(targetId);
-    if (zone) zone.classList.add('drag-over');
-  }
-  function dragLeave(e, targetId) {
-    const zone = document.getElementById(targetId);
-    if (zone) zone.classList.remove('drag-over');
-  }
-
-  function drop(e, targetId) {
-    e.preventDefault();
-    const zone = document.getElementById(targetId);
-    if (zone) zone.classList.remove('drag-over', 'correct', 'wrong');
-    if (!dragActive) return;
-    dropHandled = true;
-    dragIds.forEach(function (dId) {
-      if (placement[dId] === targetId && dId !== dragActive) placement[dId] = 'source';
-    });
-    placement[dragActive] = targetId;
-    dragActive = null;
-    render();
-  }
-
-  function dropToBank(e) {
-    e.preventDefault();
-    if (!dragActive) return;
-    dropHandled = true;
-    placement[dragActive] = 'source';
-    dragActive = null;
-    render();
-  }
+  });
+  targetIds.forEach(function (tId) { dnd.attachTarget(document.getElementById(tId), tId); });
+  dnd.attachTarget(document.getElementById(cfg.prefix + '-word-bank'), 'bank');
 
   function showFeedback(kind) {
     const box = document.getElementById(cfg.feedboxId);
@@ -873,7 +839,7 @@ function makeDragQuestion(cfg) {
   }
 
   function resetInitial() {
-    done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
+    done = false; checked = false; attempts = 0;
     answerSnapshot = null; revealed = false; passed = false;
     lastWrong = null; /* איפוס טרי בלבד — reset() קורא לכאן רק כשאין התקדמות */
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
@@ -929,11 +895,6 @@ function makeDragQuestion(cfg) {
     showDragGestureHint(firstSlot);
   }
 
-  window[cfg.prefix + 'DragOver'] = dragOver;
-  window[cfg.prefix + 'DragEnter'] = dragEnter;
-  window[cfg.prefix + 'DragLeave'] = dragLeave;
-  window[cfg.prefix + 'Drop'] = drop;
-  window[cfg.prefix + 'DropToBank'] = dropToBank;
   window[cfg.prefix + 'Check'] = check;
   window[cfg.prefix + 'OpenHint'] = openHint;
   window[cfg.prefix + 'CloseHint'] = closeHint;
@@ -972,8 +933,6 @@ function makeDragQuestion(cfg) {
     lastWrong = s.lw || ((attempts > 0 && !done) ? answerSig() : null);
     /* גרירה חיה — scratch, לעולם לא משוחזר: ערך ישן היה גורם ל-drop לפעול
        על קלף רפאים. */
-    dragActive = null;
-    dropHandled = false;
   }
 
   /* מחקה את כתיבות ה-DOM של check() בלבד: בלי שינוי מצב, בלי דיווח. */
