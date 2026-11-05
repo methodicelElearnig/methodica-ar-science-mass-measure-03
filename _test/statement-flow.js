@@ -77,7 +77,7 @@ function boot(c) {
   /* 50-loader.js and 90-boot.js are deliberately omitted: they would try to pull
      the CDN library and run the real boot sequence. This suite is about item
      scope, which lives in 20-xapi.js. */
-  for (const f of ['10-identity', '20-xapi', '25-report', '40-resume']) {
+  for (const f of ['10-identity', '20-xapi', '25-report', '30-pointer-dnd', '40-resume']) {
     inject(read(path.join(BASE, 'unit-js', f + '.js')));
   }
   inject(read(path.join(dir, 'script.js')));

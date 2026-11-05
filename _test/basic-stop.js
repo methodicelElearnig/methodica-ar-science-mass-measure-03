@@ -55,7 +55,7 @@ function boot() {
     s.textContent = code;
     w.document.body.appendChild(s);
   };
-  for (const f of ['10-identity', '20-xapi', '25-report', '40-resume']) {
+  for (const f of ['10-identity', '20-xapi', '25-report', '30-pointer-dnd', '40-resume']) {
     inject(read(path.join(BASE, 'unit-js', f + '.js')));
   }
   inject(read(path.join(dir, 'script.js')));

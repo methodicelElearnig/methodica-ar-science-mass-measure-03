@@ -1479,10 +1479,10 @@ function showDragGestureHint(slotEl) {
   });
   function dismiss() {
     hint.remove();
-    slotEl.removeEventListener('dragstart', dismiss);
+    slotEl.removeEventListener('pointerdown', dismiss);
     slotEl.removeEventListener('click', dismiss);
   }
-  slotEl.addEventListener('dragstart', dismiss);
+  slotEl.addEventListener('pointerdown', dismiss);   /* a press is the start of the gesture (also covers touch) */
   /* also dismiss on plain click — screen s17's item has a click-to-place fallback
      (s17ItemClick) alongside drag; that's the same "start of the demonstrated action" for a
      learner using that input path instead of dragging. */
@@ -1535,8 +1535,6 @@ function makeDragQuestion(cfg) {
   let placement = {};
   dragIds.forEach(function (id) { placement[id] = 'source'; });
 
-  let dragActive = null;
-  let dropHandled = false;
   let checked = false;
   let attempts = 0;
   let done = false;
@@ -1571,9 +1569,7 @@ function makeDragQuestion(cfg) {
       if (placement[dragId] === 'source') {
         card.textContent = labels[dragId];
         if (!checked) {
-          card.draggable = true;
-          card.ondragstart = function (e) { dragStart(e, dragId); };
-          card.ondragend = dragEnd;
+          dnd.attachSource(card, dragId);   /* pointer DnD (30-pointer-dnd.js): mouse + touch */
         } else {
           card.classList.add('locked');
         }
@@ -1596,9 +1592,7 @@ function makeDragQuestion(cfg) {
         placed.className = 'dq-placed-card';
         placed.textContent = labels[placedId];
         if (!checked) {
-          placed.draggable = true;
-          placed.addEventListener('dragstart', function (e) { placedDragStart(e, placedId); });
-          placed.addEventListener('dragend', dragEnd);
+          dnd.attachSource(placed, placedId);   /* placed card: drag back out / to another target */
         } else {
           placed.classList.add('locked');
         }
@@ -1615,82 +1609,54 @@ function makeDragQuestion(cfg) {
     if (btn && !done) btn.disabled = !allFilled || sig() === lastWrong; // retry gate
   }
 
-  function dragStart(e, dragId) {
-    if (checked) { e.preventDefault(); return; }
-    dragActive = dragId;
-    dropHandled = false;
-    e.dataTransfer.setData('text/plain', dragId);
-    e.dataTransfer.effectAllowed = 'move';
-    setScaledDragImage(e, e.currentTarget || e.target);
-    setTimeout(function () {
-      const card = document.getElementById(dragId);
-      if (card) card.classList.add('dragging');
-    }, 0);
-  }
-
-  function placedDragStart(e, dragId) {
-    if (checked) { e.preventDefault(); return; }
-    dragActive = dragId;
-    dropHandled = false;
-    e.dataTransfer.setData('text/plain', dragId);
-    e.dataTransfer.effectAllowed = 'move';
-    setScaledDragImage(e, e.currentTarget || e.target);
-    setTimeout(function () {
-      const oldZoneId = placement[dragId];
-      placement[dragId] = 'source';
-      const oldZone = document.getElementById(oldZoneId);
-      if (oldZone) oldZone.classList.remove('correct', 'wrong');
+  /* ── Pointer DnD (mouse + touch) — ../unit-js/30-pointer-dnd.js ──
+     Replaces the native HTML5 drag handlers (dragstart/dragover/drop), which never fire from
+     touch (so the setScaledDragImage workaround for the native drag image is no longer needed
+     here: the ghost is a real clone, scaled to #app). placement stays the single model and
+     render() rebuilds every card, so the source and placed cards are attached inside render();
+     the targets and the bank are static markup and are attached once, here. Same rules as
+     before: nothing is draggable once checked; a placed card dragged out empties its target at
+     once; a release outside any target sends the card back to the bank; dropping on an occupied
+     target evicts its occupant. */
+  const dnd = createPointerDnd({
+    canDrag: function () { return !checked; },
+    onPick: function (dragId, src) {
+      if (src.classList.contains('dq-placed-card')) {   /* placed card: its target empties now */
+        const oldZoneId = placement[dragId];
+        placement[dragId] = 'source';
+        const oldZone = document.getElementById(oldZoneId);
+        if (oldZone) oldZone.classList.remove('correct', 'wrong');
+        render();
+        const card = document.getElementById(dragId);
+        if (card) card.classList.add('dragging');
+      }
+    },
+    onGhost: function (ghost, src) {   /* a placed card travels as the same pill as a bank card */
+      if (src.classList.contains('dq-placed-card')) {
+        ghost.className = 'dq-drag-card pointer-drag-ghost';
+        ghost.textContent = labels[src.dataset.pdragId];
+      }
+    },
+    onDrop: function (dragId, targetId) {
+      if (targetId === 'bank') {
+        placement[dragId] = 'source';
+      } else {
+        const zone = document.getElementById(targetId);
+        if (zone) zone.classList.remove('drag-over', 'correct', 'wrong');
+        dragIds.forEach(function (dId) {
+          if (placement[dId] === targetId && dId !== dragId) placement[dId] = 'source';
+        });
+        placement[dragId] = targetId;
+      }
       render();
-      const card = document.getElementById(dragId);
-      if (card) card.classList.add('dragging');
-    }, 0);
-  }
-
-  function dragEnd() {
-    if (!dropHandled && dragActive) {
-      placement[dragActive] = 'source';
+    },
+    onCancel: function (dragId) {   /* released outside any target: back to the bank */
+      placement[dragId] = 'source';
       render();
     }
-    dragActive = null;
-    dropHandled = false;
-    document.querySelectorAll(cfg.screenSelector + ' .drag-over').forEach(function (z) {
-      z.classList.remove('drag-over');
-    });
-  }
-
-  function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
-  function dragEnter(e, targetId) {
-    e.preventDefault();
-    const zone = document.getElementById(targetId);
-    if (zone) zone.classList.add('drag-over');
-  }
-  function dragLeave(e, targetId) {
-    const zone = document.getElementById(targetId);
-    if (zone) zone.classList.remove('drag-over');
-  }
-
-  function drop(e, targetId) {
-    e.preventDefault();
-    const zone = document.getElementById(targetId);
-    if (zone) zone.classList.remove('drag-over', 'correct', 'wrong');
-    if (!dragActive) return;
-    dropHandled = true;
-    dragIds.forEach(function (dId) {
-      if (placement[dId] === targetId && dId !== dragActive) placement[dId] = 'source';
-    });
-    placement[dragActive] = targetId;
-    dragActive = null;
-    render();
-  }
-
-  function dropToBank(e) {
-    e.preventDefault();
-    if (!dragActive) return;
-    dropHandled = true;
-    placement[dragActive] = 'source';
-    dragActive = null;
-    render();
-  }
+  });
+  targetIds.forEach(function (tId) { dnd.attachTarget(document.getElementById(tId), tId); });
+  dnd.attachTarget(document.getElementById(cfg.prefix + '-word-bank'), 'bank');
 
   function showFeedback(kind) {
     const box = document.getElementById(cfg.feedboxId);
@@ -1856,7 +1822,7 @@ function makeDragQuestion(cfg) {
   }
 
   function resetInitial() {
-    done = false; checked = false; attempts = 0; dragActive = null; dropHandled = false;
+    done = false; checked = false; attempts = 0;
     answerSnapshot = null; revealed = false; passed = false; lastWrong = null;
     shuffleWordBank();
     dragIds.forEach(function (dId) { placement[dId] = 'source'; });
@@ -1903,11 +1869,6 @@ function makeDragQuestion(cfg) {
     showDragGestureHint(document.getElementById('slot-' + (cfg.gestureHintDragId || dragIds[0])));
   }
 
-  window[cfg.prefix + 'DragOver'] = dragOver;
-  window[cfg.prefix + 'DragEnter'] = dragEnter;
-  window[cfg.prefix + 'DragLeave'] = dragLeave;
-  window[cfg.prefix + 'Drop'] = drop;
-  window[cfg.prefix + 'DropToBank'] = dropToBank;
   window[cfg.prefix + 'Check'] = check;
   window[cfg.prefix + 'OpenHint'] = openHint;
   window[cfg.prefix + 'CloseHint'] = closeHint;
@@ -1946,8 +1907,6 @@ function makeDragQuestion(cfg) {
         if (slot) bank.appendChild(slot);
       });
     }
-    dragActive = null;
-    dropHandled = false;
   }
 
   function restoreUI() {
@@ -2628,7 +2587,6 @@ const TEXTS17 = {
 let s17Done = false;
 let s17Attempts = 0;
 let s17HintShown = false;
-let s17DragId = null;
 let s17AnswerSnapshot = null; // הפלייסמנט של הלומד ברגע הניסיון השני הכושל (item id → zone id | 'source')
 let s17Revealed = false;
 /* resume: נשמר במפורש. אחרי reveal אין ב-DOM דבר שמבדיל בין "פתר נכון"
@@ -2656,77 +2614,48 @@ function s17ClearZoneStates() {
   });
 }
 
-function s17DragStart(event, itemId) {
-  s17DragId = itemId;
-  event.dataTransfer.effectAllowed = 'move';
-  event.dataTransfer.setData('text/plain', itemId);
-  setScaledDragImage(event, document.getElementById(itemId));
-  setTimeout(function () {
-    const el = document.getElementById(itemId);
-    if (el) el.classList.add('s17-dragging');
-  }, 0);
-}
-
-function s17DragEnd(itemId) {
-  const el = document.getElementById(itemId);
-  if (el) el.classList.remove('s17-dragging');
-  s17DragId = null;
-}
-
-function s17DragOver(event) {
-  event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-}
-
-function s17DragEnter(event, zoneId) {
-  event.preventDefault();
-  document.getElementById(zoneId).classList.add('s17-drag-over');
-}
-
-function s17DragLeave(event, zoneId) {
-  const zone = document.getElementById(zoneId);
-  if (zone && !zone.contains(event.relatedTarget)) {
-    zone.classList.remove('s17-drag-over');
-  }
-}
-
-function s17Drop(event, targetZone) {
-  event.preventDefault();
+/* Place an item into a zone (targetZone = 'kitchen' ...) or back into the source bank (targetZone === null).
+   Shared by the pointer DnD onDrop below; same effect as the former s17Drop / s17DropToSource. */
+function s17PlaceItem(itemId, targetZone) {
   if (s17Done) return;
-  const itemId = event.dataTransfer.getData('text/plain') || s17DragId;
-  if (!itemId) return;
-  const zoneEl = document.getElementById('s17-zone-' + targetZone);
   const itemEl = document.getElementById(itemId);
-  if (zoneEl && itemEl) {
-    zoneEl.classList.remove('s17-drag-over');
-    /* רק פריט אחד מותר בכל תא שחרור בו-זמנית — בקשה מפורשת (2026-09-08).
-       אם כבר יש פריט אחר באזור היעד, הוא מוחזר למחסן המקור לפני שהפריט
-       הנגרר נכנס, לפי אותה מוסכמת "החלפה" כמו ב-makeDragQuestion.drop(). */
-    const existing = zoneEl.querySelector('.s17-drag-item');
-    if (existing && existing !== itemEl) {
-      document.getElementById('s17-source-bank').appendChild(existing);
+  if (targetZone === null) {
+    const sourceBank = document.getElementById('s17-source-bank');
+    if (itemEl && sourceBank && itemEl.parentElement !== sourceBank) {
+      if (itemEl.parentElement) itemEl.parentElement.removeChild(itemEl);
+      sourceBank.appendChild(itemEl);
     }
-    if (itemEl.parentElement) itemEl.parentElement.removeChild(itemEl);
-    zoneEl.appendChild(itemEl);
+  } else {
+    const zoneEl = document.getElementById('s17-zone-' + targetZone);
+    if (zoneEl && itemEl) {
+      /* רק פריט אחד מותר בכל תא שחרור בו-זמנית — בקשה מפורשת (2026-09-08).
+         אם כבר יש פריט אחר באזור היעד, הוא מוחזר למחסן המקור לפני שהפריט
+         הנגרר נכנס, לפי אותה מוסכמת "החלפה" כמו ב-makeDragQuestion.drop(). */
+      const existing = zoneEl.querySelector('.s17-drag-item');
+      if (existing && existing !== itemEl) {
+        document.getElementById('s17-source-bank').appendChild(existing);
+      }
+      if (itemEl.parentElement) itemEl.parentElement.removeChild(itemEl);
+      zoneEl.appendChild(itemEl);
+    }
   }
   s17UpdateCheckBtn();
   s17ClearZoneStates();
 }
 
-function s17DropToSource(event) {
-  event.preventDefault();
-  if (s17Done) return;
-  const itemId = event.dataTransfer.getData('text/plain') || s17DragId;
-  if (!itemId) return;
-  const sourceBank = document.getElementById('s17-source-bank');
-  const itemEl = document.getElementById(itemId);
-  if (itemEl && sourceBank && itemEl.parentElement !== sourceBank) {
-    if (itemEl.parentElement) itemEl.parentElement.removeChild(itemEl);
-    sourceBank.appendChild(itemEl);
-  }
-  s17UpdateCheckBtn();
-  s17ClearZoneStates();
-}
+/* Pointer DnD (mouse + touch) — ../unit-js/30-pointer-dnd.js. Replaces the native HTML5 drag handlers,
+   which never fire from touch (and with them the setScaledDragImage workaround for the native drag
+   image). The DOM is the state here (no model), and the listeners sit on the items themselves, so they
+   survive every appendChild (drop, reveal, resume, reset). A short tap on a placed item still sends it
+   back to the bank (the former s17ItemClick, now onTap). */
+const s17Dnd = createPointerDnd({
+  canDrag: function () { return !s17Done; },
+  onTap: function (dragId) { s17ItemClick(dragId); },
+  onDrop: function (dragId, targetId) { s17PlaceItem(dragId, targetId === 'bank' ? null : targetId); }
+});
+S17_ITEM_IDS.forEach(function (id) { s17Dnd.attachSource(document.getElementById(id), id); });
+S17_ZONE_IDS.forEach(function (z) { s17Dnd.attachTarget(document.getElementById('s17-zone-' + z), z); });
+s17Dnd.attachTarget(document.getElementById('s17-source-bank'), 'bank');
 
 function s17ItemClick(itemId) {
   // לחיצה = חזרה למחסן המילים (fallback לאינטראקציית מגע/נגישות)
@@ -2898,7 +2827,6 @@ function resetScreenState17() {
   s17Attempts = 0;
   s17HintShown = false;
   s17LastWrong = null;
-  s17DragId = null;
   s17AnswerSnapshot = null;
   s17Revealed = false;
 
@@ -3574,8 +3502,7 @@ function applyResumeVars(st) {
     /* מסמך ישן בלי lw (נשמר לפני תיקון ה-retry gate): גוזרים מהתשובה השמורה, כדי
        שהכפתור לא ייפתח על אותה תשובה שגויה. */
     s17LastWrong = st.s17.lw || ((s17Attempts > 0 && !s17Done && st.s17.place) ? JSON.stringify(st.s17.place) : null);
-    s17DragId = null;
-    __s17Place = st.s17.place || null;
+      __s17Place = st.s17.place || null;
   }
 }
 

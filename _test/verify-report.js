@@ -145,7 +145,7 @@ for (const c of COMPONENTS) {
    never initialises, or two components running different builds of one file. */
 section('3. shared layer wiring');
 
-const EXPECTED_ORDER = ['10-identity', '20-xapi', '25-report', '40-resume', '50-loader', 'script', '90-boot'];
+const EXPECTED_ORDER = ['10-identity', '20-xapi', '25-report', '30-pointer-dnd', '40-resume', '50-loader', 'script', '90-boot'];
 const versions = {};
 
 for (const c of COMPONENTS) {
@@ -412,7 +412,7 @@ if (!JSDOM) {
     };
     let threw = null;
     try {
-      for (const f of ['10-identity', '20-xapi', '25-report', '40-resume', '50-loader']) {
+      for (const f of ['10-identity', '20-xapi', '25-report', '30-pointer-dnd', '40-resume', '50-loader']) {
         inject(path.join(BASE, 'unit-js', f + '.js'));
       }
       inject(path.join(dir, 'script.js'));
