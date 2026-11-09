@@ -126,6 +126,8 @@ for (const pattern of ['WWW', 'WWR', 'WRW', 'RWW']) {
   ok(scope, '"continue" stays on screen 3 (no "יופי של עבודה")', screen(P) === 3, 'screen=' + screen(P));
   const c1 = compCompleted(P);
   ok(scope, 'one component completed, success:false', c1.length === 1 && c1[0].result && c1[0].result.success === false, JSON.stringify(c1));
+  const nRight = pattern.split('').filter(c => c === 'R').length;
+  ok(scope, 'score contract: scaled = correct / 3 (' + nRight + '/3)', c1.length === 1 && Math.abs(c1[0].result.score.scaled - nRight / 3) < 1e-9, JSON.stringify(c1));
   ok(scope, 'button disabled', s3dis(P) === true);
   P.run("document.getElementById('s3-check').disabled = false;"); click(P, 's3-check');
   ok(scope, 'a second click sends nothing more', compCompleted(P).length === 1);
@@ -168,6 +170,30 @@ for (const pattern of ['RRW', 'RWR', 'WRR', 'RRR']) {
   click(P, 's3-check');
   ok(scope, '"continue" goes to screen 4', screen(P) === 4, 'screen=' + screen(P));
   ok(scope, 'nothing completed at the stop', compCompleted(P).length === 0);
+  /* score contract: the last click (s9Finish) reports the basic result whatever the FIFA sections did */
+  const nRight = pattern.split('').filter(c => c === 'R').length;
+  P.run("['a', 'b', 'c', 'd'].forEach(function (k, i) { q1SectionResults[k] = i === 0 ? 'success' : 'fail'; }); s9Finish();");
+  const c = compCompleted(P);
+  ok(scope, 'score contract: end with FIFA 1/4 -> success:true, scaled ' + nRight + '/3 (no second condition)',
+     c.length === 1 && c[0].result.success === true && Math.abs(c[0].result.score.scaled - nRight / 3) < 1e-9, JSON.stringify(c));
+  P.close();
+}
+
+/* ── score contract (MOE QA runbook §4 "ציון ומעבר"; 2026-11-09, 08.11 sheet fixes 1, 2, 4, 6) ──
+   s0 promises 2 of 3. success and score.scaled come from one count of those 3 questions; the FIFA
+   question (item 004, sections א–ד) never enters, whole or by section; success <=> scaled >= 2/3. */
+{
+  const P = boot();
+  for (let k = 0; k <= 3; k++) for (const sec of [0, 3, 4]) {
+    const r = P.val("(function(){ ['q1', 'q2', 'q3'].forEach(function (q, i) { stationProgress[q] = i < " + k + " ? 'success' : 'fail'; });" +
+      " ['a', 'b', 'c', 'd'].forEach(function (s, i) { q1SectionResults[s] = i < " + sec + " ? 'success' : 'fail'; });" +
+      " return JSON.stringify(xapiPartResult()); })()");
+    let res; try { res = JSON.parse(r); } catch (e) { res = { success: null, score: { scaled: NaN }, raw: r }; }
+    const scope = 'result ' + k + '/3 + FIFA ' + sec + '/4';
+    ok(scope, 'success = correct >= 2', res.success === (k >= 2), JSON.stringify(res));
+    ok(scope, 'scaled = correct / 3 (FIFA sections not counted)', Math.abs(res.score.scaled - k / 3) < 1e-9, JSON.stringify(res));
+    ok(scope, 'success <=> scaled >= 2/3', res.success === (res.score.scaled >= 2 / 3 - 1e-9), JSON.stringify(res));
+  }
   P.close();
 }
 

@@ -746,7 +746,7 @@ let basicStopEnded = false;
 function basicStopBlocks() {
   const qs = [stationProgress.q1, stationProgress.q2, stationProgress.q3];
   if (qs.some(function (v) { return v !== 'success' && v !== 'fail'; })) return false;
-  return getBasicScore02() < 2;
+  return getBasicScore02() < XAPI_PASS_K;
 }
 
 function s3EndAtStop() {
@@ -757,7 +757,7 @@ function s3EndAtStop() {
     return;
   }
   basicStopEnded = true;
-  xapiEndComponent({ success: false, score: { scaled: getBasicScore02() / 7 } }, btn);
+  xapiEndComponent(xapiPartResult(), btn);
   try { flushResumeSave(); } catch (e) {}
 }
 
@@ -2039,19 +2039,21 @@ function restoreTfRowUI() {
   if (checkBtn) { checkBtn.textContent = 'هل إجابتي صحيحة؟'; checkBtn.onclick = s8Check; checkBtn.disabled = !s8Selected || s8Selected === s8LastWrong; }
 }
 
-/* כמה מהשאלות נענו נכון, בשתי התחנות שהלומד הובטח להן:
+/* כמה מהשאלות נענו נכון:
    מסך 0 — "3 שאלות ... ענו נכון על 2 ומעלה" (תחנה א, stationProgress),
-   מסך 4 — "3 מתוך 4 סעיפים" (תחנה ב, ארבעת סעיפי שאלת ה-FIFA).
-   שני הסִפים נדרשים יחד, ולכן success הוא AND ביניהם. המכנה הוא 7 —
-   בדיוק שבע השאלות שהקטלוג מגדיר לרכיב הזה. */
+   מסך 4 — "3 מתוך 4 סעיפים" (תחנה ב, ארבעת סעיפי שאלת ה-FIFA, פריט 004).
+   תוצאת הרכיב (2026-11-09, תיקונים 1, 2, 4, 6 בגיליון 08.11): success ו-score מאותה
+   ספירה — שלוש השאלות של מסך 0 בלבד, 2 מתוך 3. שאלת ה-FIFA (ארבעת הסעיפים) מדווחת
+   answered משלה ואינה נכנסת לתוצאת הרכיב. עד כה: success = basic >= 2 && sections >= 3,
+   score = (basic + sections) / 7 — כל סעיף נספר כשאלה. הטקסט במסך 4 לא שונה. */
+var XAPI_PASS_K = 2, XAPI_PASS_N = 3;
+function xapiPartResult() {
+  const _b = getBasicScore02();
+  return { success: _b >= XAPI_PASS_K, score: { scaled: _b / XAPI_PASS_N } };
+}
 function getBasicScore02() {
   return ['q1', 'q2', 'q3'].filter(function (k) {
     return stationProgress[k] === 'success';
-  }).length;
-}
-function getSectionScore02() {
-  return ['a', 'b', 'c', 'd'].filter(function (k) {
-    return q1SectionResults[k] === 'success';
   }).length;
 }
 
@@ -2059,10 +2061,7 @@ function getSectionScore02() {
    ⚠️ הרכיב אינו מנווט: Kata מסירה אותו מהמסך ברגע שה-completed מגיע
    ומחליטה מהקטלוג מה הבא. הניווט נשאר ל-walkthrough מקומי בלבד. */
 function s9Finish() {
-  const _b = getBasicScore02();
-  const _s = getSectionScore02();
-  xapiEndComponent({ success: _b >= 2 && _s >= 3, score: { scaled: (_b + _s) / 7 } },
-    document.getElementById('s9-check'));
+  xapiEndComponent(xapiPartResult(), document.getElementById('s9-check'));
   if (DEV_NAV) window.location.href = '../methodica-ar-science-mass-measure-03-04/index.html';
 }
 
