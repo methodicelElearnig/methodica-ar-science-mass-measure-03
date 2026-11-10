@@ -477,6 +477,101 @@ if (!JSDOM) {
   }
 }
 
+/* ═══════════════════ 7. result.response = Kata's pattern (MOE runbook 10.11.26) ═══════════════════
+   Kata compares result.response with the question's correctXapiResponsesPattern character by
+   character. Static: the retired string builders are gone, every call site hands xapiAnswered a spec
+   object, and the Ctrl+Arrow screen jump sits behind DEV_NAV. Runtime: for every metadata question
+   the builder, fed the correct answer the way a learner gives it (choices in reverse click order, with
+   bidi marks / ZWSP around the text; matching pairs reversed), yields exactly Kata's pattern.
+   _test/responses.js does the same through the real screen handlers. */
+section('7. result.response (MOE runbook 10.11.26)');
+
+const xapiSrc = read(path.join(BASE, 'unit-js', '20-xapi.js'));
+ok('20-xapi', 'retired builders xapiZoneAnswer / xapiFieldsAnswer / xapiMultiAnswer are not defined',
+   !/function xapi(Zone|Fields|Multi)Answer\b/.test(xapiSrc));
+ok('20-xapi', 'xapiAnswered sends result.response built by xapiResponse',
+   /var r = xapiResponse\(item, qKey, answer\);[\s\S]{0,300}response: r\.response/.test(xapiSrc));
+ok('20-xapi', 'the lookup drops LRM / RLM / ALM / ZWSP / isolates',
+   xapiSrc.includes('_XAPI_BIDI = /[\\u200B\\u200E\\u200F\\u061C\\u202A-\\u202E\\u2066-\\u2069]/g'));
+
+const SPEC = /^\{ (choices|pairs|steps|values|value|order|text): /;
+for (const c of COMPONENTS) {
+  const js = read(path.join(compDir(c), 'script.js'));
+  ok(c, 'no retired builder call', !/xapi(Zone|Fields|Multi)Answer\(/.test(js));
+  /* the last argument of every xapiAnswered( call (comments out first: they hold commas and parens) */
+  const jsc = js.replace(/\/\*[\s\S]*?\*\//g, '');
+  let calls = 0, bad = [];
+  for (const m of jsc.matchAll(/(?<!function )xapiAnswered\(/g)) {
+    let i = m.index + m[0].length, depth = 1, args = [], cur = '';
+    for (; i < jsc.length && depth > 0; i++) {
+      const ch = jsc[i];
+      if ('([{'.includes(ch)) depth++;
+      if (')]}'.includes(ch)) depth--;
+      if (depth === 1 && ch === ',') { args.push(cur); cur = ''; continue; }
+      if (depth > 0) cur += ch;
+    }
+    args.push(cur);
+    const last = args[args.length - 1].trim();
+    calls++;
+    if (!(SPEC.test(last) || (last === '_ans' && /const _ans = \{ pairs: xapiPairs\(\) \};/.test(js)))) bad.push(last.slice(0, 60));
+  }
+  ok(c, 'every xapiAnswered call passes a spec object ({choices} / {pairs} / {value})', calls > 0 && bad.length === 0, calls + ' calls; ' + bad.join(' || '));
+  /* the developer shortcut: the handler that jumps screens returns at once without DEV_NAV */
+  let jumps = 0;
+  for (const m of js.matchAll(/document\.addEventListener\('keydown', function \(e\) \{([\s\S]*?)\n\}\);/g)) {
+    if (!/ArrowLeft[\s\S]*goTo\(/.test(m[1])) continue;
+    jumps++;
+    ok(c, 'Ctrl+Arrow handler starts with if (!DEV_NAV) return;', /^if \(!DEV_NAV\) return;/.test(m[1].replace(/\/\*[\s\S]*?\*\//g, '').trim()));
+  }
+  ok(c, 'one Ctrl+Arrow handler found', jumps === 1, String(jumps));
+}
+
+if (JSDOM) {
+  const BIDI = ['\u200F', '\u200E', '\u200B', '\u061C'];
+  for (const c of COMPONENTS) {
+    const meta = readJson(path.join(BASE, 'metadata', UNIT_SLUG + '-' + c + '.json'));
+    const dom = new JSDOM('<!doctype html><body></body>', { runScripts: 'dangerously' });
+    const w = dom.window;
+    const warns = [];
+    w.console.warn = (...a) => warns.push(a.join(' '));
+    for (const f of ['10-identity', '20-xapi']) {
+      const s = w.document.createElement('script'); s.textContent = read(path.join(BASE, 'unit-js', f + '.js')); w.document.body.appendChild(s);
+    }
+    const slug = UNIT_SLUG + '-' + c;
+    const s0 = w.document.createElement('script');
+    s0.textContent = 'var XAPI_COMP_SLUG = ' + JSON.stringify(slug) + '; var XAPI_COMP_ID = XAPI_ID_PREFIX + XAPI_COMP_SLUG + "/";';
+    w.document.body.appendChild(s0);
+    w.METADATA = meta;
+    let n = 0;
+    ok(c, 'xapiResponse (the response layer) is defined', typeof w.xapiResponse === 'function');
+    if (typeof w.xapiResponse !== 'function') { w.close(); continue; }
+    for (const it of meta.subContent || []) {
+      const suf = it.id.replace(/\/+$/, '').slice(-3);
+      for (const qq of it.questions || []) {
+        const k = qq.questionId.replace(/\/+$/, '').split('/').pop();
+        const pat = qq.correctXapiResponsesPattern;
+        ok(c, suf + '/' + k + ' carries Kata\'s correctXapiResponsesPattern', Array.isArray(pat) && pat.length > 0);
+        if (!Array.isArray(pat) || !pat.length) continue;
+        let spec;
+        switch (qq.questionType) {
+          case 'choice': spec = { choices: qq.correctAnswers.slice().reverse().map((a, i) => BIDI[i % 4] + ' ' + a + BIDI[(i + 1) % 4]) }; break;
+          case 'matching': spec = { pairs: qq.correctAnswers.slice().reverse() }; break;
+          case 'numeric': spec = { value: String(qq.correctAnswers[0]) + '\u200B' }; break;
+          case 'true-false': spec = { value: String(qq.correctAnswers[0]) }; break;
+          case 'performance': spec = { steps: qq.correctAnswers.map((s) => s.response) }; break;
+          default: spec = { text: String(qq.correctAnswers[0]) };
+        }
+        const resp = w.xapiResponse(suf, k, spec).response;
+        ok(c, suf + '/' + k + ' (' + qq.questionType + '): the correct answer formats to Kata\'s pattern', pat.includes(resp), JSON.stringify(resp) + ' vs ' + JSON.stringify(pat));
+        n++;
+      }
+    }
+    ok(c, 'no [xAPI] warning while formatting', !warns.some((s) => /\[xAPI\]/.test(s)), warns.slice(0, 2).join(' | '));
+    ok(c, 'questions formatted', n > 0, String(n));
+    w.close();
+  }
+}
+
 /* ═══════════════════════════════ summary ═══════════════════════════════ */
 console.log('\n' + '='.repeat(64));
 if (failures.length) {

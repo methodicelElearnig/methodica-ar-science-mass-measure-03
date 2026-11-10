@@ -589,7 +589,7 @@ function viqCheck(n) {
   /* xAPI: מסך 5 (זהב) הוא פריט 002 ומסך 6 (תרופה) הוא 003 — הלומד הולך
      במסלול אחד בלבד (בחירה במסך 4), ולכן רק אחד משניהם מדווח אי פעם. */
   xapiAnswered(VIQ_XAPI_ITEM[n], 'q1', isCorrect, isCorrect || viqAttempts[n] >= 2,
-    xapiFieldsAnswer([cfg.inputId]));
+    { value: input.value });
   fb.classList.remove('collapsed');
   scqFbResetPosition(cfg.feedboxId);
 
@@ -1020,7 +1020,7 @@ function s8Check() {
   s8Attempts++;
   const optEl = s8OptEl(s8Selected);
   xapiAnswered('006', 'q1', s8Selected === S8.correctId,
-    s8Selected === S8.correctId || s8Attempts >= S8.maxAttempts, xapiAnswerText(optEl));
+    s8Selected === S8.correctId || s8Attempts >= S8.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s8Selected === S8.correctId) {
     optEl.classList.add('correct');
@@ -1278,7 +1278,7 @@ function s10Check() {
   s10Attempts++;
   const optEl = s10OptEl(s10Selected);
   xapiAnswered('007', 'q1', s10Selected === S10.correctId,
-    s10Selected === S10.correctId || s10Attempts >= S10.maxAttempts, xapiAnswerText(optEl));
+    s10Selected === S10.correctId || s10Attempts >= S10.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s10Selected === S10.correctId) {
     optEl.classList.add('correct');
@@ -1561,6 +1561,19 @@ function makeDragQuestion(cfg) {
     }).join(' | ');
   }
 
+  /* xAPI (MOE runbook 10.11.26): the placed pairs for xapiMatchingResponse — the card's label as the
+     source, the target's position as an index into answers.target (target-N = N-1, the order the
+     metadata lists them in). An empty target is no pair. */
+  function xapiPairs() {
+    const out = [];
+    targetIds.forEach(function (tId) {
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      if (placed) out.push({ source: labels[placed], target: parseInt(tId.replace(/^.*-target-/, ''), 10) - 1 });
+    });
+    return out;
+  }
+
   function render() {
     dragIds.forEach(function (dragId) {
       const slot = document.getElementById('slot-' + dragId);
@@ -1735,11 +1748,10 @@ function makeDragQuestion(cfg) {
 
     render();
 
-    /* xAPI: **אחרי** לולאת האזורים, ולפני ההסתעפות.
-       ⚠️ xapiZoneAnswer לא מתאים לפקטורי הזה: העוזר בונה מזהי אזור בתבנית
-       <prefix>-zone-<id>, בעוד היעדים כאן הם <prefix>-target-N. */
+    /* xAPI: **אחרי** לולאת האזורים, ולפני ההסתעפות. הזוגות מ-xapiPairs (matching,
+       MOE runbook 10.11.26). */
     if (cfg.xapiItem) {
-      const _ans = sig();
+      const _ans = { pairs: xapiPairs() };
       (cfg.xapiQuestions || ['q1']).forEach(function (q) {
         /* ⚠️ 2 כמספר ולא maxAttempts: לעותק הזה של הפקטורי אין הקשירה
            הזאת — הוא בודק `attempts >= 2` ישירות. שם לא-מוגדר היה זורק
@@ -2197,7 +2209,7 @@ function s14Check() {
   s14Attempts++;
   const optEl = s14OptEl(s14Selected);
   xapiAnswered('009', 'q1', s14Selected === S14.correctId,
-    s14Selected === S14.correctId || s14Attempts >= S14.maxAttempts, xapiAnswerText(optEl));
+    s14Selected === S14.correctId || s14Attempts >= S14.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s14Selected === S14.correctId) {
     optEl.classList.add('correct');
@@ -2387,7 +2399,10 @@ function s15Check() {
   s15Attempts++;
   const optEl = s15OptEl(s15Selected);
   xapiAnswered('009', 'q2', s15Selected === S15.correctId,
-    s15Selected === S15.correctId || s15Attempts >= S15.maxAttempts, xapiAnswerText(optEl));
+    s15Selected === S15.correctId || s15Attempts >= S15.maxAttempts,
+    /* the cards' text ('… (جزء بالمئة من الغرام)') is not the metadata text: by position, kitchen / lab / analytic
+       = answers[0..2] of 009/q2 */
+    { choices: [['kitchen', 'lab', 'analytic'].indexOf(s15Selected)] });
 
   if (s15Selected === S15.correctId) {
     optEl.classList.add('correct');
@@ -2738,6 +2753,20 @@ function s17ShowFeedback(kind, isCorrect) {
   box.classList.add('visible');
 }
 
+/* xAPI matching pairs of 011/q1: each card's text → its zone's position in answers.target
+   (kitchen / lab / analytic = מטבח / מעבדה / אנליטיים, the metadata order). */
+function s17XapiPairs() {
+  const out = [];
+  S17_ZONE_IDS.forEach(function (zoneId, idx) {
+    const zoneEl = document.getElementById('s17-zone-' + zoneId);
+    if (!zoneEl) return;
+    zoneEl.querySelectorAll('.s17-drag-item').forEach(function (item) {
+      out.push({ source: xapiAnswerText(item), target: idx });
+    });
+  });
+  return out;
+}
+
 function s17Check() {
   if (s17Done) return;
   s17Attempts++;
@@ -2756,10 +2785,8 @@ function s17Check() {
   });
 
   /* xAPI: **אחרי** לולאת האזורים, כי allCorrect סופי רק בסופה.
-     כאן — ורק כאן בפרויקט — האזורים באמת בתבנית s17-zone-<id> והפריטים
-     נושאים class המכיל "drag-item", ולכן xapiZoneAnswer מתאים כמות שהוא. */
-  xapiAnswered('011', 'q1', allCorrect, allCorrect || s17Attempts >= 2,
-    xapiZoneAnswer('s17', S17_ZONE_IDS));
+     הזוגות מ-s17XapiPairs (matching, MOE runbook 10.11.26). */
+  xapiAnswered('011', 'q1', allCorrect, allCorrect || s17Attempts >= 2, { pairs: s17XapiPairs() });
 
   const checkBtn = document.getElementById('s17-check');
   if (allCorrect) {
@@ -2958,7 +2985,7 @@ function s19Check() {
   s19Attempts++;
   const optEl = s19OptEl(s19Selected);
   xapiAnswered('012', 'q1', s19Selected === S19.correctId,
-    s19Selected === S19.correctId || s19Attempts >= S19.maxAttempts, xapiAnswerText(optEl));
+    s19Selected === S19.correctId || s19Attempts >= S19.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s19Selected === S19.correctId) {
     optEl.classList.add('correct');
@@ -3161,7 +3188,7 @@ function s21Check() {
   s21Attempts++;
   const optEl = s21OptEl(s21Selected);
   xapiAnswered('013', 'q1', s21Selected === S21.correctId,
-    s21Selected === S21.correctId || s21Attempts >= S21.maxAttempts, xapiAnswerText(optEl));
+    s21Selected === S21.correctId || s21Attempts >= S21.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s21Selected === S21.correctId) {
     optEl.classList.add('correct');
