@@ -714,7 +714,7 @@ function s3Check() {
     xapiAnswered('003', 'q' + (i + 1),
       s3Selected[r] === TF_S3_CORRECT[r],
       _s3Last,
-      xapiAnswerText(document.getElementById('s3-r' + (i + 1) + '-' + s3Selected[r])));
+      s3Selected[r]);   /* 'true' / 'false', לא התווית — מדריך §6.3b (10.11.26) */
   });
 
   if (allCorrect) {

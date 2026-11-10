@@ -1347,8 +1347,10 @@ function s8Check() {
   if (!s8Selected || s8Done) return;
   s8Attempts++;
   const selectedBtn = s8BtnEl(s8Selected);
+  /* נכון/לא נכון: מדווחים את הבחירה עצמה ('true' / 'false'), לא את תווית הכפתור — ה-
+     correctXapiResponsesPattern ב-Kata הוא הבוליאני (מדריך §6.3b, 10.11.26) */
   xapiAnswered('004', 'q3', s8Selected === S8.correctVal,
-    s8Selected === S8.correctVal || s8Attempts >= S8.maxAttempts, xapiAnswerText(selectedBtn));
+    s8Selected === S8.correctVal || s8Attempts >= S8.maxAttempts, s8Selected);
 
   if (s8Selected === S8.correctVal) {
     selectedBtn.classList.add('btn-correct');
