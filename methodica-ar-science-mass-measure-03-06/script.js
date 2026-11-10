@@ -189,7 +189,7 @@ function s6aCheck() {
   /* xAPI: בראש הפונקציה, לפני ההסתעפות. המבנה כאן הוא else-if בלי return
      מוקדם, ולכן הצבה בתוך אחד הענפים הייתה מפספסת את השאר. */
   xapiAnswered('001', 'q1', s6aSelected === S6A.correctId,
-    s6aSelected === S6A.correctId || s6aAttempts >= S6A.maxAttempts, xapiAnswerText(optEl));
+    s6aSelected === S6A.correctId || s6aAttempts >= S6A.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s6aSelected === S6A.correctId) {
     optEl.classList.add('correct');
@@ -334,7 +334,7 @@ function s6bCheck() {
   s6bAttempts++;
   const optEl = s6bOptEl(s6bSelected);
   xapiAnswered('001', 'q2', s6bSelected === S6B.correctId,
-    s6bSelected === S6B.correctId || s6bAttempts >= S6B.maxAttempts, xapiAnswerText(optEl));
+    s6bSelected === S6B.correctId || s6bAttempts >= S6B.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s6bSelected === S6B.correctId) {
     optEl.classList.add('correct');
@@ -583,8 +583,8 @@ function makeDragQuestion(cfg) {
     });
   }
 
-  /* חתימה לפי **תווית** ולא לפי מזהה קלף — אותה מחרוזת בדיוק ש-check()
-     מדווח ל-xAPI. check() מתייחס לקלפים בעלי אותה תווית כשקולים, ולכן
+  /* חתימה לפי **תווית** ולא לפי מזהה קלף — היא מה שה-Retry gate
+     משווה ל-lastWrong (xAPI מקבל את xapiPairs). check() מתייחס לקלפים בעלי אותה תווית כשקולים, ולכן
      החלפת שני קלפים זהים אינה "תשובה אחרת". */
   function answerSig() {
     return targetIds.map(function (tId) {
@@ -592,6 +592,19 @@ function makeDragQuestion(cfg) {
       dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
       return tId.replace(/^.*-target-/, '') + '=' + (placed ? labels[placed] : '—');
     }).join(' | ');
+  }
+
+  /* xAPI (MOE runbook 10.11.26): the placed pairs for xapiMatchingResponse — the card's label as the
+     source, the target's position as an index into answers.target (target-N = N-1, the order the
+     metadata lists them in). An empty target is no pair. */
+  function xapiPairs() {
+    const out = [];
+    targetIds.forEach(function (tId) {
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      if (placed) out.push({ source: labels[placed], target: parseInt(tId.replace(/^.*-target-/, ''), 10) - 1 });
+    });
+    return out;
   }
 
   /* Retry gate: הפרדיקט היחיד ל-disabled של "צדקתי?" — render ו-restoreUI. */
@@ -772,11 +785,9 @@ function makeDragQuestion(cfg) {
 
     /* xAPI: **אחרי** לולאת האזורים, כי allCorrect סופי רק בסופה, ולפני
        ההסתעפות כדי שירוץ פעם אחת בכל מסלול.
-       ⚠️ xapiZoneAnswer לא מתאים כאן: העוזר בונה מזהי אזור בתבנית
-       <prefix>-zone-<id>, בעוד היעדים של הפקטורי הזה הם s6c-target-N.
-       לכן בונים את מחרוזת התשובה מקומית מתוך placement. */
+       הזוגות מ-xapiPairs (matching, MOE runbook 10.11.26). */
     if (cfg.xapiItem) {
-      const _ans = answerSig();
+      const _ans = { pairs: xapiPairs() };
       (cfg.xapiQuestions || ['q1']).forEach(function (q) {
         xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
       });
@@ -1063,6 +1074,9 @@ window.addEventListener('load', function () {
 });
 
 document.addEventListener('keydown', function (e) {
+  /* קיצור פיתוח בלבד: בלי ?dev=1 (ותמיד כשיש registration) Ctrl+חץ לא מדלג על
+     מסכים, שערי וידאו ושאלות. MOE runbook 10.11.26 (Phase 6, lane 3). */
+  if (!DEV_NAV) return;
   if (e.ctrlKey && e.key === 'ArrowLeft') goTo(currentScreen + 1);
   if (e.ctrlKey && e.key === 'ArrowRight') goTo(currentScreen - 1);
 });

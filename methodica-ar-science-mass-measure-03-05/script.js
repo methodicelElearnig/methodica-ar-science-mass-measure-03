@@ -563,7 +563,7 @@ function s2Check() {
   s2Attempts++;
   const optEl = s2OptEl(s2Selected);
   xapiAnswered('001', 'q1', s2Selected === S2.correctId,
-    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, xapiAnswerText(optEl));
+    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s2Selected === S2.correctId) {
     optEl.classList.add('correct');
@@ -733,7 +733,7 @@ function s3Check() {
   s3Attempts++;
   const optEl = s3OptEl(s3Selected);
   xapiAnswered('001', 'q2', s3Selected === S3.correctId,
-    s3Selected === S3.correctId || s3Attempts >= S3.maxAttempts, xapiAnswerText(optEl));
+    s3Selected === S3.correctId || s3Attempts >= S3.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s3Selected === S3.correctId) {
     optEl.classList.add('correct');
@@ -1007,6 +1007,19 @@ function makeDragQuestion(cfg) {
     }).join(' | ');
   }
 
+  /* xAPI (MOE runbook 10.11.26): the placed pairs for xapiMatchingResponse — the card's label as the
+     source, the target's position as an index into answers.target (target-N = N-1, the order the
+     metadata lists them in). An empty target is no pair. */
+  function xapiPairs() {
+    const out = [];
+    targetIds.forEach(function (tId) {
+      let placed = null;
+      dragIds.forEach(function (dId) { if (placement[dId] === tId) placed = dId; });
+      if (placed) out.push({ source: labels[placed], target: parseInt(tId.replace(/^.*-target-/, ''), 10) - 1 });
+    });
+    return out;
+  }
+
   function render() {
     dragIds.forEach(function (dragId) {
       const slot = document.getElementById('slot-' + dragId);
@@ -1182,10 +1195,9 @@ function makeDragQuestion(cfg) {
 
     /* xAPI: **אחרי** לולאת האזורים, כי allCorrect סופי רק בסופה, ולפני
        ההסתעפות כדי שירוץ פעם אחת בכל מסלול.
-       ⚠️ xapiZoneAnswer לא מתאים: העוזר בונה מזהי אזור בתבנית
-       <prefix>-zone-<id>, בעוד היעדים כאן הם s4-target-N. */
+       הזוגות מ-xapiPairs (matching, MOE runbook 10.11.26). */
     if (cfg.xapiItem) {
-      const _ans = sig();
+      const _ans = { pairs: xapiPairs() };
       (cfg.xapiQuestions || ['q1']).forEach(function (q) {
         xapiAnswered(cfg.xapiItem, q, allCorrect, allCorrect || attempts >= maxAttempts, _ans);
       });
@@ -1530,6 +1542,9 @@ window.addEventListener('load', function () {
 });
 
 document.addEventListener('keydown', function (e) {
+  /* קיצור פיתוח בלבד: בלי ?dev=1 (ותמיד כשיש registration) Ctrl+חץ לא מדלג על
+     מסכים, שערי וידאו ושאלות. MOE runbook 10.11.26 (Phase 6, lane 3). */
+  if (!DEV_NAV) return;
   if (e.ctrlKey && e.key === 'ArrowLeft') goTo(currentScreen + 1);
   if (e.ctrlKey && e.key === 'ArrowRight') goTo(currentScreen - 1);
 });

@@ -36,7 +36,16 @@
           ],
           "correctAnswers": [
             "الكرات التي تم فحصها مطابقة للمعيار، لكن يجب إجراء فحوصات إضافية"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "جميع الكرات التي ينتجها المصنع مطابقة للمعيار.", "description": "جميع الكرات التي ينتجها المصنع مطابقة للمعيار."},
+              {"id": "جميع الكرات في المصنع تزن 419 غرام تقريبًا", "description": "جميع الكرات في المصنع تزن 419 غرام تقريبًا"},
+              {"id": "الكرات التي تم فحصها مطابقة للمعيار، لكن يجب إجراء فحوصات إضافية", "description": "الكرات التي تم فحصها مطابقة للمعيار، لكن يجب إجراء فحوصات إضافية"},
+              {"id": "المعطيات غير كافية لتقييم الإنتاج", "description": "المعطيات غير كافية لتقييم الإنتاج"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["الكرات التي تم فحصها مطابقة للمعيار، لكن يجب إجراء فحوصات إضافية"]
         }
       ]
     },
@@ -59,7 +68,16 @@
           ],
           "correctAnswers": [
             "تلمجموعة ج — بسبب الدمج بين الدقة والتكرار"
-          ]
+          ],
+          "xapiInteractionComponents": {
+            "choices": [
+              {"id": "المجموعة أ — بسبب مستوى الدقّة العالي", "description": "المجموعة أ — بسبب مستوى الدقّة العالي"},
+              {"id": "المجموعة ب — بسبب التناسُق بين القياسات", "description": "المجموعة ب — بسبب التناسُق بين القياسات"},
+              {"id": "المجموعتان ب وَ ت — لأنهما أجرتا قياسات متكررة", "description": "المجموعتان ب وَ ت — لأنهما أجرتا قياسات متكررة"},
+              {"id": "تلمجموعة ج — بسبب الدمج بين الدقة والتكرار", "description": "تلمجموعة ج — بسبب الدمج بين الدقة والتكرار"}
+            ]
+          },
+          "correctXapiResponsesPattern": ["تلمجموعة ج — بسبب الدمج بين الدقة والتكرار"]
         }
       ]
     },
@@ -74,29 +92,37 @@
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q1",
           "questionType": "true-false",
           "questionText": "لماذا يجب علينا إجراء 3 قياسات على الأقل في العلم؟ قامت باحثة بقياس وزن عيّنة مرتين وحصلت على نتيجتين: 5.0 غرام، 5.8 غرام. اقترحت زميلتها إجراء قياس ثالث. اختاروا: 1. إذا كان هناك قياسان مختلفان، فإن القياس الأكبر هو الأدقّ دائمًا.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["غير صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["false"],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["false"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q2",
           "questionType": "true-false",
           "questionText": "2. إجراء عدة قياسات قد يساعد في حساب معدل أكثر موثوقية.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["true"],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["true"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q3",
           "questionType": "true-false",
           "questionText": "3. عندما يكون لدينا قياسان مختلفان فقط، من الصعب معرفة أيهما يمثل كتلة العينة بشكل أفضل.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["true"],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["true"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q4",
           "questionType": "true-false",
           "questionText": "4. الهدف من القياس الثالث هو الحصول على نتيجة أكبر فقط.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["غير صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["false"],
+          "xapiInteractionComponents": null,
+          "correctXapiResponsesPattern": ["false"]
         }
       ]
     }

@@ -322,7 +322,7 @@ function s1Check() {
      מסלול הטעות מאפס s1Selected = [] (למטה), ולכן קריאה מתוך הענף הייתה
      מדווחת תשובה ריקה בכל ניסיון שגוי. */
   xapiAnswered('001', 'q1', isCorrect, isCorrect || s1Attempts >= MCQ_S1.maxAttempts,
-    xapiMultiAnswer(s1Selected, s1OptEl));
+    { choices: s1Selected.map(function (id) { return xapiAnswerText(s1OptEl(id)); }) });
 
   if (isCorrect) {
     s1Phase = 'correct';
@@ -503,7 +503,7 @@ function s2Check() {
   s2Attempts++;
   const optEl = s2OptEl(s2Selected);
   xapiAnswered('002', 'q1', s2Selected === S2.correctId,
-    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, xapiAnswerText(optEl));
+    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s2Selected === S2.correctId) {
     optEl.classList.add('correct');
@@ -681,7 +681,7 @@ function s3Check() {
   s3Attempts++;
   const optEl = s3OptEl(s3Selected);
   xapiAnswered('003', 'q1', s3Selected === S3.correctId,
-    s3Selected === S3.correctId || s3Attempts >= S3.maxAttempts, xapiAnswerText(optEl));
+    s3Selected === S3.correctId || s3Attempts >= S3.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s3Selected === S3.correctId) {
     optEl.classList.add('correct');
@@ -987,7 +987,7 @@ function s6Check() {
   s6Attempts++;
   const optEl = s6OptEl(s6Selected);
   xapiAnswered('004', 'q1', s6Selected === S6.correctId,
-    s6Selected === S6.correctId || s6Attempts >= S6.maxAttempts, xapiAnswerText(optEl));
+    s6Selected === S6.correctId || s6Attempts >= S6.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s6Selected === S6.correctId) {
     optEl.classList.add('correct');
@@ -1147,7 +1147,7 @@ function s7Check() {
   const isCorrect = Number(input.value) === S7.correct;
   s7Attempts++;
   xapiAnswered('004', 'q2', isCorrect, isCorrect || s7Attempts >= S7.maxAttempts,
-    xapiFieldsAnswer(['s7-input']));
+    { value: input.value });
 
   if (isCorrect) {
     input.classList.add('correct');
@@ -1350,7 +1350,7 @@ function s8Check() {
   /* נכון/לא נכון: מדווחים את הבחירה עצמה ('true' / 'false'), לא את תווית הכפתור — ה-
      correctXapiResponsesPattern ב-Kata הוא הבוליאני (מדריך §6.3b, 10.11.26) */
   xapiAnswered('004', 'q3', s8Selected === S8.correctVal,
-    s8Selected === S8.correctVal || s8Attempts >= S8.maxAttempts, s8Selected);
+    s8Selected === S8.correctVal || s8Attempts >= S8.maxAttempts, { value: s8Selected });
 
   if (s8Selected === S8.correctVal) {
     selectedBtn.classList.add('btn-correct');
@@ -1511,7 +1511,7 @@ function s9Check() {
   s9Attempts++;
   const optEl = s9OptEl(s9Selected);
   xapiAnswered('004', 'q4', s9Selected === S9.correctId,
-    s9Selected === S9.correctId || s9Attempts >= S9.maxAttempts, xapiAnswerText(optEl));
+    s9Selected === S9.correctId || s9Attempts >= S9.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s9Selected === S9.correctId) {
     optEl.classList.add('correct');
@@ -1634,6 +1634,9 @@ window.addEventListener('load', function () {
 });
 
 document.addEventListener('keydown', function (e) {
+  /* קיצור פיתוח בלבד: בלי ?dev=1 (ותמיד כשיש registration) Ctrl+חץ לא מדלג על
+     מסכים, שערי וידאו ושאלות. MOE runbook 10.11.26 (Phase 6, lane 3). */
+  if (!DEV_NAV) return;
   if (e.ctrlKey && e.key === 'ArrowLeft') goTo(currentScreen + 1);
   if (e.ctrlKey && e.key === 'ArrowRight') goTo(currentScreen - 1);
 });

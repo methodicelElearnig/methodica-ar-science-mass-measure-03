@@ -89,7 +89,7 @@ function marksIn(P, sel) {
 /* ═══════════════════════════ jsdom ═══════════════════════════
    אותו אתחול כמו statement-flow.js: בלי 50-loader ו-90-boot (שמושכים את ספריית
    ה-CDN ומריצים את האתחול האמיתי), ו-sendStatement720 מוחלף ב-no-op. */
-function boot(c) {
+function boot(c, query) {
   const dir = path.join(BASE, UNIT_SLUG + '-' + c);
   const errors = [];
   const vc = new VirtualConsole();
@@ -100,7 +100,7 @@ function boot(c) {
   });
   vc.on('error', (...a) => errors.push('console.error: ' + a.map(String).join(' ').slice(0, 200)));
   const dom = new JSDOM(read(path.join(dir, 'index.html')), {
-    url: 'http://localhost:8777/' + UNIT_SLUG + '-' + c + '/index.html',
+    url: 'http://localhost:8777/' + UNIT_SLUG + '-' + c + '/index.html' + (query || ''),
     runScripts: 'dangerously',
     virtualConsole: vc,
     beforeParse(w) {
@@ -506,7 +506,10 @@ async function runGate(Q) {
   ok(scope, 'no uncaught page errors during the walk', errs.length === 0, errs.slice(0, 3).join(' || '));
 }
 
-(async function main() {
+/* _test/responses.js (MOE runbook 10.11.26) drives the same questions to their correct answer. */
+module.exports = { UNIT_SLUG, BASE, boot, tick, scq, QUESTIONS };
+
+if (require.main === module) (async function main() {
   let last = null;
   for (const Q of QUESTIONS) {
     if (Q.c !== last) { section(Q.c + ' — ' + UNIT_SLUG + '-' + Q.c); last = Q.c; }

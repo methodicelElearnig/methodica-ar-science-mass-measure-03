@@ -285,7 +285,7 @@ function s1Check() {
   /* xAPI: לפני ההסתעפות, כדי שירוץ בדיוק פעם אחת לכל לחיצה בשני המסלולים.
      isLast הוא "נכון, או שנגמרו הניסיונות" — רק answered.last נכנס למכנה. */
   xapiAnswered('001', 'q1', s1Selected === S1.correctId,
-    s1Selected === S1.correctId || s1Attempts >= S1.maxAttempts, xapiAnswerText(optEl));
+    s1Selected === S1.correctId || s1Attempts >= S1.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s1Selected === S1.correctId) {
     optEl.classList.add('correct');
@@ -483,7 +483,7 @@ function s2Check() {
   s2Attempts++;
   const optEl = s2OptEl(s2Selected);
   xapiAnswered('002', 'q1', s2Selected === S2.correctId,
-    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, xapiAnswerText(optEl));
+    s2Selected === S2.correctId || s2Attempts >= S2.maxAttempts, { choices: [xapiAnswerText(optEl)] });
 
   if (s2Selected === S2.correctId) {
     optEl.classList.add('correct');
@@ -714,7 +714,7 @@ function s3Check() {
     xapiAnswered('003', 'q' + (i + 1),
       s3Selected[r] === TF_S3_CORRECT[r],
       _s3Last,
-      s3Selected[r]);   /* 'true' / 'false', לא התווית — מדריך §6.3b (10.11.26) */
+      { value: s3Selected[r] });   /* 'true' / 'false', לא התווית — מדריך §6.3b (10.11.26) */
   });
 
   if (allCorrect) {
@@ -836,6 +836,9 @@ window.addEventListener('load', function () {
 });
 
 document.addEventListener('keydown', function (e) {
+  /* קיצור פיתוח בלבד: בלי ?dev=1 (ותמיד כשיש registration) Ctrl+חץ לא מדלג על
+     מסכים, שערי וידאו ושאלות. MOE runbook 10.11.26 (Phase 6, lane 3). */
+  if (!DEV_NAV) return;
   if (e.ctrlKey && e.key === 'ArrowLeft') goTo(currentScreen + 1);
   if (e.ctrlKey && e.key === 'ArrowRight') goTo(currentScreen - 1);
 });
