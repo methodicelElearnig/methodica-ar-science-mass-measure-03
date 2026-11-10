@@ -90,8 +90,8 @@
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-004/q3",
           "questionType": "true-false",
           "questionText": "ت. حدّدوا ما إذا كانت الجملة التالية صحيحة أم غير صحيحة: استنادًا إلى المعدل الذي حسبتموه، الكرة مطابقة لمعيار FIFA.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["true"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-02/methodica-ar-science-mass-measure-03-02-004/q4",

@@ -74,29 +74,29 @@
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q1",
           "questionType": "true-false",
           "questionText": "لماذا يجب علينا إجراء 3 قياسات على الأقل في العلم؟ قامت باحثة بقياس وزن عيّنة مرتين وحصلت على نتيجتين: 5.0 غرام، 5.8 غرام. اقترحت زميلتها إجراء قياس ثالث. اختاروا: 1. إذا كان هناك قياسان مختلفان، فإن القياس الأكبر هو الأدقّ دائمًا.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["غير صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["false"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q2",
           "questionType": "true-false",
           "questionText": "2. إجراء عدة قياسات قد يساعد في حساب معدل أكثر موثوقية.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["true"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q3",
           "questionType": "true-false",
           "questionText": "3. عندما يكون لدينا قياسان مختلفان فقط، من الصعب معرفة أيهما يمثل كتلة العينة بشكل أفضل.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["true"]
         },
         {
           "questionId": "https://lomdot.education.gov.il/metodica/720/ar/science/mass-measure/03/methodica-ar-science-mass-measure-03-04/methodica-ar-science-mass-measure-03-04-003/q4",
           "questionType": "true-false",
           "questionText": "4. الهدف من القياس الثالث هو الحصول على نتيجة أكبر فقط.",
-          "answers": ["صحيح", "غير صحيح"],
-          "correctAnswers": ["غير صحيح"]
+          "answers": ["true", "false"],
+          "correctAnswers": ["false"]
         }
       ]
     }
