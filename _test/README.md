@@ -55,6 +55,16 @@ NODE_PATH=... node _test/verify-report.js ../../deployments/2026-09-19
 מסך ראוי לפריט היא שיפוט תוכן, ונבדקת בקריאת המסך; `verify-report.js` בודק
 בנפרד את המפה מול המטא-דאטה בשני הכיוונים.
 
+### `write-guard.js` — ‎66 בדיקות
+
+מסמך ההקשחה (Documentation/reporting-and-resume/BOOT-AND-RESUME-HARDENING-2026-11-03.md §2.6, §2.10; 10.11.26): אף כתיבה לפני השחזור — ה-drain כותב את המסמך כפי שנקרא, `markSent` לפני שלב ב' מסמן בזיכרון בלבד, קריאה שנכשלה (לא 404) סוגרת את כל הכתיבות עד קריאה מוצלחת; צורת המקור של `40-resume.js` / `50-loader.js`; לכל סין: רשת הכיסוי מדליקה `__resumeInFlight` בעצמה עם registration, preload זהה לאות שב-loader, preconnect ל-Kata, תמונות lazy מחוץ למסך הנחיתה; שמירת היציאה עוברת דרך `saveState720OnLeave` על `-l` ודרך `saveState720` על `-k`. 45 מהבדיקות נכשלות על הקוד שלפני.
+
+`xapi-720-l.js` — ה-stub של `-k` ועוד `saveState720OnLeave` (`__leaveWrites()`), לבדיקה בדפדפן דרך `?xapiLib=../_test/xapi-720-l.js`. `xapi-720-k.js` נשאר לבדיקה שהיחידה עדיין רצה על `-k`.
+
+### `true-false.js` — ‎69 בדיקות
+
+מדריך §6.3b (10.11.26): שאלות ה-true-false של המטא-דאטה — 02-004 q3 (s8) ו-04-003 q1..q4 (s3) — נענות נכון, שגוי פעמיים ומעורב, ומדווחות `true` / `false` (מה שה-`correctXapiResponsesPattern` ב-Kata מחזיק), אף פעם לא `صحيح` / `غير صحيح`; הערך שווה לתשובה הנכונה בדיוק כש-`success`. 46 מהבדיקות נכשלות על הקוד שלפני.
+
 ### `retry-gate.js` — ‎387 בדיקות
 
 ה-Retry gate של מפרט 720 (דיווח MOE מ-23.09.26): אחרי ניסיון שגוי שאינו אחרון,

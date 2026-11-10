@@ -1,0 +1,219 @@
+{
+ "_note": "Largest box (canvas px, 1280x710 frame at scale 1) each image is drawn in, measured in real Chrome on 2026-11-10 by walking every screen of every part with both characters (pink, boy) and opening every .img-zoom-btn (zoomable images carry their zoom-modal box). Files absent here are never drawn.",
+ "btn-flag-default.png": [
+  [
+   38,
+   38
+  ]
+ ],
+ "btn-flag-hover.png": [
+  [
+   38,
+   38
+  ]
+ ],
+ "daniela_and_noam_asking_ar.png": [
+  [
+   658,
+   658
+  ]
+ ],
+ "football-player.png": [
+  [
+   658,
+   658
+  ]
+ ],
+ "football-weighing.png": [
+  [
+   658,
+   658
+  ]
+ ],
+ "gesture-hand-cursor.svg": [
+  [
+   28,
+   33
+  ]
+ ],
+ "girl-weighing-tuna_ar.png": [
+  [
+   658,
+   658
+  ]
+ ],
+ "gold-necklace.png": [
+  [
+   170,
+   113
+  ]
+ ],
+ "icon-hint-blue.svg": [
+  [
+   26,
+   24
+  ]
+ ],
+ "scene01-screen22-boy-using-kitchen-weight.png": [
+  [
+   658,
+   658
+  ]
+ ],
+ "scene02-screen06-football-player.png": [
+  [
+   658,
+   658
+  ]
+ ],
+ "scene2-screen03-labor-woman-experment.jpg": [
+  [
+   658,
+   658
+  ]
+ ],
+ "scene2-screen4-woman-setting-on-a-sofa.jpg": [
+  [
+   658,
+   658
+  ]
+ ],
+ "screen02-Aizak-neoton.png": [
+  [
+   362,
+   362
+  ]
+ ],
+ "screen02-football.jpg": [
+  [
+   658,
+   658
+  ]
+ ],
+ "screen03-man-on-laptop.jpg": [
+  [
+   658,
+   658
+  ]
+ ],
+ "screen05-woman-setting.jpg": [
+  [
+   658,
+   658
+  ]
+ ],
+ "screen08-footbal-01.png": [
+  [
+   124,
+   119
+  ]
+ ],
+ "screen08-footbal-02.png": [
+  [
+   124,
+   119
+  ]
+ ],
+ "screen08-footbal-03.png": [
+  [
+   124,
+   119
+  ]
+ ],
+ "screen14-analytic-weight.jpg": [
+  [
+   221,
+   213
+  ]
+ ],
+ "screen14-kitchen-weight.jpg": [
+  [
+   221,
+   213
+  ]
+ ],
+ "screen14-work-weight.jpg": [
+  [
+   221,
+   213
+  ]
+ ],
+ "screen15-rice-fields.jpg": [
+  [
+   658,
+   658
+  ]
+ ],
+ "screen19-adeer.png": [
+  [
+   220,
+   183
+  ]
+ ],
+ "screen19-yoram.png": [
+  [
+   220,
+   183
+  ]
+ ],
+ "screen5-gold-blocks.jpg": [
+  [
+   290,
+   272
+  ]
+ ],
+ "screen5-midicine.jpg": [
+  [
+   290,
+   272
+  ]
+ ],
+ "screen9-store-scale-measure.png": [
+  [
+   658,
+   658
+  ]
+ ],
+ "sellers-conversation_ar.png": [
+  [
+   584,
+   464
+  ]
+ ],
+ "sim-scale-regular.png": [
+  [
+   319,
+   252
+  ]
+ ],
+ "sim-scale-sensitive.png": [
+  [
+   319,
+   252
+  ]
+ ],
+ "simulation-gold-block.png": [
+  [
+   244,
+   185
+  ]
+ ],
+ "simulation-medicine-box.png": [
+  [
+   102,
+   193
+  ]
+ ],
+ "weight-machine.png": [
+  [
+   380,
+   203
+  ]
+ ],
+ "woman-weighing-pickles.png": [
+  [
+   658,
+   658
+  ]
+ ]
+}

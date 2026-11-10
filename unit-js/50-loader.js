@@ -80,11 +80,16 @@ function bootXAPI() {
      ההחזרה בדיוק כפי שהיו, ולכן הוא תואם-לאחור מול -j.
      ‎-j נשאר ללא שינוי ב-CDN, כך שהיחידות האחרות שטוענות אותו אינן מושפעות.
 
+     ‎-l (2026-11-10, מסמך ההקשחה §2.10) הוא -k ועוד פונקציה אחת, saveState720OnLeave: שמירת
+     היציאה שעדיין מגיעה ל-Kata כש-Chrome מסרב ל-PUT הסינכרוני בזמן סגירת העמוד (fallback של
+     keepalive). ‎-k לא השתנה ב-CDN. 40-resume.js מגדר את הפונקציה ב-typeof, ולכן היחידה עדיין
+     רצה על -k (החזרה לאחור = האות, ה-regex וקישורי ה-preload).
+
      ב-localhost בלבד, ?xapiLib=<נתיב same-origin> יכול לעקוף לבדיקת בילד מקומי
-     — כך נבדק ה-resume מול _test/xapi-720-k.js בלי LRS אמיתי.
+     — כך נבדק ה-resume מול _test/xapi-720-l.js בלי LRS אמיתי.
 
      ⚠️ שם הקובץ של ה-stub חייב להסתיים באות ספרייה שה-regex למטה מכיר
-     (xapi-720-k.js): ה-regex הוא מה שקובע את XAPI_USING_G, ושם שלא תואם משתיק
+     (xapi-720-l.js): ה-regex הוא מה שקובע את XAPI_USING_G, ושם שלא תואם משתיק
      את כל ה-statements ברמת הפריט בלי שום שגיאה.
 
      ⚠️ window.XAPI_USING_G אומר לסינים אם statements ברמת פריט זמינים בכלל.
@@ -92,14 +97,14 @@ function bootXAPI() {
      משתיקה את xapiOnScreen ואת דיווח הווידאו בלי שום שגיאה.** לכן שינוי
      ה-LIB720 ושינוי ה-regex חייבים לקרות באותו commit; זה הכשל השקט של המעבר
      בין אותיות. */
-  var LIB720 = CDN + (RESUME_ENABLED ? 'xapi-720-k.js' : 'xapi-720-i.js');
+  var LIB720 = CDN + (RESUME_ENABLED ? 'xapi-720-l.js' : 'xapi-720-i.js');
   try {
     if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
       var _ovr = new URLSearchParams(location.search).get('xapiLib');
       if (_ovr && /^(\.\.?\/|\/)[^:]*$/.test(_ovr)) LIB720 = _ovr;   // same-origin יחסי בלבד
     }
   } catch (e) {}
-  window.XAPI_USING_G = /xapi-720-[ghijk]\.js/.test(LIB720);
+  window.XAPI_USING_G = /xapi-720-[ghijkl]\.js/.test(LIB720);
 
   loadScript(CDN + 'xapiwrapper.min.js', function () {
     loadScript(LIB720, function () {
@@ -156,7 +161,8 @@ function bootXAPI() {
                dropBootCover מכבה גם את __resumeInFlight שהודלק בראש
                bootXAPI, ולכן רשת הביטחון חוזרת להתנהגות ה-800ms הרגילה.
                ויש payload → הדגל נשאר דלוק, והכיסוי מוחזק עד שלב ב'. */
-            if (!_payload) dropBootCover();
+            /* B2 (2026-11-10): קריאה שנכשלה אינה "אין מה לשחזר" — הכיסוי נשאר לניסיון החוזר בשלב ב'. */
+            if (!_payload && !_resumeReadFailed) dropBootCover();
           } catch (e) {
             console.error('[resume] read', e);
             dropBootCover();
@@ -215,6 +221,23 @@ function bootXAPI() {
                    _resumeReady נדלק רק כאן, ולא בשלב א': הוא השער של כל
                    נתיבי הכתיבה, וכתיבה שנפתחת לפני השחזור דורסת את
                    doc.payload ב-payload טרי. */
+                /* B3 (2026-11-10, מסמך ההקשחה §2.2): אם הקריאה בשלב א' נכשלה, קוראים פעם
+                   נוספת. נכשלה שוב → השמירה כבויה לסשן הזה (ה-statements ממשיכים לצאת) וההתקדמות
+                   ב-Kata נשמרת. הצליחה → מאמצים את הדמות רק אם לא נבחרה אחת בינתיים, ומציירים
+                   מחדש רק את מסך 0 (resetScreenState על מסך אחר היה מוחק UI באמצע עבודה). */
+                if (_resumeReadFailed) {
+                  _saved = readUnitState();
+                  if (_resumeReadFailed) {
+                    console.error('[resume] state read failed twice — saving is OFF for this session; progress on Kata is preserved',
+                      typeof window.stateLastResult720 === 'function' ? window.stateLastResult720() : null);
+                  } else {
+                    if (!_pendingProfile && adoptUnitCharacter(_saved) && currentScreen === 0) {
+                      try { resetScreenState(0); } catch (e) {}
+                    }
+                    _payload = _saved.payload;
+                  }
+                }
+                if (!_resumeReadFailed) {
                 _resumeReady = true;
                 if (!_unitState) _unitState = emptyUnitState();
                 /* בחירה שנעשתה בחלון שבין השלבים ממתינה בתור. מנוקזת **לפני**
@@ -240,9 +263,11 @@ function bootXAPI() {
                   applyExecutionState(_payload, _hm ? parseInt(_hm[1], 10) : undefined);
                   _resumed = true;
                 }
+                }   /* if (!_resumeReadFailed) */
               } catch (e) {
                 console.error('[resume] init', e);
-                _resumeReady = true;
+                /* B4: שחזור שזרק לא פותח מחדש סשן שהקריאה שלו נכשלה. */
+                _resumeReady = !_resumeReadFailed;
                 if (!_unitState) _unitState = emptyUnitState();
               }
             }
@@ -262,6 +287,9 @@ function bootXAPI() {
                שפותחת את הפריט של המסך הראשון.
                ב-resume, applyExecutionState כבר שלח אותו בעצמו. */
             if (!_resumed) { try { xapiOnScreen(currentScreen); } catch (e) {} }
+            /* B5: מסך שהלומד הגיע אליו בחלון שבין השלבים (וכל מפתח יומן שסומן בזיכרון) מקבל
+               שמירה מושהית אחת — אינרטית אחרי קריאה שנכשלה. */
+            if (!_resumed && currentScreen !== 0) { try { scheduleResumeSave(); } catch (e) {} }
             if (typeof onXapiReady === 'function') {
               try { onXapiReady(); } catch (e) { console.error('[xAPI] ready hook', e); }
             }

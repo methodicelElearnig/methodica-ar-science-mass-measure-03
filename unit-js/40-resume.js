@@ -87,6 +87,11 @@ var _leavingToNextPart = false;
    מפילה statement אמיתי בשקט. */
 var _unitState = null;
 
+/* A3 (2026-11-10, BOOT-AND-RESUME-HARDENING-2026-11-03.md §2.1): קריאה שנכשלה (401 / 5xx / רשת /
+   200 ריק) אינה "אין עדיין מסמך". כל עוד הדגל דולק, אף נתיב כתיבה לא כותב — אחרת מסמך ריק היה
+   דורס את ההתקדמות השמורה ב-Kata. מתאפס בקריאה מוצלחת. */
+var _resumeReadFailed = false;
+
 /* נדלק ע"י initResumeResetHatch. הדגל נחוץ כי ה-hatch מסלק את ?resetState
    מה-URL בתחילת ה-boot, בעוד readUnitState רץ מאוחר יותר (אחרי טעינת
    הספרייה) — ואז הבדיקה על ה-query string כבר לא הייתה מוצאת כלום. */
@@ -177,6 +182,15 @@ function readUnitState() {
     }
     doc = (typeof window.loadState720 === 'function') ? window.loadState720(RESUME_STATE_ID) : null;
   } catch (e) { console.error('[resume] read', e); doc = null; }
+  _resumeReadFailed = false;
+  if (doc === null && typeof window.stateLastResult720 === 'function') {
+    var _lr = null;
+    try { _lr = window.stateLastResult720(); } catch (e) {}
+    if (_lr && _lr.op === 'load' && _lr.ok === false) {
+      _resumeReadFailed = true;
+      console.warn('[resume] state read FAILED (not a 404) — writes stay closed until a read succeeds', _lr);
+    }
+  }
   doc = migrateState(doc);
   if (doc && doc.component && doc.component !== currentPartSlug()) {
     console.warn('[resume] document belongs to "' + doc.component + '", not "' + currentPartSlug() + '" — discarded');
@@ -212,6 +226,10 @@ function captureUnitState() {
    לירות ולדרוך על הכתיבה עם payload שעוד מצביע על הסין הזה.
    מחזיר אם הכתיבה הסינכרונית נחתה — מי שעומד לנווט חייב לדעת. */
 function persistUnitState(doc) {
+  if (_resumeReadFailed) {
+    console.warn('[resume] persist refused — the state read failed, writes stay closed');
+    return false;
+  }
   var ok = false;
   try {
     if (typeof window.saveState720Debounced === 'function') window.saveState720Debounced(RESUME_STATE_ID, doc);
@@ -326,8 +344,13 @@ function drainPendingUnitState() {
     _pendingResults = null;
     dirty = true;
   }
+  /* A1 (2026-11-10): המסמך **כפי שנקרא** — לעולם לא צילום חי של הדף. ה-drain רץ לפני
+     applyExecutionState, כלומר צילום כאן הוא של הדף שעוד לא שוחזר, והוא דרס ב-Kata את
+     ה-payload השמור (הבאג של 03.11). הדמות והתוצאות יושבות ליד ה-payload, כך שלא הולך כלום. */
   if (dirty) {
-    try { persistUnitState(captureUnitState()); } catch (e) { console.error('[resume] drain', e); }
+    _unitState.v = RESUME_STATE_VERSION;
+    _unitState.component = currentPartSlug();
+    try { persistUnitState(_unitState); } catch (e) { console.error('[resume] drain', e); }
   }
 }
 
@@ -411,6 +434,7 @@ function markSent(ledger, key) {
   if (!_unitState) return;
   _unitState[ledger] = _unitState[ledger] || {};
   _unitState[ledger][key] = true;
+  if (!_resumeReady) return;   /* A2: מסמנים בזיכרון תמיד; כותבים רק אחרי השחזור — המפתח נוסע עם השמירה הבאה */
   try { persistUnitState(captureUnitState()); } catch (e) { console.error('[resume] ledger', e); }
 }
 
@@ -617,7 +641,7 @@ function repaintScreen(n) {
 
 /* החלפת מסך — נקודת החנק. מושהה: תוחם את האיבוד למסך אחד. */
 function scheduleResumeSave() {
-  if (!RESUME_ENABLED || !_resumeReady || _restoring) return;
+  if (!RESUME_ENABLED || !_resumeReady || _restoring || _resumeReadFailed) return;
   if (typeof window.saveState720Debounced !== 'function') return;
   try { window.saveState720Debounced(RESUME_STATE_ID, captureUnitState()); } catch (e) {}
 }
@@ -628,16 +652,28 @@ function scheduleResumeSave() {
    בזמן שהמסמך הבא נטען, מספיק זמן ל-timer המיושן לירות **אחרי** הכתיבה
    קדימה. השיגור הבא היה חוזר לתוך הסין שהסתיים. */
 function flushResumeSave() {
-  if (!RESUME_ENABLED || !_resumeReady || _restoring) return;
+  if (!RESUME_ENABLED || !_resumeReady || _restoring || _resumeReadFailed) return;
   if (typeof window.saveState720 !== 'function') return;
   try { window.saveState720(RESUME_STATE_ID, captureUnitState()); } catch (e) {}
+}
+
+/* שמירת היציאה (2026-11-10, xapi-720-l.js; מסמך ההקשחה §2.10). אותם שומרים כמו
+   flushResumeSave, אבל דרך saveState720OnLeave: Chrome מסרב ל-PUT הסינכרוני של saveState720
+   בזמן סגירת העמוד, ולכן ב--k כל שמירת יציאה נכשלה והשינוי המושהה האחרון (≤ 800ms) אבד.
+   ‎-l מנסה קודם אותו PUT סינכרוני, ורק כשהוא זורק שולח אותו שוב כ-fetch עם keepalive.
+   מגודר ב-typeof: על -k זה flushResumeSave. כתיבות של תשובה / סיום נשארות ב-flushResumeSave. */
+function flushResumeSaveLeaving() {
+  if (!RESUME_ENABLED || !_resumeReady || _restoring || _resumeReadFailed) return;
+  var save = (typeof window.saveState720OnLeave === 'function') ? window.saveState720OnLeave : window.saveState720;
+  if (typeof save !== 'function') return;
+  try { save(RESUME_STATE_ID, captureUnitState()); } catch (e) {}
 }
 
 /* יציאה מהעמוד. beforeunload לבדו לא מספיק: הוא לא נורה כשלשונית מובייל
    עוברת לרקע ואז נהרגת — וזו בדיוק הדרך שבה לומד עוזב באמצע. */
 function flushResumeSaveOnLeave() {
   if (_leavingToNextPart) return;
-  flushResumeSave();
+  flushResumeSaveLeaving();
 }
 
 /* נרשם מ-90-boot.js. */
