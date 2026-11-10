@@ -1634,6 +1634,9 @@ window.addEventListener('load', function () {
 });
 
 document.addEventListener('keydown', function (e) {
+  /* קיצור פיתוח בלבד: בלי ?dev=1 (ותמיד כשיש registration) Ctrl+חץ לא מדלג על
+     מסכים, שערי וידאו ושאלות. MOE runbook 10.11.26 (Phase 6, lane 3). */
+  if (!DEV_NAV) return;
   if (e.ctrlKey && e.key === 'ArrowLeft') goTo(currentScreen + 1);
   if (e.ctrlKey && e.key === 'ArrowRight') goTo(currentScreen - 1);
 });
