@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>وحدة تعليمية 720 | علوم، الهدف 3 | فصل 5 (المهمة الرئيسية — موعد أ)</title>
+<!-- ספריית ה-xAPI נטענת מ-unit-js/50-loader.js בסוף ה-body, כלומר אחרי שהפרסר כבר הכניס לתור את כל
+     התמונות שלמטה; בקו איטי הבקשה שלה יצאה רק אחרי התמונה האחרונה, וזה מה שדחה את שחזור ה-resume
+     (2026-11-03, BOOT-AND-RESUME-HARDENING §2.3). preload מה-head שם אותה ראשונה בתור. ה-href חייב
+     להיות זהה למה ש-50-loader.js בונה (בלי ?v=, בלי crossorigin), אחרת הדפדפן מוריד פעמיים; אות
+     הספרייה כאן משתנה יחד עם LIB720 שם (ה-harness בודק). -->
+<link rel="preload" as="script" fetchpriority="high" href="https://lomdot.education.gov.il/metodica/720active/common/xapiwrapper.min.js">
+<link rel="preload" as="script" fetchpriority="high" href="https://lomdot.education.gov.il/metodica/720active/common/xapi-720-l.js">
+<link rel="preconnect" href="https://kata.cet.ac.il">
 <link rel="stylesheet" href="styles.css?v=2">
 <!-- מודאל "מצאתם בעיה?" — עותק אחד לכל הסינים. נטען אחרי styles.css במכוון. -->
 <link rel="stylesheet" href="../unit-css/25-report.css?v=1">
@@ -30,6 +38,11 @@
 <div id="boot-cover" style="position:fixed;inset:0;z-index:9999;background:#fff"></div>
 <script>
 (function () {
+  /* שיגור מ-Kata (registration ב-URL) עשוי לשחזר מסמך: מדליקים את הדגל **כאן**, לפני שנטען
+     סקריפט כלשהו. bootXAPI מדליק אותו גם, אבל הוא רץ מתג ה-script האחרון, ובקאש קר הסקריפטים
+     מגיעים אחרי ה-800ms שלמטה — הכיסוי נפל לפני שהדגל היה קיים וחשף את מסך 0 לכל ההמתנה
+     (2026-11-03). בלי registration (מקומי, dev) ההתנהגות של 800ms לא משתנה. */
+  if (/[?&]registration=/.test(location.search)) window.__resumeInFlight = true;
   var t0 = Date.now();
   function tick() {
     var c = document.getElementById('boot-cover');
@@ -113,13 +126,13 @@
       <div class="dq-sim" id="s1-sim">
         <div class="dq-sim-station">
           <div class="dq-sim-imgwrap">
-            <img class="dq-sim-scale-img" src="assets/images/weight-machine.png" alt="ميزان مراقبة الجودة">
+            <img class="dq-sim-scale-img" src="assets/images/weight-machine.png" alt="ميزان مراقبة الجودة" loading="lazy">
             <div class="dq-sim-lcd"><span class="dq-sim-lcd-val">0.0</span><span class="dq-sim-lcd-unit">غرام</span></div>
           </div>
         </div>
         <div class="dq-sim-dropzone" id="s1-sim-dropzone"></div>
         <div class="dq-sim-necklace" id="s1-sim-necklace">
-          <img src="assets/images/gold-necklace.png" alt="سلسلة ذهب" draggable="false">
+          <img src="assets/images/gold-necklace.png" alt="سلسلة ذهب" draggable="false" loading="lazy">
         </div>
       </div>
     </div>
@@ -310,7 +323,7 @@
               <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </button>
-          <img src="assets/images/screen03-man-on-laptop.jpg" alt="عامل في مصنع المجوهرات أمام حاسوب نقال">
+          <img src="assets/images/screen03-man-on-laptop.jpg" alt="عامل في مصنع المجوهرات أمام حاسوب نقال" loading="lazy">
         </div></div>
       </div>
       <div class="scq-content">
@@ -393,7 +406,7 @@
               <path d="M13 13L17.5 17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </button>
-          <img src="assets/images/screen05-woman-setting.jpg" alt="دنيا، مديرة المصنع">
+          <img src="assets/images/screen05-woman-setting.jpg" alt="دنيا، مديرة المصنع" loading="lazy">
         </div></div>
       </div>
       <div class="scq-content">
@@ -535,8 +548,8 @@
        ישירות ב-#app, לפי 720-templates skill (_global-components.md) -->
   <button class="flag-btn" aria-label="هل واجهتم مشكلة؟" title="هل واجهتم مشكلة؟">
     <span class="flag-btn-icon" aria-hidden="true">
-      <img class="flag-btn-icon-default" src="assets/images/btn-flag-default.png" alt="">
-      <img class="flag-btn-icon-hover" src="assets/images/btn-flag-hover.png" alt="">
+      <img class="flag-btn-icon-default" src="assets/images/btn-flag-default.png" alt="" loading="lazy">
+      <img class="flag-btn-icon-hover" src="assets/images/btn-flag-hover.png" alt="" loading="lazy">
     </span>
     <span class="flag-btn-label">هل واجهتم مشكلة؟</span>
   </button>
@@ -647,8 +660,8 @@
 <script src="../unit-js/20-xapi.js?v=4"></script>
 <script src="../unit-js/25-report.js?v=1"></script>
 <script src="../unit-js/30-pointer-dnd.js?v=20261105"></script>
-<script src="../unit-js/40-resume.js?v=1"></script>
-<script src="../unit-js/50-loader.js?v=1"></script>
+<script src="../unit-js/40-resume.js?v=2"></script>
+<script src="../unit-js/50-loader.js?v=2"></script>
 <script src="script.js?v=14"></script>
 <!-- ה-side-effects היחידים. חייב להיות אחרון, ובתג נפרד: זריקה ברמת
      top-level ב-script.js לא מפילה תג script אחר. ראו unit-js/90-boot.js. -->
