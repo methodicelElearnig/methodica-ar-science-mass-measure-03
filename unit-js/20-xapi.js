@@ -181,14 +181,42 @@ function _xapiCloseItem(item) {
   try { sendCompletedOnce('doneItems', itemLedgerKey(item), 'question', xapiItemResult(item), { objectId: xapiItemId(item), expectsAnswer: _xapiIsEval(item) }); } catch (e) {}
 }
 
+/* ── B-2 (monday 13454123722, 2026-11-12): Back never closes an item ──
+   The item closes only on a FORWARD move. A move is backward when the target screen ranks lower than the
+   screen being left. A Back from a half-answered item used to send its 'completed' with the failed result
+   at that moment, and the ledger then swallowed the real one after the learner came back and answered.
+   The forward button is blocked until a question is finished, so the first forward close carries the final
+   result. Rank: a numeric id is its number; a string id is its index in SCREEN_ORDER when the unit has one,
+   else in SCREEN_TO_SUBCONTENT's key order. Screens in XAPI_HUB_SCREENS (a part may declare it) are never
+   backward: a forward route into a lower screen still closes the item it leaves. The item comparison is the
+   fallback for the first call. */
+var _xapiLastScreen = null;
+function _xapiScreenRank(s) {
+  if (s == null) return null;
+  if (typeof s === 'number' || /^\d+$/.test(String(s))) return Number(s);
+  var order = (typeof SCREEN_ORDER !== 'undefined' && Array.isArray(SCREEN_ORDER)) ? SCREEN_ORDER
+    : (typeof SCREEN_TO_SUBCONTENT !== 'undefined' && SCREEN_TO_SUBCONTENT) ? Object.keys(SCREEN_TO_SUBCONTENT) : [];
+  var i = order.indexOf(s);
+  return i < 0 ? null : i;
+}
+function _xapiIsBackward(fromItem, toItem, toScreen, fromScreen) {
+  if (typeof XAPI_HUB_SCREENS !== 'undefined' && XAPI_HUB_SCREENS && XAPI_HUB_SCREENS[toScreen]) return false;
+  var a = _xapiScreenRank(fromScreen), b = _xapiScreenRank(toScreen);
+  if (a != null && b != null) return b < a;
+  return !!(fromItem && toItem && Number(toItem) < Number(fromItem));
+}
+
 /* זוגות initialized/completed ברמת הפריט, מונעים מ-goTo(). דפדוף בתוך אותו
-   פריט לא משדר כלום; הפריט נסגר כשהלומד נכנס למסך ששייך לפריט אחר. */
+   פריט לא משדר כלום; הפריט נסגר כשהלומד נכנס קדימה למסך ששייך לפריט אחר
+   (חזרה אחורה לא סוגרת — B-2 למעלה). */
 function xapiOnScreen(screen) {
+  var fromScreen = _xapiLastScreen;
+  _xapiLastScreen = screen;
   if (!window.XAPI_USING_G || typeof sendStatement720 !== 'function') return;
   var map = (typeof SCREEN_TO_SUBCONTENT !== 'undefined') ? SCREEN_TO_SUBCONTENT[screen] : null;
   var item = map ? map[0] : null;
   if (item === xapiCurrentItem) return;
-  if (xapiCurrentItem) _xapiCloseItem(xapiCurrentItem);
+  if (xapiCurrentItem && !_xapiIsBackward(xapiCurrentItem, item, screen, fromScreen)) _xapiCloseItem(xapiCurrentItem);
   xapiCurrentItem = item;
   if (item) {
     try { sendStatement720('initialized', 'question', null, { objectId: xapiItemId(item), isEvaluationItem: _xapiIsEval(item) }); } catch (e) {}
